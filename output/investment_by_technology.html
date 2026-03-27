@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technology Investment vs. Proposal Activity, 1897–1908</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+    background:#E8E2D8;
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:40px 20px 56px;
+  }
+  .card{
+    width:100%;
+    max-width:1060px;
+    background:#FDFBF8;
+    border-radius:5px;
+    box-shadow:0 2px 20px rgba(0,0,0,0.11),0 1px 4px rgba(0,0,0,0.06);
+    border-top:4px solid #1A1A2E;
+    padding:36px 42px 22px;
+  }
+  .eyebrow{
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:#8B6E3C;
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:Georgia, 'Times New Roman', serif;
+    font-size:22px;
+    font-weight:700;
+    color:#1A1A2E;
+    line-height:1.3;
+    margin-bottom:8px;
+  }
+  .sub{
+    font-size:13.5px;
+    color:#55556A;
+    line-height:1.6;
+    margin-bottom:22px;
+    max-width:720px;
+  }
+  .rule{
+    height:1px;
+    background:linear-gradient(to right,#C9B99A 35%,transparent);
+    margin:0 0 16px;
+  }
+  .footer{
+    margin-top:16px;
+    padding-top:11px;
+    border-top:1px solid #E4DDD3;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+  }
+  .src{font-size:10.5px;color:#9998A8;line-height:1.5}
+  .badge{
+    font-size:9.5px;font-weight:700;letter-spacing:1.2px;
+    text-transform:uppercase;color:#FDFBF8;
+    background:#1A1A2E;padding:3px 10px;border-radius:3px;
+    white-space:nowrap;flex-shrink:0;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">Board of Ordnance &amp; Fortification &nbsp;·&nbsp; Combined Analysis</div>
+  <h1>Technology Investment vs. Proposal Activity, 1897–1908</h1>
+  <p class="sub">Stacked bars show proposal volume by technology cluster each year. The dotted area shows total military budget (2025-adjusted) for context — revealing whether increased funding correlated with more innovation proposals.</p>
+  <div class="rule"></div>
+  <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>                <div id="66636b3d-9231-420a-aea8-d05195ecdabb" class="plotly-graph-div" style="height:520px; width:100%;"></div>            <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("66636b3d-9231-420a-aea8-d05195ecdabb")) {                    Plotly.newPlot(                        "66636b3d-9231-420a-aea8-d05195ecdabb",                        [{"customdata":["$2.1B","$2.2B","$1.8B","$5.0B","$6.8B","$7.1B","$4.6B","$6.3B","$7.0B","$6.1B","$5.1B","$6.2B"],"fill":"tozeroy","fillcolor":"rgba(26,26,46,0.08)","hovertemplate":"Year: %{x}\u003cbr\u003eBudget: %{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"rgba(26,26,46,0.35)","dash":"dot","width":2},"name":"Total Military Budget (2025 $)","x":[1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908],"y":[2082619607.0099998,2201156065.02,1808088844.43,4950989560.36,6775692665.969999,7060715311.3,4614311810.08,6262488483.73,6982366248.87,6080339322.51,5123191462.559999,6209347035.9],"type":"scatter","xaxis":"x","yaxis":"y2"},{"hovertemplate":"\u003cb\u003eArmor and Protection\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eProposals: %{y}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"rgba(124,67,24,0.85)","line":{"color":"#7C4318","width":0.5}},"name":"Armor and Protection","x":[1897,1898,1900,1901,1903,1904,1906,1907],"y":[11,2,1,2,8,5,9,2],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"\u003cb\u003eArtillery\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eProposals: %{y}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"rgba(29,52,97,0.85)","line":{"color":"#1D3461","width":0.5}},"name":"Artillery","x":[1897,1898,1900,1901,1903,1904,1906,1907],"y":[53,34,22,84,34,23,20,19],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"\u003cb\u003eCommunications and Observation\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eProposals: %{y}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"rgba(27,79,114,0.85)","line":{"color":"#1B4F72","width":0.5}},"name":"Communications and Observation","x":[1897,1898,1900,1901,1903,1904,1907],"y":[7,3,2,6,2,2,3],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"\u003cb\u003eExplosives\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eProposals: %{y}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"rgba(107,45,139,0.85)","line":{"color":"#6B2D8B","width":0.5}},"name":"Explosives","x":[1897,1898,1900,1901,1903,1904,1906,1907],"y":[106,18,13,30,16,21,7,15],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"\u003cb\u003eFortification and Engineering\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eProposals: %{y}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"rgba(45,106,79,0.85)","line":{"color":"#2D6A4F","width":0.5}},"name":"Fortification and Engineering","x":[1897,1898,1900,1901,1903,1904,1906,1907],"y":[20,11,3,6,14,14,11,10],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"\u003cb\u003eLogistics and Support\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eProposals: %{y}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"rgba(93,64,55,0.85)","line":{"color":"#5D4037","width":0.5}},"name":"Logistics and Support","x":[1897,1900,1904],"y":[1,1,1],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"\u003cb\u003eSmall Arms\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eProposals: %{y}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"rgba(10,110,93,0.85)","line":{"color":"#0A6E5D","width":0.5}},"name":"Small Arms","x":[1897,1898,1900,1901,1903,1904,1906,1907],"y":[2,3,3,24,6,2,1,1],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"\u003cb\u003eOther\u002fUnclassified\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eProposals: %{y}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"rgba(84,110,122,0.85)","line":{"color":"#546E7A","width":0.5}},"name":"Other\u002fUnclassified","x":[1897,1898,1900,1901,1903,1904,1906,1907],"y":[197,108,80,268,138,71,94,98],"type":"bar","xaxis":"x","yaxis":"y"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,0.94],"title":{"text":"Year"},"tickfont":{"size":11},"tickvals":[1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908],"gridcolor":"#D6CEBF","linecolor":"#D6CEBF"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"Proposals Submitted"},"tickfont":{"size":11},"gridcolor":"#D6CEBF","linecolor":"#D6CEBF"},"yaxis2":{"anchor":"x","overlaying":"y","side":"right","title":{"text":"Total Budget (2025 $)"},"tickfont":{"size":11},"tickformat":"$,.0f","gridcolor":"rgba(0,0,0,0)","linecolor":"#D6CEBF"},"legend":{"font":{"size":10.5,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"},"orientation":"h","y":-0.18,"x":0.5,"xanchor":"center","bgcolor":"rgba(0,0,0,0)"},"font":{"size":12,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","color":"#1A1A2E"},"margin":{"l":70,"r":80,"t":20,"b":120},"hoverlabel":{"font":{"size":12,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"},"bgcolor":"#FDFBF8","bordercolor":"#D6CEBF"},"barmode":"stack","paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"#EAE3D8","height":520},                        {"responsive": true}                    )                };                            </script>        </div>
+  <div class="footer">
+    <div class="src">Source: BOF Annual Reports &amp; Congressional Appropriations, 1897–1908</div>
+    <div class="badge">Interactive</div>
+  </div>
+</div>
+</body>
+</html>

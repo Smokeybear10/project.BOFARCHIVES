@@ -14,6 +14,9 @@ python run_bof_analysis.py --input-dir Subject --output-dir output
 
 # run budget analysis
 python run_budget_analysis.py --input "Military Budgets, 1865-1920.xlsx" --output-dir output
+
+# run combined analysis (subjects + budget, 1897-1908)
+python run_combined_analysis.py
 ```
 
 All charts are interactive HTML files in `output/`. Open them by double-clicking or:
@@ -44,6 +47,12 @@ open output/*.html
 | ![Area Chart](Graphs/budget-area.png) | ![Treemap](Graphs/budget-treemap.png) |
 | Army + Navy appropriations over time | Spending by decade and branch |
 
+**Combined Analysis (1897-1908)**
+- Crosses proposal data with budget data for the BOF period
+- Technology investment chart: proposal volume by cluster overlaid on military budget
+- Technology timeline: bubble chart showing when each cluster was active
+- Technology prevalence: 100% stacked area of shifting priorities over time
+
 ## Tech Stack
 
 | Layer | Tools |
@@ -59,6 +68,7 @@ project.BOFARCHIVE/
 ├── index.html                        # GitHub Pages landing page
 ├── run_bof_analysis.py               # proposal pipeline entry point
 ├── run_budget_analysis.py            # budget pipeline entry point
+├── run_combined_analysis.py          # combined subjects + budget charts
 ├── requirements.txt
 ├── Subject/                          # input BOF Excel files
 ├── Military Budgets, 1865-1920.xlsx  # input budget data
@@ -67,7 +77,8 @@ project.BOFARCHIVE/
 │   ├── config.py                     # classification rules, column aliases
 │   ├── transform.py                  # data cleaning and structuring
 │   ├── visualize.py                  # proposal chart generation
-│   └── budget_visualize.py           # budget chart generation
+│   ├── budget_visualize.py           # budget chart generation
+│   └── combined_visualize.py         # combined analysis charts
 └── output/                           # all generated HTML charts and CSVs
 ```
 
