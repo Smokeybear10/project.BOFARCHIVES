@@ -29,10 +29,20 @@ open output/*.html
 - Classifies by technology cluster, board decision, and proposer type
 - Generates Sankey diagram, approval rate trends, and per-year breakdowns
 
+| | |
+|---|---|
+| ![Sankey](Graphs/proposal-sankey.png) | ![Success Rates](Graphs/proposal-success.png) |
+| Proposal flow from cluster to decision | Government vs. private approval rates |
+
 **Budget Analysis (1865-1920)**
 - Cleans and structures Army + Navy appropriation data across 55 fiscal years
 - Supports nominal and 2025 inflation-adjusted values
 - Generates stacked area charts, treemaps, and proportional share charts
+
+| | |
+|---|---|
+| ![Area Chart](Graphs/budget-area.png) | ![Treemap](Graphs/budget-treemap.png) |
+| Army + Navy appropriations over time | Spending by decade and branch |
 
 ## Tech Stack
 
