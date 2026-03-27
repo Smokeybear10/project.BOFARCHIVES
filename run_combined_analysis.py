@@ -34,6 +34,14 @@ def parse_args() -> argparse.Namespace:
         "--output-dir", type=Path, default=Path("output"),
         help="Directory for HTML outputs.",
     )
+    parser.add_argument(
+        "--graphs-dir", type=Path, default=Path("Graphs"),
+        help="Directory for PNG thumbnails used on the landing page.",
+    )
+    parser.add_argument(
+        "--no-thumbnails", action="store_true",
+        help="Skip PNG export (requires kaleido).",
+    )
     return parser.parse_args()
 
 
@@ -55,18 +63,39 @@ def main() -> None:
     budget = load_budget_master(args.budget)
 
     out = args.output_dir
+    graphs = args.graphs_dir
+    thumbs = None if args.no_thumbnails else {
+        "investment": graphs / "combine-investment.png",
+        "timeline": graphs / "combine-timeline.png",
+        "prevalence": graphs / "combine-prevalence.png",
+    }
 
     path = out / "investment_by_technology.html"
-    save_investment_by_technology(proposals, budget, path)
+    save_investment_by_technology(
+        proposals, budget, path,
+        thumbnail_png=thumbs["investment"] if thumbs else None,
+    )
     print(f"  Investment chart    -> {path}")
+    if thumbs:
+        print(f"  Investment thumb    -> {thumbs['investment']}")
 
     path = out / "technology_timeline.html"
-    save_technology_timeline(proposals, path)
+    save_technology_timeline(
+        proposals, path,
+        thumbnail_png=thumbs["timeline"] if thumbs else None,
+    )
     print(f"  Technology timeline -> {path}")
+    if thumbs:
+        print(f"  Timeline thumb      -> {thumbs['timeline']}")
 
     path = out / "technology_prevalence.html"
-    save_technology_prevalence(proposals, path)
+    save_technology_prevalence(
+        proposals, path,
+        thumbnail_png=thumbs["prevalence"] if thumbs else None,
+    )
     print(f"  Prevalence chart   -> {path}")
+    if thumbs:
+        print(f"  Prevalence thumb   -> {thumbs['prevalence']}")
 
     print("Done.")
 

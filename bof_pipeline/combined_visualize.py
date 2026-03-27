@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -142,6 +143,7 @@ def save_investment_by_technology(
     proposals_df: pd.DataFrame,
     budget_df: pd.DataFrame,
     output_html: Path,
+    thumbnail_png: Optional[Path] = None,
 ) -> None:
     """
     Dual-axis chart: military budget (1897-1908) as area backdrop,
@@ -235,6 +237,10 @@ def save_investment_by_technology(
         tickfont=dict(size=11), secondary_y=True,
     )
 
+    if thumbnail_png is not None:
+        thumbnail_png.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_image(str(thumbnail_png), width=1200, height=750, scale=1)
+
     plot_div = fig.to_html(full_html=False, include_plotlyjs="cdn")
     html = _card_html(
         plot_div,
@@ -250,7 +256,11 @@ def save_investment_by_technology(
 
 # ── 2. Technology timeline — development periods ─────────────────────────────
 
-def save_technology_timeline(proposals_df: pd.DataFrame, output_html: Path) -> None:
+def save_technology_timeline(
+    proposals_df: pd.DataFrame,
+    output_html: Path,
+    thumbnail_png: Optional[Path] = None,
+) -> None:
     """
     Gantt-style timeline showing when each technology cluster was active
     (had proposals submitted), with bubble size = proposal count per year.
@@ -355,6 +365,10 @@ def save_technology_timeline(proposals_df: pd.DataFrame, output_html: Path) -> N
         font=dict(size=10.5, color=_TEXT_MID, family=_SANS),
     )
 
+    if thumbnail_png is not None:
+        thumbnail_png.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_image(str(thumbnail_png), width=1200, height=750, scale=1)
+
     plot_div = fig.to_html(full_html=False, include_plotlyjs="cdn")
     html = _card_html(
         plot_div,
@@ -370,7 +384,11 @@ def save_technology_timeline(proposals_df: pd.DataFrame, output_html: Path) -> N
 
 # ── 3. Technology type prevalence by period ───────────────────────────────────
 
-def save_technology_prevalence(proposals_df: pd.DataFrame, output_html: Path) -> None:
+def save_technology_prevalence(
+    proposals_df: pd.DataFrame,
+    output_html: Path,
+    thumbnail_png: Optional[Path] = None,
+) -> None:
     """
     100% stacked area showing the proportion of each technology cluster over time.
     Reveals shifting priorities across the BOF reporting period.
@@ -444,6 +462,10 @@ def save_technology_prevalence(proposals_df: pd.DataFrame, output_html: Path) ->
         height=500,
         margin=dict(l=70, r=36, t=20, b=110),
     )
+
+    if thumbnail_png is not None:
+        thumbnail_png.parent.mkdir(parents=True, exist_ok=True)
+        fig.write_image(str(thumbnail_png), width=1200, height=750, scale=1)
 
     plot_div = fig.to_html(full_html=False, include_plotlyjs="cdn")
     html = _card_html(
