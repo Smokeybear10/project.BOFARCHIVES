@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Board of Ordnance &amp; Fortification — Technology Timeline 1897–1908</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a18;font-size:14px}
+.page{max-width:1300px;margin:0 auto;padding:2rem 1.5rem 3rem}
+h1{font-size:18px;font-weight:500;margin-bottom:4px}
+.sub{font-size:13px;color:#6b6b65;margin-bottom:1.25rem}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:1rem;align-items:center}
+.controls label{font-size:12px;color:#6b6b65}
+select,input[type=text]{font-size:12px;padding:5px 10px;border:1px solid #d3d1c7;border-radius:6px;background:#fff;color:#1a1a18;height:30px}
+select:focus,input:focus{outline:2px solid #378add;outline-offset:1px}
+.legend{display:flex;gap:16px;margin-bottom:1rem;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:5px;font-size:12px;color:#6b6b65}
+.ld{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.stats{display:flex;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap}
+.stat{background:#fff;border:1px solid #e8e6df;border-radius:8px;padding:8px 14px;min-width:90px}
+.stat .val{font-size:20px;font-weight:500}
+.stat .lbl{font-size:11px;color:#888780;margin-top:1px}
+.scroll-wrap{overflow:auto;border:1px solid #d3d1c7;border-radius:10px;background:#fff;max-height:72vh}
+table{border-collapse:collapse;min-width:100%}
+thead th{position:sticky;top:0;z-index:5;background:#f1efe8;font-size:11px;font-weight:600;color:#5f5e5a;padding:6px 8px;border-bottom:1px solid #d3d1c7;border-right:1px solid #eae8e1;white-space:nowrap;text-align:center}
+thead th:first-child{text-align:left;min-width:210px;max-width:250px;position:sticky;left:0;z-index:6;background:#f1efe8}
+tbody tr{border-bottom:1px solid #eae8e1}
+tbody tr:hover{background:#f8f7f4}
+td{padding:0;border-right:1px solid #eae8e1;vertical-align:middle}
+td:first-child{position:sticky;left:0;background:#fff;z-index:2;font-size:11px;padding:3px 8px;min-width:210px;max-width:250px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tbody tr:hover td:first-child{background:#f8f7f4}
+td.yc{width:80px;min-width:80px;padding:2px 4px}
+.bar{width:72px;height:16px;border-radius:3px;cursor:pointer;transition:opacity .12s,transform .1s;display:block;margin:0 auto}
+.bar:hover{opacity:.72;transform:scaleX(.96)}
+.cnt{font-size:10px;background:#f1efe8;color:#888780;border-radius:6px;padding:1px 4px;margin-left:3px}
+.none{padding:3rem;text-align:center;font-size:14px;color:#888780}
+#tt{position:fixed;background:#fff;border:1px solid #d3d1c7;border-radius:8px;padding:10px 14px;font-size:12px;pointer-events:none;z-index:9999;max-width:280px;display:none;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+#tt strong{display:block;font-size:13px;font-weight:500;margin-bottom:4px}
+#tt .ta{color:#3d3d3a;margin-bottom:2px}
+#tt .ty{color:#888780;font-size:11px}
+</style>
+</head>
+<body>
+<div class="page">
+<h1>Board of Ordnance &amp; Fortification — Technology Review Timeline</h1>
+<p class="sub">All 9 annual report periods, 1897–1908 · Each colored bar = a review period · Hover for details · Use filters to explore by category or outcome</p>
+<div class="stats" id="stats"></div>
+<div class="controls">
+  <label>Category:</label>
+  <select id="cf">
+    <option value="">All categories</option>
+    <option value="rangefinding">Range finding &amp; fire control</option>
+    <option value="artillery">Artillery &amp; guns</option>
+    <option value="firearms">Firearms &amp; ammunition</option>
+    <option value="aerial">Aerial &amp; airships</option>
+    <option value="torpedo">Torpedoes &amp; mines</option>
+    <option value="armor">Armor &amp; fortifications</option>
+    <option value="communication">Communication</option>
+    <option value="transport">Transport &amp; vehicles</option>
+    <option value="equipment">Soldier equipment</option>
+  </select>
+  <label>Outcome:</label>
+  <select id="of">
+    <option value="">All outcomes</option>
+    <option value="a">Accepted / adopted</option>
+    <option value="r">Not recommended / rejected</option>
+    <option value="t">Under test / allotment</option>
+    <option value="o">Referred / filed / other</option>
+  </select>
+  <input type="text" id="sf" placeholder="Search..." style="width:170px">
+</div>
+<div class="legend">
+  <div class="li"><div class="ld" style="background:#1D9E75"></div>Accepted / adopted</div>
+  <div class="li"><div class="ld" style="background:#E24B4A"></div>Not recommended / rejected</div>
+  <div class="li"><div class="ld" style="background:#EF9F27"></div>Under test / allotment</div>
+  <div class="li"><div class="ld" style="background:#888780"></div>Referred / filed / other</div>
+</div>
+<div class="scroll-wrap"><div id="tbl"></div></div>
+</div>
+<div id="tt"><strong id="tn"></strong><div class="ta" id="ta"></div><div class="ty" id="ty"></div></div>
+<script>
+const P=["1897–98","1898–99","1900–01","1901–02","1903–04","1904–05","1905–06","1906–07","1907–08"];
+function col(a){
+  const s=a.toLowerCase();
+  if(/adopted|recommended\.?$|accepted/.test(s)&&!/not\s+rec/.test(s))return"#1D9E75";
+  if(/not\s+rec|rejected|failed|not adopted|not recommended|adverse/.test(s))return"#E24B4A";
+  if(/allotment|under test|service test|provision made|further test|entered in|to be tested|test\b/.test(s))return"#EF9F27";
+  return"#888780";
+}
+function oc(a){
+  const s=a.toLowerCase();
+  if(/adopted|recommended\.?$|accepted/.test(s)&&!/not\s+rec/.test(s))return"a";
+  if(/not\s+rec|rejected|failed|adverse/.test(s))return"r";
+  if(/allotment|under test|provision made|test\b/.test(s))return"t";
+  return"o";
+}
+const D=[
+["1897–98","Field gun 75mm (Maxim-Nordenfelt)","Recommended","artillery"],
+["1897–98","Mountain gun 75mm","Allotment","artillery"],
+["1897–98","Depression position finders","Allotment","rangefinding"],
+["1897–98","Wireless telegraph (Lewis)","Allotment","communication"],
+["1897–98","Micrometer range finder","Allotment","rangefinding"],
+["1897–98","Range-finding devices","Not recommended","rangefinding"],
+["1897–98","Instrument for observation of fire","Allotment","rangefinding"],
+["1897–98","Rapid fire gun 15cm (Bofors)","Allotment","artillery"],
+["1897–98","Hotchkiss 1-pounder balloon gun","Allotment","artillery"],
+["1897–98","Field carriage minimum recoil (Driggs-Seabury)","Allotment","artillery"],
+["1897–98","Armored car","Not recommended","transport"],
+["1897–98","Airship","Not recommended","aerial"],
+["1897–98","Torpedo system","Not recommended","torpedo"],
+["1897–98","Submarine mine","Not recommended","torpedo"],
+["1897–98","Submarine boat","Referred to Secretary Navy","torpedo"],
+["1897–98","High-explosive shell","Not recommended","firearms"],
+["1897–98","High explosives emmensite/gun cotton","Adopted as types","firearms"],
+["1897–98","Wire-wound gun","Not recommended","artillery"],
+["1897–98","Wire-wound mortar 12-inch","Postponed","artillery"],
+["1897–98","Automobile torpedo","Postponed","torpedo"],
+["1897–98","Flying machine","Not recommended","aerial"],
+["1897–98","Schmidt chronograph","Allotment","rangefinding"],
+["1897–98","Wilder machine gun","Allotment","firearms"],
+["1897–98","Telephones","No changes recommended","communication"],
+["1897–98","Three-inch 15-pounder Vickers gun","Allotment","artillery"],
+["1897–98","Combination horizontal base & depression finder","Allotment","rangefinding"],
+["1897–98","Wireless telegraph (Squier)","Allotment","communication"],
+["1897–98","Test ammunition for artillery station","Recommended","firearms"],
+["1897–98","Harbor defense","Not recommended","armor"],
+["1897–98","Bomb-dropping device","Not recommended","aerial"],
+["1898–99","Langley aerodrome","Allotment","aerial"],
+["1898–99","Squier-Crehore electrical range finder","Additional allotment not recommended","rangefinding"],
+["1898–99","Buffington-Crozier 10-inch disappearing carriage","To be tested","artillery"],
+["1898–99","Bofors 15cm gun","Accepted","artillery"],
+["1898–99","Driggs-Seabury subcaliber tube","Allotment","firearms"],
+["1898–99","Thorite explosive","Allotment","firearms"],
+["1898–99","Conversion of 3.2-inch gun into subcaliber tube","Recommended","firearms"],
+["1898–99","Diaphragm shell (Isham)","Allotment","firearms"],
+["1898–99","Warner & Swasey optical instrument facilities","Filed","rangefinding"],
+["1898–99","Wireless telegraphy","Allotment — Lewis to test","communication"],
+["1898–99","Automatic machine rifle (McClean)","Allotment","firearms"],
+["1898–99","Sprague electrical system for coast forts","Accepted","communication"],
+["1898–99","Howell disappearing carriage","Recommended","artillery"],
+["1898–99","Brown segmental wire-wound gun","Filed","artillery"],
+["1898–99","Airship (multiple proposals)","Not recommended","aerial"],
+["1898–99","Range finder","Not recommended","rangefinding"],
+["1898–99","Time and percussion fuse","To be tested","firearms"],
+["1898–99","Projectiles for dynamite gun","Recommended","firearms"],
+["1898–99","Gatling 8-inch gun","Filed — allotment revoked","artillery"],
+["1898–99","Military kite","Not recommended","aerial"],
+["1898–99","Pneumatic gun carriage","Filed","artillery"],
+["1898–99","Armor-piercing shells","Not recommended","firearms"],
+["1898–99","Combination position finder","Allotment","rangefinding"],
+["1898–99","Bomb-dropping device","Not recommended","aerial"],
+["1900–01","Shields for coast guns","Adopted","armor"],
+["1900–01","Nonrecoil field carriage","Allotment","artillery"],
+["1900–01","Electrical power equipment for heavy guns","Adopted for service test","artillery"],
+["1900–01","Range and azimuth indicator","Additional allotment","rangefinding"],
+["1900–01","Search lights","Installation recommended","rangefinding"],
+["1900–01","Canteen","Not recommended","equipment"],
+["1900–01","Combination fuses","Tested and not recommended","firearms"],
+["1900–01","Observation instrument for artillery fire","Not recommended","rangefinding"],
+["1900–01","Bandolier","Under test in field","equipment"],
+["1900–01","Telescopic sight","Not recommended","rangefinding"],
+["1900–01","Nonmetallic field gun ammunition","Allotment","firearms"],
+["1900–01","Air navigation","Not recommended","aerial"],
+["1900–01","Range finder","Referred to military attaché","rangefinding"],
+["1900–01","Brown wire-wound gun","Under test","artillery"],
+["1900–01","Hotchkiss automatic 1-pounder","Under test","artillery"],
+["1900–01","Luger automatic pistol","Allotment for service test","firearms"],
+["1900–01","Automatic pistol (Colt)","Reports of tests called for","firearms"],
+["1900–01","Submarine mines control","Referred to Chief of Artillery","torpedo"],
+["1900–01","Electrical communication for fire control","Allotment","communication"],
+["1900–01","Kite-telephone system","Not recommended","communication"],
+["1900–01","Steel turret","Not recommended","armor"],
+["1900–01","Three-inch Vickers-Maxim gun","Not recommended","artillery"],
+["1900–01","Disappearing carriage","Additional tests made","artillery"],
+["1900–01","Position finding systems test","Recommended","rangefinding"],
+["1900–01","Steam freight wagon","Postponed","transport"],
+["1900–01","Trench digging machine","Not recommended","transport"],
+["1900–01","Datum points","Adopted","rangefinding"],
+["1900–01","Replotting board","Allotment","rangefinding"],
+["1900–01","Three-pounder subcaliber tube","Adopted as a type","artillery"],
+["1900–01","One-pounder subcaliber tube","Adopted as additional type","artillery"],
+["1900–01","Explosive shells","Not recommended","firearms"],
+["1900–01","Asphyxiating shell","Not recommended","firearms"],
+["1900–01","Noiseless cannon","Not recommended","artillery"],
+["1900–01","Bullet-proof garment","Not recommended","equipment"],
+["1900–01","Wire-wound gun (chamber capacity increase)","Authority given","artillery"],
+["1901–02","Isham shell & Tuttle thorite","Not recommended (shell)","firearms"],
+["1901–02","High explosives testing program","Recommended for Board oversight","firearms"],
+["1901–02","Bofors gun further test","Provision made for test","artillery"],
+["1901–02","Gruson turrets","Filed","armor"],
+["1901–02","Electrical firing devices (Brown & Munsell)","Permission granted","artillery"],
+["1901–02","75mm field gun description (Vickers)","Filed","artillery"],
+["1901–02","Brown wire-wound gun further test","Granted","artillery"],
+["1901–02","Shields and mounts for 6-pounder guns","Type adopted","armor"],
+["1901–02","Mauser automatic pistol","Filed","firearms"],
+["1901–02","War balloon","Filed","aerial"],
+["1901–02","Armstrong field-gun carriage","Filed","artillery"],
+["1901–02","Wireless telegraphy","Not recommended","communication"],
+["1901–02","Foreign field artillery material","Entered in competitive test","artillery"],
+["1901–02","Field artillery program","Adopted","artillery"],
+["1901–02","Hotchkiss 1-pounder automatic gun","To be held for competitive test","firearms"],
+["1901–02","Automatic pistol (Bergmann)","Filed to await result of tests","firearms"],
+["1901–02","Aerial torpedoes (Elmer Gates)","Board willing to witness","torpedo"],
+["1901–02","Military automobile test","Postponed","transport"],
+["1901–02","Canteen (Lanz)","Under test","equipment"],
+["1901–02","Smokeless powder","To be used in all target practice","firearms"],
+["1901–02","Telautograph","Adopted as a type","communication"],
+["1901–02","Pneumatic gun carriage","Additional test rounds","artillery"],
+["1901–02","High-explosive shell further test","Further tests","firearms"],
+["1901–02","Bore sight","Allotment","rangefinding"],
+["1901–02","Fuses","Allotment","firearms"],
+["1901–02","Ammunition cart","Test witnessed","artillery"],
+["1903–04","System of fire control and direction","Under review","rangefinding"],
+["1903–04","Intrenching tool","Under review","equipment"],
+["1903–04","Machine-gun carriage (Parker)","Under review","artillery"],
+["1903–04","Brown wire-wound gun 10-inch","Under test","artillery"],
+["1903–04","Luger pistol tests","Under review","firearms"],
+["1903–04","Device for automatic training of guns","Under review","artillery"],
+["1903–04","High explosive shell","Under review","firearms"],
+["1903–04","Semi-automatic guns (Driggs-Seabury)","Under review","firearms"],
+["1903–04","Magazine rifle and bayonet (M1903 Springfield)","Under review","firearms"],
+["1903–04","Langley aerodrome tests","Tested — failed","aerial"],
+["1903–04","Disappearing carriage 16-inch rifle","Under review","artillery"],
+["1903–04","Test of machine guns","Under review","firearms"],
+["1903–04","6-inch wire-wound gun","Under review","artillery"],
+["1903–04","Portable range finder","Under review","rangefinding"],
+["1903–04","Horizontal base range finder","Under review","rangefinding"],
+["1903–04","Continuous reading range and azimuth","Under review","rangefinding"],
+["1903–04","Telescopic bore sight","Under review","rangefinding"],
+["1903–04","Air ship","Under review","aerial"],
+["1903–04","Aerial ordnance balloon","Under review","aerial"],
+["1903–04","Wireless telegraph apparatus","Under review","communication"],
+["1903–04","Wireless control of dirigible torpedoes","Under review","torpedo"],
+["1903–04","Torpedo","Under review","torpedo"],
+["1903–04","Torpedo propulsion","Under review","torpedo"],
+["1903–04","Apparatus for destroying torpedoes","Under review","torpedo"],
+["1903–04","Armor-plate forts","Under review","armor"],
+["1903–04","Cemented steel plates test","Under review","armor"],
+["1903–04","Subtarget gun machine","Under review","firearms"],
+["1903–04","Recoil spade","Under review","artillery"],
+["1903–04","Fuses","Under review","firearms"],
+["1903–04","6-pounder semi-automatic gun","Under review","firearms"],
+["1903–04","Plotting boards","Under review","rangefinding"],
+["1904–05","Reflecting sight","Under review","rangefinding"],
+["1904–05","Ballistic computer (Whistler-Hearn)","Under review","rangefinding"],
+["1904–05","Horizontal base range finder (Bethlehem)","Under review","rangefinding"],
+["1904–05","Range finder 8-foot base (Warner & Swasey)","Under review","rangefinding"],
+["1904–05","Forbes range finder","Under review","rangefinding"],
+["1904–05","Rafferty range finder","Under review","rangefinding"],
+["1904–05","Whistler-Hearn depression range finder","Under review","rangefinding"],
+["1904–05","Modified Lewis range finder","Under review","rangefinding"],
+["1904–05","Disappearing searchlight","Under review","rangefinding"],
+["1904–05","Six-inch rapid-fire gun (Bethlehem)","Under review","artillery"],
+["1904–05","6-inch wire-wound gun (Ordnance Dept.)","Allotment","artillery"],
+["1904–05","Brown 6-inch wire-wound gun","Under review","artillery"],
+["1904–05","Semi-automatic gun 7½-pounder","Under review","artillery"],
+["1904–05","Armored car","Under review","transport"],
+["1904–05","Armored transport wagon","Under review","transport"],
+["1904–05","Ten-inch elevating carriage","Under review","artillery"],
+["1904–05","Automatic 1-pounder gun (McClean)","Under review","firearms"],
+["1904–05","Automatic pistol","Under review","firearms"],
+["1904–05","High explosive","Under review","firearms"],
+["1904–05","Wire-cutting projectile","Under review","firearms"],
+["1904–05","Dirigible torpedo","Under review","torpedo"],
+["1904–05","Halpine torpedo","Under review","torpedo"],
+["1904–05","Submarine mine","Under review","torpedo"],
+["1904–05","Searchlight 60-inch test","Under review","rangefinding"],
+["1904–05","Aerial navigation","Under review","aerial"],
+["1904–05","Captive balloon with mirrors","Under review","aerial"],
+["1904–05","Deck armor tests","Under review","armor"],
+["1904–05","Machine-gun mount","Under review","firearms"],
+["1904–05","Searchlight mechanism","Under review","rangefinding"],
+["1904–05","Long distance firing seacoast guns","Under review","artillery"],
+["1905–06","Morris tube outfits","Allotment","firearms"],
+["1905–06","Rafferty range and deflection boards","Allotment","rangefinding"],
+["1905–06","Ear protector","Adopted","equipment"],
+["1905–06","15-pounder semi-automatic gun (3-inch M1902)","Under test","artillery"],
+["1905–06","Wire-cutting bayonet","Under review","equipment"],
+["1905–06","Tandem torpedo (Klinger)","Under review","torpedo"],
+["1905–06","Range finder","Under review","rangefinding"],
+["1905–06","Horizontal base range finder (Rafferty)","Allotment","rangefinding"],
+["1905–06","Whistler-Hearn range finder test","Under review","rangefinding"],
+["1905–06","Warner & Swasey 8-foot range finder test","Under review","rangefinding"],
+["1905–06","Warner & Swasey 25-foot base range finder","Payment","rangefinding"],
+["1905–06","Synchronizing range-finder arms","Under review","rangefinding"],
+["1905–06","Range and azimuth indicator (National Electrical)","Under review","rangefinding"],
+["1905–06","Searchlight controllers","Allotment","rangefinding"],
+["1905–06","Flying machine (Wright Brothers)","Under review","aerial"],
+["1905–06","Flying machine (Alva Reynolds)","Under review","aerial"],
+["1905–06","Balloons and airships","Under review","aerial"],
+["1905–06","Aerial torpedo","Under review","torpedo"],
+["1905–06","Torpedo watercraft","Under review","torpedo"],
+["1905–06","Controllable submarine torpedo","Under review","torpedo"],
+["1905–06","Submarine mines","Under review","torpedo"],
+["1905–06","Armor plate tests","Under review","armor"],
+["1905–06","Crozier 6-inch wiregun endurance test","Under review","artillery"],
+["1905–06","Brown & Crozier guns tests","Under review","artillery"],
+["1905–06","Alteration of 1-pounder gun (McClean)","Under review","firearms"],
+["1905–06","Machine gun","Under review","firearms"],
+["1905–06","Smokeless powder","Under review","firearms"],
+["1905–06","Smoke compound test","Under review","firearms"],
+["1905–06","Insulating compounds test","Under review","communication"],
+["1905–06","Visible signal transmission","Allotment","communication"],
+["1905–06","Lifting kite","Under review","aerial"],
+["1905–06","Portable searchlight (field artillery)","Under review","rangefinding"],
+["1905–06","Bomb-dropping device","Under review","aerial"],
+["1905–06","Bayonet catch / wire-cutting bayonet","Under review","equipment"],
+["1905–06","Two-hand mechanism rapid-fire guns (Bethlehem)","Under review","artillery"],
+["1905–06","Smoke rockets as shield","Under review","firearms"],
+["1906–07","Portable searchlight for field artillery","Under review","rangefinding"],
+["1906–07","Development of searchlights","Under review","rangefinding"],
+["1906–07","Schulz disappearing searchlight platform","Under review","rangefinding"],
+["1906–07","Rowan reflecting sight","Under review","rangefinding"],
+["1906–07","New range finder (Lewis)","Under review","rangefinding"],
+["1906–07","Whistler-Hearn range finder further test","Under review","rangefinding"],
+["1906–07","Warner & Swasey range finder further test","Under review","rangefinding"],
+["1906–07","Depression range finder report","Under review","rangefinding"],
+["1906–07","Device to determine overs and shorts","Under review","rangefinding"],
+["1906–07","Device for training artillery gunners","Under review","rangefinding"],
+["1906–07","Sketching camera","Under review","rangefinding"],
+["1906–07","Telescopic sight","Under review","rangefinding"],
+["1906–07","Night shooting light","Under review","rangefinding"],
+["1906–07","Sighting field artillery at night","Under review","rangefinding"],
+["1906–07","Searchlight controller","Under review","rangefinding"],
+["1906–07","De Knight automatic gun","Under test","firearms"],
+["1906–07","Test of automatic guns (McClean)","Under review","firearms"],
+["1906–07","Machine gun","Under review","firearms"],
+["1906–07","Armor-piercing projectile","Under review","firearms"],
+["1906–07","High-explosive shells","Under review","firearms"],
+["1906–07","Gas check for projectiles","Under review","firearms"],
+["1906–07","Morris tube outfits further test","Under review","firearms"],
+["1906–07","Smoke compound","Under review","firearms"],
+["1906–07","Subtarget gun machines further test","Under review","firearms"],
+["1906–07","Armored car","Under review","transport"],
+["1906–07","Recoil spade for field guns","Under review","artillery"],
+["1906–07","Brown system gun construction","Under review","artillery"],
+["1906–07","Repairs 10-inch wire gun","Under review","artillery"],
+["1906–07","Fergusson device for laying guns","Under review","artillery"],
+["1906–07","Device to prevent erosion of guns","Under review","artillery"],
+["1906–07","Test of armor plate","Under review","armor"],
+["1906–07","Test of experimental redoubt","Under review","armor"],
+["1906–07","Harbor defense","Under review","armor"],
+["1906–07","Dirigible torpedo","Under review","torpedo"],
+["1906–07","Dirigible balloon","Under review","aerial"],
+["1906–07","Flying machine","Under review","aerial"],
+["1906–07","Flags for airships","Under review","aerial"],
+["1906–07","Aerial projectiles","Under review","aerial"],
+["1906–07","Semaphore","Under review","communication"],
+["1906–07","Intrenching spade","Under review","equipment"],
+["1906–07","Ammunition belt / jacket","Under review","equipment"],
+["1907–08","Portable searchlight further test","Allotment","rangefinding"],
+["1907–08","Depression position finder test","Under review","rangefinding"],
+["1907–08","Leon-Björkman range finder","Under review","rangefinding"],
+["1907–08","Range finder (Bausch & Lomb)","Allotment","rangefinding"],
+["1907–08","Competitive test horizontal base range finders","Under review","rangefinding"],
+["1907–08","Lewis position finder adopted as type","Under review","rangefinding"],
+["1907–08","Photographic method for overs and shorts","Allotment","rangefinding"],
+["1907–08","Photometric tests of searchlights","Under review","rangefinding"],
+["1907–08","Searchlight beam as electrical conductor","Under review","rangefinding"],
+["1907–08","Beam projector","Under review","rangefinding"],
+["1907–08","McClean 1-pounder gun test","Under review","firearms"],
+["1907–08","Subtarget gun machines further test","Under review","firearms"],
+["1907–08","Sight for small arms","Under review","firearms"],
+["1907–08","Projectile for use against balloons","Under review","firearms"],
+["1907–08","Gas check for projectiles","Under review","firearms"],
+["1907–08","Cartridge with combustible case","Under review","firearms"],
+["1907–08","Sighting arms at night","Under review","firearms"],
+["1907–08","Smoke projectile","Under review","firearms"],
+["1907–08","Shrapnel","Under review","firearms"],
+["1907–08","Armor plate tests program","Under review","armor"],
+["1907–08","Wire-wound guns adoption","Not recommended","artillery"],
+["1907–08","Gun mounting and shield","Under review","artillery"],
+["1907–08","Erosion prevention test","Allotment","artillery"],
+["1907–08","Drift of mortar projectiles report","Under review","artillery"],
+["1907–08","Gun construction","Under review","artillery"],
+["1907–08","Recoil device for guns","Under review","artillery"],
+["1907–08","Speedfiring gun and smokeless powder device","Under review","artillery"],
+["1907–08","Specifications for aeroplanes","Under review","aerial"],
+["1907–08","Aerial navigation (Wilbur Wright)","Under review","aerial"],
+["1907–08","Specifications for aeroplane flying machines","Under review","aerial"],
+["1907–08","Allotments for aeroplane flying machines","Allotment","aerial"],
+["1907–08","Dirigible balloon","Under review","aerial"],
+["1907–08","Experiments with dirigible balloons (Signal Corps)","Under review","aerial"],
+["1907–08","Wireless telephone experiments","Under review","communication"],
+["1907–08","Vega telephot camera report","Under review","communication"],
+["1907–08","Smokebox wireless control torpedo","Under review","torpedo"],
+["1907–08","Operating submarine mines","Under review","torpedo"],
+["1907–08","Magnetic submarine torpedo","Under review","torpedo"],
+["1907–08","Electrically charged wire entanglements","Under review","armor"],
+["1907–08","Centrifugal device for throwing high explosives","Under review","firearms"],
+["1907–08","Harbor defense","Under review","armor"],
+["1907–08","Fortification","Under review","armor"],
+];
+function norm(s){return s.toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();}
+function sim(a,b){
+  const na=norm(a),nb=norm(b);
+  if(na===nb)return true;
+  const wa=na.split(" ").filter(w=>w.length>3);
+  const wb=nb.split(" ").filter(w=>w.length>3);
+  if(!wa.length||!wb.length)return false;
+  let s=0;for(const w of wa)if(wb.includes(w))s++;
+  return s>=2&&s/Math.max(wa.length,wb.length)>=0.45;
+}
+function build(){
+  const cf=document.getElementById("cf").value;
+  const of_=document.getElementById("of").value;
+  const sf=document.getElementById("sf").value.toLowerCase();
+  let rows=D;
+  if(cf)rows=rows.filter(r=>r[3]===cf);
+  if(sf)rows=rows.filter(r=>r[1].toLowerCase().includes(sf)||r[2].toLowerCase().includes(sf));
+  const grps={};
+  for(const r of rows){
+    let k=null;
+    for(const gk of Object.keys(grps)){
+      if(grps[gk][0][3]===r[3]&&sim(gk,r[1])){k=gk;break;}
+    }
+    if(!k){grps[r[1]]=[];k=r[1];}
+    grps[k].push(r);
+  }
+  let entries=Object.entries(grps).map(([name,rs])=>({name,rs}));
+  if(of_)entries=entries.filter(e=>e.rs.some(r=>oc(r[2])===of_));
+  entries.sort((a,b)=>a.name.localeCompare(b.name));
+  const total=entries.length;
+  let acc=0,rej=0,tst=0,oth=0;
+  for(const e of entries){const o=oc(e.rs[e.rs.length-1][2]);if(o==="a")acc++;else if(o==="r")rej++;else if(o==="t")tst++;else oth++;}
+  document.getElementById("stats").innerHTML='<div class="stat"><div class="val">'+total+'</div><div class="lbl">Technologies</div></div><div class="stat"><div class="val" style="color:#1D9E75">'+acc+'</div><div class="lbl">Accepted</div></div><div class="stat"><div class="val" style="color:#E24B4A">'+rej+'</div><div class="lbl">Rejected</div></div><div class="stat"><div class="val" style="color:#EF9F27">'+tst+'</div><div class="lbl">Under test</div></div><div class="stat"><div class="val" style="color:#888780">'+oth+'</div><div class="lbl">Other</div></div>';
+  const tbl=document.getElementById("tbl");
+  if(!entries.length){tbl.innerHTML='<div class="none">No technologies match this filter.</div>';return;}
+  let h='<table><thead><tr><th style="text-align:left">Technology ('+total+')</th>';
+  for(const p of P)h+='<th>'+p+'</th>';
+  h+='</tr></thead><tbody>';
+  for(const e of entries){
+    h+='<tr><td title="'+e.name+'">'+e.name+(e.rs.length>1?'<span class="cnt">'+e.rs.length+'×</span>':'')+'</td>';
+    for(const p of P){
+      const pr=e.rs.filter(r=>r[0]===p);
+      h+='<td class="yc">';
+      if(pr.length){const last=pr[pr.length-1];const c=col(last[2]);const d=encodeURIComponent(JSON.stringify({n:e.name,a:last[2],y:p,cnt:pr.length}));h+='<div class="bar" style="background:'+c+'" data-d="'+d+'" onmouseenter="st(event,this)" onmouseleave="ht()"></div>';}
+      h+='</td>';
+    }
+    h+='</tr>';
+  }
+  h+='</tbody></table>';
+  tbl.innerHTML=h;
+}
+function st(e,el){const d=JSON.parse(decodeURIComponent(el.dataset.d));document.getElementById("tn").textContent=d.n;document.getElementById("ta").textContent=d.a;document.getElementById("ty").textContent=d.y+(d.cnt>1?' · '+d.cnt+' entries':'');document.getElementById("tt").style.display="block";mt(e);}
+function mt(e){const t=document.getElementById("tt");let x=e.clientX+14,y=e.clientY-12;if(x+290>window.innerWidth)x=e.clientX-300;if(y+100>window.innerHeight)y=e.clientY-110;t.style.left=x+"px";t.style.top=y+"px";}
+function ht(){document.getElementById("tt").style.display="none";}
+document.addEventListener("mousemove",function(e){if(document.getElementById("tt").style.display!=="none")mt(e);});
+document.getElementById("cf").addEventListener("change",build);
+document.getElementById("of").addEventListener("change",build);
+document.getElementById("sf").addEventListener("input",build);
+build();
+</script>
+</body>
+</html>
