@@ -5,8 +5,8 @@ year,proposer_type,submissions,approved,success_rate
 1898.0,Private,160,3,0.01875
 1900.0,Government,5,1,0.2
 1900.0,Private,120,9,0.075
-1901.0,Private,372,36,0.0967741935483871
-1901.0,Government,48,2,0.041666666666666664
+1901.0,Private,186,18,0.0967741935483871
+1901.0,Government,24,1,0.041666666666666664
 1903.0,Government,21,0,0.0
 1903.0,Private,197,0,0.0
 1904.0,Government,18,0,0.0

@@ -1,6 +1,8 @@
 # BOF Archive | Military Data Visualization
 
-Historical analysis pipeline for U.S. Board of Ordnance & Fortification records (1897-1908) and military budget appropriations (1865-1920).
+Historical analysis pipeline and live filterable dashboard for U.S. Board of Ordnance & Fortification records (1897-1908) and military budget appropriations (1865-1920).
+
+**Local dashboard runs at http://localhost:2104** — port is fixed, do not change.
 
 ## Quick Start
 
@@ -9,21 +11,44 @@ python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-# run proposal analysis
+# regenerate raw chart data (only needed if Subject/ or budget xlsx changed)
 python run_bof_analysis.py --input-dir Subject --output-dir output
-
-# run budget analysis
 python run_budget_analysis.py --input "Military Budgets, 1865-1920.xlsx" --output-dir output
-
-# run combined analysis (subjects + budget, 1897-1908)
 python run_combined_analysis.py
+
+# rebuild paper-themed dashboard charts
+python regenerate_paper.py
+
+# launch the dashboard
+./serve.sh
 ```
 
-All charts are interactive HTML files in `output/`. Open them by double-clicking or:
+Open **http://localhost:2104** in a browser.
 
-```bash
-open output/*.html
-```
+## The Dashboard
+
+`./serve.sh` boots a static server on port **2104** and serves the root `index.html`. The dashboard has two views — switch between them with the tabs below the topbar.
+
+**Proposals view** (1897–1908, ~1,901 records):
+- Live filters — year range, cluster, status, proposer type, full-text search
+- Cross-filter charts — click any chart slice to filter the rest of the dashboard
+- Quick presets — Approved / 1901 surge / Private inventors / Communications (0 approved) / Artillery
+- Paginated records table with sort + click-row-for-detail modal showing full board action and reasoning text
+- CSV export of the current filtered slice
+
+**Budget view** (1865–1920, ~110 appropriations):
+- Year range, branch (Army/Navy), inflation toggle (nominal vs 2025-adjusted)
+- Era presets — Reconstruction / Gilded Age / Spanish-American / Pre-WWI / WWI mobilization
+- KPIs — total spend, peak year, average per year, Army share, years covered
+- Charts — appropriations stacked over time, branch mix donut, decade totals, year-over-year change
+- Paginated table sorted by year/branch/amount/decade, separate CSV export
+
+**Shared:**
+- Theme switcher — Paper (default) / Slate / Terminal / Broadsheet, persisted to localStorage
+- URL hash sync — view + filters serialized for shareable links
+- Keyboard shortcuts — `/` focus search · `esc` close modal · `r` reset filters
+
+The static archive grid below the live charts links to 9 paper-themed Plotly HTMLs in `charts/`.
 
 ## What It Does
 
@@ -65,7 +90,13 @@ open output/*.html
 
 ```
 project.BOFARCHIVE/
-├── index.html                        # GitHub Pages landing page
+├── index.html                        # dashboard (root) — served at localhost:2104
+├── style.css                         # dashboard styles, 4 themes
+├── app.js                            # dashboard logic — filters, charts, table, modal
+├── charts/                           # paper-themed Plotly HTMLs + PNGs
+├── serve.sh                          # ./serve.sh → http://localhost:2104
+├── regenerate_paper.py               # rebuild paper-themed charts
+├── index-gallery.html                # earlier card-grid landing (preserved)
 ├── run_bof_analysis.py               # proposal pipeline entry point
 ├── run_budget_analysis.py            # budget pipeline entry point
 ├── run_combined_analysis.py          # combined subjects + budget charts
@@ -79,8 +110,18 @@ project.BOFARCHIVE/
 │   ├── visualize.py                  # proposal chart generation
 │   ├── budget_visualize.py           # budget chart generation
 │   └── combined_visualize.py         # combined analysis charts
-└── output/                           # all generated HTML charts and CSVs
+└── output/                           # raw generated HTML charts and CSVs
 ```
+
+## Dev Server
+
+The local server is **always port 2104**. Start it with:
+
+```bash
+./serve.sh
+```
+
+`serve.sh` kills any process holding 2104 first, then boots `python3 -m http.server 2104` from the repo root. Always use `./serve.sh` — the port is fixed at 2104 across this project.
 
 ## Customization
 

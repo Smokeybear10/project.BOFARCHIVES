@@ -25,11 +25,13 @@
 <!-- Top bar -->
 <div class="topbar">
   <div class="brand">
-    <span class="name">BOF<span class="div">/</span>ARCHIVE</span>
-    <span class="sub">Board of Ordnance &amp; Fortification · 1897–1908</span>
+    <span class="dot"></span>
+    <span class="name">BOF<span class="div">/</span>TERMINAL<span class="div">/</span>v1</span>
+    <span class="sub">Board of Ordnance &amp; Fortification archive · 1897–1908</span>
   </div>
   <div class="right">
     <span><strong id="rec-count">—</strong>RECORDS</span>
+    <span><strong>11</strong>YEARS</span>
     <span id="clock">—</span>
     <div class="theme-switch" role="tablist" aria-label="Theme">
       <button data-theme="terminal" title="Terminal · neon dark">TERM</button>
@@ -40,20 +42,12 @@
   </div>
 </div>
 
-<!-- View tabs -->
-<div class="view-tabs" role="tablist" aria-label="Data view">
-  <button class="view-tab active" data-view="proposals" role="tab" aria-selected="true">
-    <span class="vt-name">Proposals</span>
-    <span class="vt-meta">1897–1908 · <span id="vt-prop-count">—</span> records</span>
-  </button>
-  <button class="view-tab" data-view="budget" role="tab" aria-selected="false">
-    <span class="vt-name">Budget</span>
-    <span class="vt-meta">1865–1920 · <span id="vt-budget-count">—</span> appropriations</span>
-  </button>
+<!-- Ticker -->
+<div class="ticker">
+  <div class="ticker-track" id="ticker">
+    <span class="tick"><span class="yr">LOADING</span><span class="subj">archive…</span></span>
+  </div>
 </div>
-
-<!-- ============ PROPOSALS VIEW ============ -->
-<div id="view-proposals">
 
 <!-- Filter bar -->
 <div class="filters">
@@ -146,7 +140,7 @@
         <span class="panel-title">▣ Submissions Per Year</span>
         <span class="panel-tag">live · filtered</span>
       </div>
-      <div class="panel-body"><div id="chart-timeline"></div></div>
+      <div class="panel-body"><div id="chart-timeline" class="loading">PARSING DATA</div></div>
     </div>
 
     <div class="panel col-4">
@@ -154,7 +148,7 @@
         <span class="panel-title">◉ Cluster Mix</span>
         <span class="panel-tag">live</span>
       </div>
-      <div class="panel-body"><div id="chart-cluster"></div></div>
+      <div class="panel-body"><div id="chart-cluster" class="loading">PARSING DATA</div></div>
     </div>
 
     <div class="panel col-6">
@@ -162,7 +156,7 @@
         <span class="panel-title">▤ Status × Cluster</span>
         <span class="panel-tag">live</span>
       </div>
-      <div class="panel-body"><div id="chart-status"></div></div>
+      <div class="panel-body"><div id="chart-status" class="loading">PARSING DATA</div></div>
     </div>
 
     <div class="panel col-6">
@@ -170,15 +164,15 @@
         <span class="panel-title">⌥ Top Proposers (top 12)</span>
         <span class="panel-tag">live</span>
       </div>
-      <div class="panel-body"><div id="chart-proposers"></div></div>
+      <div class="panel-body"><div id="chart-proposers" class="loading">PARSING DATA</div></div>
     </div>
 
-    <div class="panel col-12" style="height:340px;">
+    <div class="panel col-12" style="min-height:280px;">
       <div class="panel-header">
         <span class="panel-title">▦ Year × Cluster Heatmap</span>
         <span class="panel-tag">live</span>
       </div>
-      <div class="panel-body"><div id="chart-heatmap"></div></div>
+      <div class="panel-body"><div id="chart-heatmap" class="loading">PARSING DATA</div></div>
     </div>
   </div>
 
@@ -205,149 +199,7 @@
     </div>
     <div class="pager" id="pager"></div>
   </div>
-</main>
-</div>
-<!-- ============ END PROPOSALS VIEW ============ -->
 
-<!-- ============ BUDGET VIEW ============ -->
-<div id="view-budget" hidden>
-
-<!-- Budget filter bar -->
-<div class="filters">
-  <div class="filter-group">
-    <label>YEAR</label>
-    <input type="number" id="b-year-min" min="1866" max="1920" step="1" value="1866">
-    <span class="dash">→</span>
-    <input type="number" id="b-year-max" min="1866" max="1920" step="1" value="1920">
-  </div>
-  <div class="filter-group">
-    <label>BRANCH</label>
-    <select id="b-branch">
-      <option value="">All branches</option>
-      <option value="Army">Army</option>
-      <option value="Navy">Navy</option>
-    </select>
-  </div>
-  <div class="filter-group">
-    <label>UNITS</label>
-    <select id="b-units">
-      <option value="2025">2025-adjusted</option>
-      <option value="nominal">Nominal $</option>
-    </select>
-  </div>
-  <button class="clear" id="btn-clear-budget">↻ RESET</button>
-  <span class="match-count">SUM <strong id="b-match-sum">—</strong> · <strong id="b-match-n">—</strong> RECORDS</span>
-</div>
-
-<!-- Budget active filter chips -->
-<div class="active-chips" id="budget-active-chips"></div>
-
-<!-- Budget quick presets -->
-<div class="presets">
-  <span class="pre-label">QUICK</span>
-  <button class="preset" data-budget-preset="reconstruction">Reconstruction <span class="count">1866–1879</span></button>
-  <button class="preset" data-budget-preset="gilded">Gilded Age <span class="count">1880–1897</span></button>
-  <button class="preset" data-budget-preset="span-am">Spanish-American <span class="count">1898–1900</span></button>
-  <button class="preset" data-budget-preset="prewwi">Pre-WWI <span class="count">1901–1916</span></button>
-  <button class="preset" data-budget-preset="wwi">WWI mobilization <span class="count">1917–1920</span></button>
-  <span class="preset-spacer"></span>
-  <button class="export" id="btn-export-budget">↓ EXPORT CSV</button>
-</div>
-
-<!-- Budget KPIs -->
-<div class="kpis">
-  <div class="kpi">
-    <div class="kpi-label">Total spend</div>
-    <div class="kpi-value" data-bkpi="total" style="font-size:24px;">—</div>
-    <div class="kpi-sub" id="bkpi-total-sub">—</div>
-  </div>
-  <div class="kpi accent">
-    <div class="kpi-label">Peak year</div>
-    <div class="kpi-value" data-bkpi="peak-year">—</div>
-    <div class="kpi-sub" id="bkpi-peak-sub">—</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-label">Avg / year</div>
-    <div class="kpi-value" data-bkpi="avg" style="font-size:22px;">—</div>
-    <div class="kpi-sub" id="bkpi-avg-sub">—</div>
-  </div>
-  <div class="kpi warn">
-    <div class="kpi-label">Army share</div>
-    <div class="kpi-value" data-bkpi="army-share">—<span class="unit">%</span></div>
-    <div class="kpi-sub" id="bkpi-army-sub">—</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-label">Years covered</div>
-    <div class="kpi-value" data-bkpi="years">—</div>
-    <div class="kpi-sub" id="bkpi-years-sub">—</div>
-  </div>
-</div>
-
-<!-- Budget chart grid -->
-<main>
-  <div class="grid">
-    <div class="panel col-8">
-      <div class="panel-header">
-        <span class="panel-title">▣ Appropriations Over Time</span>
-        <span class="panel-tag">live · stacked</span>
-      </div>
-      <div class="panel-body"><div id="b-chart-timeline"></div></div>
-    </div>
-
-    <div class="panel col-4">
-      <div class="panel-header">
-        <span class="panel-title">◉ Branch Mix</span>
-        <span class="panel-tag">live</span>
-      </div>
-      <div class="panel-body"><div id="b-chart-branch"></div></div>
-    </div>
-
-    <div class="panel col-6">
-      <div class="panel-header">
-        <span class="panel-title">▤ Decade Totals</span>
-        <span class="panel-tag">live</span>
-      </div>
-      <div class="panel-body"><div id="b-chart-decade"></div></div>
-    </div>
-
-    <div class="panel col-6">
-      <div class="panel-header">
-        <span class="panel-title">⌥ Year-over-Year Change</span>
-        <span class="panel-tag">live</span>
-      </div>
-      <div class="panel-body"><div id="b-chart-yoy"></div></div>
-    </div>
-  </div>
-
-  <!-- Budget records table -->
-  <div class="records">
-    <div class="records-header">
-      <span class="records-title">▤ Filtered Appropriations</span>
-      <span class="records-info">Showing <strong id="b-rec-range">—</strong> of <strong id="b-rec-total">—</strong> · sorted by year</span>
-    </div>
-    <div id="b-records-body">
-      <table class="records-table" id="b-records-table">
-        <thead>
-          <tr>
-            <th data-bsort="year" class="col-year">Year <span class="sort-ind">▼</span></th>
-            <th data-bsort="branch" class="col-cluster">Branch <span class="sort-ind">▼</span></th>
-            <th data-bsort="appropriation_2025_usd" class="col-subject">Appropriation (2025 $) <span class="sort-ind">▼</span></th>
-            <th data-bsort="appropriation_usd" class="col-proposer">Nominal $ <span class="sort-ind">▼</span></th>
-            <th data-bsort="decade" class="col-status">Decade <span class="sort-ind">▼</span></th>
-          </tr>
-        </thead>
-        <tbody id="b-records-tbody"></tbody>
-      </table>
-      <div class="records-empty" id="b-records-empty" style="display:none;">⊘ NO MATCHING APPROPRIATIONS — try adjusting filters</div>
-    </div>
-    <div class="pager" id="b-pager"></div>
-  </div>
-</main>
-</div>
-<!-- ============ END BUDGET VIEW ============ -->
-
-<!-- Archive (always shown) -->
-<main id="archive-main">
   <!-- Archive: pre-rendered context charts -->
   <div class="section-rule">▼ Full archive · pre-rendered context</div>
 
@@ -408,8 +260,8 @@
         <div class="ttl">1901 Approval by Cluster</div>
       </div>
     </a>
-    <a class="archive-card" href="output/technology_review_timeline.html" target="_blank" rel="noopener">
-      <img src="Graphs/combine-review-timeline.png" alt="Technology review timeline table">
+    <a class="archive-card" href="../../output/technology_review_timeline.html" target="_blank" rel="noopener">
+      <img src="../../Graphs/combine-review-timeline.png" alt="Technology review timeline table">
       <div class="meta">
         <div class="tag">Interactive table</div>
         <div class="ttl">Tech Review Timeline</div>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOF Archive</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #FAFAF7;
+    color: #2A2A2A;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid #D4D0C8;
+    padding: 48px 40px 40px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 10px;
+  }
+  header p {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+    font-size: 14px;
+    color: #6B6B6B;
+    line-height: 1.6;
+    max-width: 560px;
+  }
+
+  /* ── Main ── */
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 40px 80px;
+  }
+
+  .section {
+    padding-top: 40px;
+  }
+  .section-heading {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 24px;
+  }
+
+  /* ── Cards ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #E8E5DE;
+    border-radius: 4px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.2s ease;
+  }
+  .card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  .card img {
+    width: 100%;
+    aspect-ratio: 16/10;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+    border-bottom: 1px solid #E8E5DE;
+  }
+
+  .card-body {
+    padding: 16px 18px 18px;
+  }
+  .card-type {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 6px;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-bottom: 6px;
+  }
+  .card-desc {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+    font-size: 12.5px;
+    color: #6B6B6B;
+    line-height: 1.5;
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid #D4D0C8;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 40px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+    font-size: 12px;
+    color: #999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer a { color: #6B6B6B; text-decoration: none; }
+  footer a:hover { color: #2A2A2A; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Board of Ordnance & Fortification Archive</h1>
+  <p>Interactive analysis of 1,901 weapon proposals submitted to the BOF (1897-1908) and U.S. military budget appropriations from 1865 to 1920.</p>
+</header>
+
+<main>
+
+  <div class="section">
+    <div class="section-heading">Combined Analysis, 1897-1908</div>
+    <div class="grid">
+
+      <a class="card" href="output/investment_by_technology.html" target="_blank">
+        <img src="Graphs/combine-investment.png" alt="Technology investment vs proposal activity chart">
+        <div class="card-body">
+          <div class="card-type">Stacked Bar + Area</div>
+          <div class="card-title">Technology Investment vs. Proposal Activity</div>
+          <p class="card-desc">Proposal volume by technology cluster overlaid on total military budget — did more funding drive more innovation?</p>
+        </div>
+      </a>
+
+      <a class="card" href="output/technology_timeline.html" target="_blank">
+        <img src="Graphs/combine-timeline.png" alt="Technology development timeline chart">
+        <div class="card-body">
+          <div class="card-type">Bubble Timeline</div>
+          <div class="card-title">Technology Development Timeline</div>
+          <p class="card-desc">When each technology cluster was active, with bubble size showing proposal volume and hover for approval rates.</p>
+        </div>
+      </a>
+
+      <a class="card" href="output/technology_prevalence.html" target="_blank">
+        <img src="Graphs/combine-prevalence.png" alt="Technology type prevalence by year chart">
+        <div class="card-body">
+          <div class="card-type">Stacked Area</div>
+          <div class="card-title">Technology Type Prevalence by Year</div>
+          <p class="card-desc">How the Board's attention shifted across technology categories over the full reporting period.</p>
+        </div>
+      </a>
+
+      <a class="card" href="output/technology_review_timeline.html" target="_blank">
+        <img src="Graphs/combine-review-timeline.png" alt="Technology review timeline table">
+        <div class="card-body">
+          <div class="card-type">Interactive Table</div>
+          <div class="card-title">Technology Review Timeline</div>
+          <p class="card-desc">Every technology reviewed across all 9 report periods, color-coded by outcome. Filter by category, outcome, or search.</p>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">Budget Analysis, 1865-1920</div>
+    <div class="grid">
+
+      <a class="card" href="output/budget_area_chart.html" target="_blank">
+        <img src="Graphs/budget-area.png" alt="Military appropriations area chart">
+        <div class="card-body">
+          <div class="card-type">Stacked Area</div>
+          <div class="card-title">Military Appropriations Over Time</div>
+          <p class="card-desc">Army and Navy spending across 55 fiscal years, with toggle for inflation-adjusted values.</p>
+        </div>
+      </a>
+
+      <a class="card" href="output/budget_treemap.html" target="_blank">
+        <img src="Graphs/budget-treemap.png" alt="Budget treemap">
+        <div class="card-body">
+          <div class="card-type">Treemap</div>
+          <div class="card-title">Budget by Decade and Branch</div>
+          <p class="card-desc">Hierarchical view of spending — rectangle area proportional to total. Click to drill into a decade.</p>
+        </div>
+      </a>
+
+      <a class="card" href="output/budget_share_chart.html" target="_blank">
+        <img src="Graphs/budget-share.png" alt="Budget share chart">
+        <div class="card-body">
+          <div class="card-type">Proportional Area</div>
+          <div class="card-title">Army vs. Navy Budget Share</div>
+          <p class="card-desc">How funding shifted between branches — Army dominance, naval expansion after 1898, and the WWI surge.</p>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">Proposal Analysis, 1897-1908</div>
+    <div class="grid">
+
+      <a class="card" href="output/flow_cluster_to_status.html" target="_blank">
+        <img src="Graphs/proposal-sankey.png" alt="Sankey flow diagram">
+        <div class="card-body">
+          <div class="card-type">Sankey</div>
+          <div class="card-title">Proposal Flow by Technology Cluster</div>
+          <p class="card-desc">How proposals moved from technology domain to board decision — approved, rejected, or investigating.</p>
+        </div>
+      </a>
+
+      <a class="card" href="output/network_proposer_cluster.html" target="_blank">
+        <img src="Graphs/proposal-success.png" alt="Approval rates by year">
+        <div class="card-body">
+          <div class="card-type">Line + Bar</div>
+          <div class="card-title">Government vs. Private Success Rates</div>
+          <p class="card-desc">Approval rate trends and submission volumes compared between government and private proposals.</p>
+        </div>
+      </a>
+
+      <a class="card" href="output/dashboard_1901_ratio.html" target="_blank">
+        <img src="Graphs/proposal-1901.png" alt="1901 approval rates">
+        <div class="card-body">
+          <div class="card-type">Bar Chart</div>
+          <div class="card-title">1901 Approval Rate by Cluster</div>
+          <p class="card-desc">Of 420 proposals in 1901, which technology categories had the highest board approval rates.</p>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <span>Thomas Ou</span>
+  <a href="https://github.com/Smokeybear10/project.BOFARCHIVES/tree/main/Subject" target="_blank" rel="noopener">Subject data (GitHub)</a>
+</footer>
+
+</body>
+</html>
