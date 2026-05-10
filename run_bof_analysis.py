@@ -1,7 +1,9 @@
 """Run BOF 1901-1902 qualitative-to-quantitative pipeline.
 
 Usage:
-    python run_bof_analysis.py --input-dir Subject --output-dir output
+    python run_bof_analysis.py \\
+        --input-dir "Data/Subjects Considered Data Visualization Assignment" \\
+        --output-dir output
 """
 
 from __future__ import annotations

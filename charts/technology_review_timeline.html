@@ -4,41 +4,61 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Board of Ordnance &amp; Fortification — Technology Timeline 1897–1908</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+:root{
+  --bg:#F6F6F7;--bg-2:#EFEFF1;--panel:#FFFFFF;--panel-2:#FAFAFB;
+  --border:#E1E3E6;--border-2:#C7CAD0;
+  --text:#1A1F36;--text-mid:#5A6075;--text-soft:#8C92A4;
+  --accent:#635BFF;
+  --accept:#0E7C66;--reject:#B91C1C;--testing:#B45309;--other:#8C92A4;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a18;font-size:14px}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased}
 .page{max-width:1300px;margin:0 auto;padding:2rem 1.5rem 3rem}
-h1{font-size:18px;font-weight:500;margin-bottom:4px}
-.sub{font-size:13px;color:#6b6b65;margin-bottom:1.25rem}
+h1{font-size:20px;font-weight:600;margin-bottom:6px;letter-spacing:-0.2px}
+.sub{font-size:13px;color:var(--text-mid);margin-bottom:1.5rem;line-height:1.5}
 .controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:1rem;align-items:center}
-.controls label{font-size:12px;color:#6b6b65}
-select,input[type=text]{font-size:12px;padding:5px 10px;border:1px solid #d3d1c7;border-radius:6px;background:#fff;color:#1a1a18;height:30px}
-select:focus,input:focus{outline:2px solid #378add;outline-offset:1px}
+.controls label{font-size:11px;color:var(--text-mid);font-weight:600;letter-spacing:0.4px;text-transform:uppercase}
+select,input[type=text]{font-family:'Inter',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--border-2);border-radius:6px;background:var(--panel);color:var(--text);height:30px}
+select:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
 .legend{display:flex;gap:16px;margin-bottom:1rem;flex-wrap:wrap}
-.li{display:flex;align-items:center;gap:5px;font-size:12px;color:#6b6b65}
+.li{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid)}
 .ld{width:12px;height:12px;border-radius:50%;flex-shrink:0}
 .stats{display:flex;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap}
-.stat{background:#fff;border:1px solid #e8e6df;border-radius:8px;padding:8px 14px;min-width:90px}
-.stat .val{font-size:20px;font-weight:500}
-.stat .lbl{font-size:11px;color:#888780;margin-top:1px}
-.scroll-wrap{overflow:auto;border:1px solid #d3d1c7;border-radius:10px;background:#fff;max-height:72vh}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 16px;min-width:96px;box-shadow:0 1px 2px rgba(15,23,42,0.04)}
+.stat .val{font-size:22px;font-weight:600;letter-spacing:-0.3px;font-variant-numeric:tabular-nums}
+.stat .lbl{font-size:10px;color:var(--text-soft);margin-top:2px;letter-spacing:0.6px;text-transform:uppercase;font-weight:600}
+.scroll-wrap{overflow:auto;border:1px solid var(--border);border-radius:10px;background:var(--panel);max-height:72vh;box-shadow:0 1px 2px rgba(15,23,42,0.04)}
 table{border-collapse:collapse;min-width:100%}
-thead th{position:sticky;top:0;z-index:5;background:#f1efe8;font-size:11px;font-weight:600;color:#5f5e5a;padding:6px 8px;border-bottom:1px solid #d3d1c7;border-right:1px solid #eae8e1;white-space:nowrap;text-align:center}
-thead th:first-child{text-align:left;min-width:210px;max-width:250px;position:sticky;left:0;z-index:6;background:#f1efe8}
-tbody tr{border-bottom:1px solid #eae8e1}
-tbody tr:hover{background:#f8f7f4}
-td{padding:0;border-right:1px solid #eae8e1;vertical-align:middle}
-td:first-child{position:sticky;left:0;background:#fff;z-index:2;font-size:11px;padding:3px 8px;min-width:210px;max-width:250px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-tbody tr:hover td:first-child{background:#f8f7f4}
-td.yc{width:80px;min-width:80px;padding:2px 4px}
-.bar{width:72px;height:16px;border-radius:3px;cursor:pointer;transition:opacity .12s,transform .1s;display:block;margin:0 auto}
-.bar:hover{opacity:.72;transform:scaleX(.96)}
-.cnt{font-size:10px;background:#f1efe8;color:#888780;border-radius:6px;padding:1px 4px;margin-left:3px}
-.none{padding:3rem;text-align:center;font-size:14px;color:#888780}
-#tt{position:fixed;background:#fff;border:1px solid #d3d1c7;border-radius:8px;padding:10px 14px;font-size:12px;pointer-events:none;z-index:9999;max-width:280px;display:none;box-shadow:0 4px 16px rgba(0,0,0,.12)}
-#tt strong{display:block;font-size:13px;font-weight:500;margin-bottom:4px}
-#tt .ta{color:#3d3d3a;margin-bottom:2px}
-#tt .ty{color:#888780;font-size:11px}
+thead th{position:sticky;top:0;z-index:5;background:var(--panel-2);font-size:10px;font-weight:600;color:var(--text-mid);padding:8px 10px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;text-align:center;letter-spacing:0.6px;text-transform:uppercase}
+thead th:first-child{text-align:left;min-width:230px;max-width:260px;position:sticky;left:0;z-index:6;background:var(--panel-2)}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:hover{background:var(--bg-2)}
+td{padding:0;border-right:1px solid var(--border);vertical-align:middle}
+td:first-child{position:sticky;left:0;background:var(--panel);z-index:2;font-size:12px;padding:5px 10px;min-width:230px;max-width:260px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+tbody tr:hover td:first-child{background:var(--bg-2)}
+td.yc{width:80px;min-width:80px;padding:3px 4px}
+.bar{width:72px;height:18px;border-radius:3px;cursor:pointer;transition:opacity .12s,transform .1s;display:block;margin:0 auto}
+.bar:hover{opacity:.78;transform:scaleX(.96)}
+.cnt{font-size:9px;background:var(--bg-2);color:var(--text-soft);border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:600;letter-spacing:0.4px}
+.none{padding:3rem;text-align:center;font-size:13px;color:var(--text-soft)}
+#tt{position:fixed;background:var(--panel);border:1px solid var(--border-2);border-radius:8px;padding:10px 14px;font-size:12px;pointer-events:none;z-index:9999;max-width:280px;display:none;box-shadow:0 4px 16px rgba(15,23,42,0.12)}
+#tt strong{display:block;font-size:13px;font-weight:600;margin-bottom:4px;color:var(--text)}
+#tt .ta{color:var(--text);margin-bottom:2px}
+#tt .ty{color:var(--text-soft);font-size:11px}
+
+.back-link{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;letter-spacing:0.6px;text-transform:uppercase;
+  color:var(--accent);text-decoration:none;
+  padding:6px 12px;border:1px solid var(--border-2);border-radius:6px;
+  margin-bottom:18px;background:var(--panel);
+  transition:all 0.15s;
+}
+.back-link:hover{border-color:var(--accent);background:rgba(99,91,255,0.06)}
 </style>
 </head>
 <body>
@@ -70,11 +90,12 @@ td.yc{width:80px;min-width:80px;padding:2px 4px}
   </select>
   <input type="text" id="sf" placeholder="Search..." style="width:170px">
 </div>
+<a class="back-link" href="../">← Back to Dashboard</a>
 <div class="legend">
-  <div class="li"><div class="ld" style="background:#1D9E75"></div>Accepted / adopted</div>
-  <div class="li"><div class="ld" style="background:#E24B4A"></div>Not recommended / rejected</div>
-  <div class="li"><div class="ld" style="background:#EF9F27"></div>Under test / allotment</div>
-  <div class="li"><div class="ld" style="background:#888780"></div>Referred / filed / other</div>
+  <div class="li"><div class="ld" style="background:var(--accept)"></div>Accepted / adopted</div>
+  <div class="li"><div class="ld" style="background:var(--reject)"></div>Not recommended / rejected</div>
+  <div class="li"><div class="ld" style="background:var(--testing)"></div>Under test / allotment</div>
+  <div class="li"><div class="ld" style="background:var(--other)"></div>Referred / filed / other</div>
 </div>
 <div class="scroll-wrap"><div id="tbl"></div></div>
 </div>
@@ -83,10 +104,10 @@ td.yc{width:80px;min-width:80px;padding:2px 4px}
 const P=["1897–98","1898–99","1900–01","1901–02","1903–04","1904–05","1905–06","1906–07","1907–08"];
 function col(a){
   const s=a.toLowerCase();
-  if(/adopted|recommended\.?$|accepted/.test(s)&&!/not\s+rec/.test(s))return"#1D9E75";
-  if(/not\s+rec|rejected|failed|not adopted|not recommended|adverse/.test(s))return"#E24B4A";
-  if(/allotment|under test|service test|provision made|further test|entered in|to be tested|test\b/.test(s))return"#EF9F27";
-  return"#888780";
+  if(/adopted|recommended\.?$|accepted/.test(s)&&!/not\s+rec/.test(s))return"#0E7C66";
+  if(/not\s+rec|rejected|failed|not adopted|not recommended|adverse/.test(s))return"#B91C1C";
+  if(/allotment|under test|service test|provision made|further test|entered in|to be tested|test\b/.test(s))return"#B45309";
+  return"#8C92A4";
 }
 function oc(a){
   const s=a.toLowerCase();
@@ -404,7 +425,7 @@ function sim(a,b){
 }
 function build(){
   const cf=document.getElementById("cf").value;
-  const of_=document.getElementById("of").value;
+  const of=document.getElementById("of").value;
   const sf=document.getElementById("sf").value.toLowerCase();
   let rows=D;
   if(cf)rows=rows.filter(r=>r[3]===cf);
@@ -419,34 +440,34 @@ function build(){
     grps[k].push(r);
   }
   let entries=Object.entries(grps).map(([name,rs])=>({name,rs}));
-  if(of_)entries=entries.filter(e=>e.rs.some(r=>oc(r[2])===of_));
+  if(of)entries=entries.filter(e=>e.rs.some(r=>oc(r[2])===of));
   entries.sort((a,b)=>a.name.localeCompare(b.name));
   const total=entries.length;
   let acc=0,rej=0,tst=0,oth=0;
   for(const e of entries){const o=oc(e.rs[e.rs.length-1][2]);if(o==="a")acc++;else if(o==="r")rej++;else if(o==="t")tst++;else oth++;}
-  document.getElementById("stats").innerHTML='<div class="stat"><div class="val">'+total+'</div><div class="lbl">Technologies</div></div><div class="stat"><div class="val" style="color:#1D9E75">'+acc+'</div><div class="lbl">Accepted</div></div><div class="stat"><div class="val" style="color:#E24B4A">'+rej+'</div><div class="lbl">Rejected</div></div><div class="stat"><div class="val" style="color:#EF9F27">'+tst+'</div><div class="lbl">Under test</div></div><div class="stat"><div class="val" style="color:#888780">'+oth+'</div><div class="lbl">Other</div></div>';
+  document.getElementById("stats").innerHTML=`<div class="stat"><div class="val">${total}</div><div class="lbl">Technologies</div></div><div class="stat"><div class="val" style="color:#0E7C66">${acc}</div><div class="lbl">Accepted</div></div><div class="stat"><div class="val" style="color:#B91C1C">${rej}</div><div class="lbl">Rejected</div></div><div class="stat"><div class="val" style="color:#B45309">${tst}</div><div class="lbl">Under test</div></div><div class="stat"><div class="val" style="color:#8C92A4">${oth}</div><div class="lbl">Other</div></div>`;
   const tbl=document.getElementById("tbl");
   if(!entries.length){tbl.innerHTML='<div class="none">No technologies match this filter.</div>';return;}
-  let h='<table><thead><tr><th style="text-align:left">Technology ('+total+')</th>';
-  for(const p of P)h+='<th>'+p+'</th>';
-  h+='</tr></thead><tbody>';
+  let h=`<table><thead><tr><th style="text-align:left">Technology (${total})</th>`;
+  for(const p of P)h+=`<th>${p}</th>`;
+  h+=`</tr></thead><tbody>`;
   for(const e of entries){
-    h+='<tr><td title="'+e.name+'">'+e.name+(e.rs.length>1?'<span class="cnt">'+e.rs.length+'×</span>':'')+'</td>';
+    h+=`<tr><td title="${e.name}">${e.name}${e.rs.length>1?`<span class="cnt">${e.rs.length}×</span>`:""}</td>`;
     for(const p of P){
       const pr=e.rs.filter(r=>r[0]===p);
-      h+='<td class="yc">';
-      if(pr.length){const last=pr[pr.length-1];const c=col(last[2]);const d=encodeURIComponent(JSON.stringify({n:e.name,a:last[2],y:p,cnt:pr.length}));h+='<div class="bar" style="background:'+c+'" data-d="'+d+'" onmouseenter="st(event,this)" onmouseleave="ht()"></div>';}
-      h+='</td>';
+      h+=`<td class="yc">`;
+      if(pr.length){const last=pr[pr.length-1];const c=col(last[2]);const d=encodeURIComponent(JSON.stringify({n:e.name,a:last[2],y:p,cnt:pr.length}));h+=`<div class="bar" style="background:${c}" data-d="${d}" onmouseenter="st(event,this)" onmouseleave="ht()"></div>`;}
+      h+=`</td>`;
     }
-    h+='</tr>';
+    h+=`</tr>`;
   }
-  h+='</tbody></table>';
+  h+=`</tbody></table>`;
   tbl.innerHTML=h;
 }
-function st(e,el){const d=JSON.parse(decodeURIComponent(el.dataset.d));document.getElementById("tn").textContent=d.n;document.getElementById("ta").textContent=d.a;document.getElementById("ty").textContent=d.y+(d.cnt>1?' · '+d.cnt+' entries':'');document.getElementById("tt").style.display="block";mt(e);}
+function st(e,el){const d=JSON.parse(decodeURIComponent(el.dataset.d));document.getElementById("tn").textContent=d.n;document.getElementById("ta").textContent=d.a;document.getElementById("ty").textContent=d.y+(d.cnt>1?` · ${d.cnt} entries`:""  );document.getElementById("tt").style.display="block";mt(e);}
 function mt(e){const t=document.getElementById("tt");let x=e.clientX+14,y=e.clientY-12;if(x+290>window.innerWidth)x=e.clientX-300;if(y+100>window.innerHeight)y=e.clientY-110;t.style.left=x+"px";t.style.top=y+"px";}
 function ht(){document.getElementById("tt").style.display="none";}
-document.addEventListener("mousemove",function(e){if(document.getElementById("tt").style.display!=="none")mt(e);});
+document.addEventListener("mousemove",e=>{if(document.getElementById("tt").style.display!=="none")mt(e);});
 document.getElementById("cf").addEventListener("change",build);
 document.getElementById("of").addEventListener("change",build);
 document.getElementById("sf").addEventListener("input",build);

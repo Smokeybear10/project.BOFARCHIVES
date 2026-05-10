@@ -5,25 +5,10 @@
 
 const CSV_URL = 'output/all_structured_records.csv';
 const BUDGET_CSV_URL = 'output/budget_master_ledger.csv';
+const APPROPRIATIONS_CSV_URL = 'output/bof_appropriations.csv';
+const ALLOTMENTS_CSV_URL = 'output/bof_allotments.csv';
 
 const THEMES = {
-  terminal: {
-    bg: '#0F141C', panel: '#0F141C', border: '#1B2330',
-    text: '#E6ECF3', textMid: '#8B95A4', textSoft: '#525C6B',
-    accent: '#4DE685', amber: '#FFB347', red: '#FF6F6F',
-    cyan: '#5BBCFF', magenta: '#C77DFF',
-    cluster: {
-      'Artillery':                      '#5BBCFF',
-      'Explosives':                     '#C77DFF',
-      'Small Arms':                     '#4DE685',
-      'Armor and Protection':           '#FFB347',
-      'Fortification and Engineering':  '#7DDFC0',
-      'Communications and Observation': '#94A9FF',
-      'Logistics and Support':          '#D88C8C',
-      'Other/Unclassified':             '#8B95A4',
-    },
-    fontFamily: "'JetBrains Mono', 'SF Mono', Menlo, monospace",
-  },
   slate: {
     bg: '#131316', panel: '#131316', border: '#232327',
     text: '#ECEDEE', textMid: '#9698A1', textSoft: '#5C5E66',
@@ -58,34 +43,17 @@ const THEMES = {
     },
     fontFamily: "'Inter', -apple-system, system-ui, sans-serif",
   },
-  broadsheet: {
-    bg: '#FBF8F1', panel: '#FBF8F1', border: '#D4CCBC',
-    text: '#1A1A1A', textMid: '#5A554C', textSoft: '#888073',
-    accent: '#8B1A1A', amber: '#A88A3D', red: '#8B1A1A',
-    cyan: '#1B4F72', magenta: '#6E3A82',
-    cluster: {
-      'Artillery':                      '#1B4F72',
-      'Explosives':                     '#6E3A82',
-      'Small Arms':                     '#2D6A4F',
-      'Armor and Protection':           '#A88A3D',
-      'Fortification and Engineering':  '#4D7C5F',
-      'Communications and Observation': '#3A5683',
-      'Logistics and Support':          '#8B3A3A',
-      'Other/Unclassified':             '#7A7268',
-    },
-    fontFamily: "'Source Serif 4', Georgia, serif",
-  },
 };
 
-let CURRENT_THEME = 'terminal';
-let COLORS = THEMES.terminal;
+let CURRENT_THEME = 'paper';
+let COLORS = THEMES.paper;
 let STATUS_COLOR = makeStatusColor(COLORS);
 let CLUSTER_COLOR = COLORS.cluster;
 let PLOT_FONT = makePlotFont(COLORS);
 
 function makeStatusColor(c) {
   return {
-    Approved:      c.accent === '#8B1A1A' ? '#2D6A4F' : c.accent,
+    Approved:      c.accent,
     Investigating: c.amber,
     Rejected:      c.red,
     Other:         c.textSoft,
@@ -139,6 +107,7 @@ const PLOT_CONFIG = { displayModeBar: false, responsive: true };
 
 // ── Theme switching ───────────────────────────────────────────────────
 function setTheme(name) {
+  // Falls back to 'paper' for any unknown theme (incl. retired terminal/broadsheet from localStorage)
   if (!THEMES[name]) name = 'paper';
   CURRENT_THEME = name;
   COLORS = THEMES[name];
@@ -195,6 +164,19 @@ let BUDGET_SORT = { key: 'year', dir: 'asc' };
 let BUDGET_PAGE = 1;
 let BUDGET_RENDERED = false;
 
+let ALL_APPROPRIATIONS = [];
+let ALL_ALLOTMENTS = [];
+let FILTERED_ALLOTMENTS = [];
+let SPENDING_FILTERS = {
+  yearMin: 1888,
+  yearMax: 1920,
+  revoked: '', // 'active', 'revoked', or '' for all
+  search:  '',
+};
+let SPENDING_SORT = { key: 'year', dir: 'asc' };
+let SPENDING_PAGE = 1;
+let SPENDING_RENDERED = false;
+
 // ── Bucketing ─────────────────────────────────────────────────────────
 function statusBucket(s) {
   if (!s || typeof s !== 'string') return 'Other';
@@ -215,9 +197,11 @@ function proposerType(t) {
 
 // ── Load ──────────────────────────────────────────────────────────────
 async function load() {
-  const [propText, budgetText] = await Promise.all([
+  const [propText, budgetText, approText, allotText] = await Promise.all([
     fetch(CSV_URL).then(r => r.text()),
     fetch(BUDGET_CSV_URL).then(r => r.text()),
+    fetch(APPROPRIATIONS_CSV_URL).then(r => r.text()),
+    fetch(ALLOTMENTS_CSV_URL).then(r => r.text()),
   ]);
 
   // Proposals
@@ -236,7 +220,7 @@ async function load() {
       reasoning: (r['Recommendation Reasoning'] || r.reasoning_text || '').trim(),
       report: r['BOF Annual Report #'] || '',
     }))
-    .filter(r => r.year >= 1897 && r.year <= 1908);
+    .filter(r => Number.isFinite(r.year));
 
   // Budget
   const bparsed = Papa.parse(budgetText, { header: true, skipEmptyLines: true });
@@ -249,7 +233,38 @@ async function load() {
       nominal: parseFloat(r.appropriation_usd) || 0,
       adjusted: parseFloat(r.appropriation_2025_usd) || 0,
     }))
-    .filter(r => r.year >= 1866 && r.year <= 1920 && r.branch);
+    .filter(r => Number.isFinite(r.year) && r.branch);
+
+  // BOF appropriations (annual congressional give to the Board)
+  const aparsed = Papa.parse(approText, { header: true, skipEmptyLines: true });
+  ALL_APPROPRIATIONS = aparsed.data
+    .map((r, i) => ({
+      id: i,
+      year: parseInt(r.Year, 10),
+      amount: parseFloat(r.Amount_Numeric || r.Amount) || 0,
+      remarks: (r.Remarks || '').trim(),
+      requested: parseFloat(r['Estimate Originally Requested by BOF (Not from the same source, but from the prior year\'s annual report)']) || null,
+      justification: (r['Justification for Estimate/Request'] || '').trim(),
+      legislation: (r['Legislation Making Appropriations for the Board'] || '').trim(),
+      permalink: (r['Permalink to Legislation/Act'] || '').trim(),
+    }))
+    .filter(r => Number.isFinite(r.year));
+
+  // BOF allotments (individual research expenditures)
+  const lparsed = Papa.parse(allotText, { header: true, skipEmptyLines: true });
+  ALL_ALLOTMENTS = lparsed.data
+    .map((r, i) => ({
+      id: i,
+      year: parseInt(parseFloat(r.Year), 10),
+      description: (r['Project/Line Item Description'] || '').trim(),
+      amount: parseFloat(r.Allotted_Numeric || r['Allotted ($)']) || 0,
+      dateAllotted: (r['Date Allotted'] || '').trim(),
+      revoked: /^y/i.test(r['Revoked Allotment?'] || ''),
+      dateRevoked: (r['Date of Revocation'] || '').trim(),
+      page: (r.Page || '').trim(),
+      notes: (r.Notes || '').trim(),
+    }))
+    .filter(r => Number.isFinite(r.year) && r.description);
 
   // Populate cluster filter
   const clusters = [...new Set(ALL.map(r => r.cluster))].sort();
@@ -269,11 +284,21 @@ async function load() {
   wireBudgetFilters();
   wireBudgetPresets();
   wireBudgetTable();
+  wireTimelineFilters();
+  wireSpendingFilters();
+  wireSpendingTable();
   wireViewTabs();
 
   document.getElementById('rec-count').textContent = ALL.length.toLocaleString();
   document.getElementById('vt-prop-count').textContent = ALL.length.toLocaleString();
   document.getElementById('vt-budget-count').textContent = ALL_BUDGET.length.toLocaleString();
+
+  // Derive year bounds from data so users can expand/contract freely.
+  setupYearBounds();
+  if (window.TIMELINE_GROUPS) {
+    document.getElementById('vt-timeline-count').textContent = window.TIMELINE_GROUPS.length.toLocaleString();
+  }
+  document.getElementById('vt-spending-count').textContent = ALL_ALLOTMENTS.length.toLocaleString();
   computePresetCounts();
   stateFromHash();
   apply();
@@ -336,7 +361,7 @@ function applyPreset(name) {
 }
 
 function resetFilters() {
-  FILTERS = { yearMin: 1897, yearMax: 1908, cluster: '', status: '', proposer: '', search: '' };
+  FILTERS = { yearMin: PROP_DEFAULT.min, yearMax: PROP_DEFAULT.max, cluster: '', status: '', proposer: '', search: '' };
   syncFilterControls();
   PAGE = 1;
   apply();
@@ -399,7 +424,7 @@ window.addEventListener('resize', () => {
 // ── Active filter chips ───────────────────────────────────────────────
 function renderActiveChips() {
   const chips = [];
-  if (FILTERS.yearMin !== 1897 || FILTERS.yearMax !== 1908) {
+  if (FILTERS.yearMin !== PROP_DEFAULT.min || FILTERS.yearMax !== PROP_DEFAULT.max) {
     const range = FILTERS.yearMin === FILTERS.yearMax ? `${FILTERS.yearMin}` : `${FILTERS.yearMin}–${FILTERS.yearMax}`;
     chips.push({ key: 'year', label: 'YEAR', val: range });
   }
@@ -848,15 +873,24 @@ function updateHash() {
   const params = new URLSearchParams();
   if (VIEW !== 'proposals') params.set('view', VIEW);
   if (VIEW === 'proposals') {
-    if (FILTERS.yearMin !== 1897 || FILTERS.yearMax !== 1908) params.set('y', `${FILTERS.yearMin}-${FILTERS.yearMax}`);
+    if (FILTERS.yearMin !== PROP_DEFAULT.min || FILTERS.yearMax !== PROP_DEFAULT.max) params.set('y', `${FILTERS.yearMin}-${FILTERS.yearMax}`);
     if (FILTERS.cluster)  params.set('c', FILTERS.cluster);
     if (FILTERS.status)   params.set('s', FILTERS.status);
     if (FILTERS.proposer) params.set('p', FILTERS.proposer);
     if (FILTERS.search)   params.set('q', FILTERS.search);
   } else if (VIEW === 'budget') {
-    if (BUDGET_FILTERS.yearMin !== 1866 || BUDGET_FILTERS.yearMax !== 1920) params.set('by', `${BUDGET_FILTERS.yearMin}-${BUDGET_FILTERS.yearMax}`);
+    if (BUDGET_FILTERS.yearMin !== BUDGET_DEFAULT.min || BUDGET_FILTERS.yearMax !== BUDGET_DEFAULT.max) params.set('by', `${BUDGET_FILTERS.yearMin}-${BUDGET_FILTERS.yearMax}`);
     if (BUDGET_FILTERS.branch) params.set('bb', BUDGET_FILTERS.branch);
     if (BUDGET_FILTERS.units !== '2025') params.set('bu', BUDGET_FILTERS.units);
+  } else if (VIEW === 'timeline') {
+    if (TIMELINE_FILTERS.category) params.set('tc', TIMELINE_FILTERS.category);
+    if (TIMELINE_FILTERS.outcome) params.set('to', TIMELINE_FILTERS.outcome);
+    if (TIMELINE_FILTERS.source) params.set('ts', TIMELINE_FILTERS.source);
+    if (TIMELINE_FILTERS.search) params.set('tq', TIMELINE_FILTERS.search);
+  } else if (VIEW === 'spending') {
+    if (SPENDING_FILTERS.yearMin !== SPENDING_DEFAULT.min || SPENDING_FILTERS.yearMax !== SPENDING_DEFAULT.max) params.set('sy', `${SPENDING_FILTERS.yearMin}-${SPENDING_FILTERS.yearMax}`);
+    if (SPENDING_FILTERS.revoked) params.set('sr', SPENDING_FILTERS.revoked);
+    if (SPENDING_FILTERS.search) params.set('sq', SPENDING_FILTERS.search);
   }
   const h = params.toString();
   history.replaceState(null, '', h ? '#' + h : window.location.pathname);
@@ -880,9 +914,32 @@ function stateFromHash() {
   }
   if (params.has('bb')) BUDGET_FILTERS.branch = params.get('bb');
   if (params.has('bu')) BUDGET_FILTERS.units = params.get('bu');
+  if (params.has('tc')) TIMELINE_FILTERS.category = params.get('tc');
+  if (params.has('to')) TIMELINE_FILTERS.outcome = params.get('to');
+  if (params.has('ts')) TIMELINE_FILTERS.source = params.get('ts');
+  if (params.has('tq')) TIMELINE_FILTERS.search = params.get('tq');
+  if (params.has('sy')) {
+    const [a, b] = params.get('sy').split('-').map(Number);
+    if (Number.isFinite(a) && Number.isFinite(b)) { SPENDING_FILTERS.yearMin = a; SPENDING_FILTERS.yearMax = b; }
+  }
+  if (params.has('sr')) SPENDING_FILTERS.revoked = params.get('sr');
+  if (params.has('sq')) SPENDING_FILTERS.search = params.get('sq');
   syncFilterControls();
   syncBudgetControls();
+  syncTimelineControls();
+  syncSpendingControls();
   if (VIEW === 'budget') setView('budget');
+  else if (VIEW === 'timeline') setView('timeline');
+  else if (VIEW === 'spending') setView('spending');
+}
+
+function syncTimelineControls() {
+  document.getElementById('t-category').value = TIMELINE_FILTERS.category;
+  document.getElementById('t-outcome').value = TIMELINE_FILTERS.outcome;
+  document.getElementById('t-source').value = TIMELINE_FILTERS.source;
+  const search = document.getElementById('t-search');
+  search.value = TIMELINE_FILTERS.search;
+  document.getElementById('t-search-wrap').classList.toggle('has-value', !!TIMELINE_FILTERS.search);
 }
 
 // ── CSV export ────────────────────────────────────────────────────────
@@ -1029,7 +1086,7 @@ function wireBudgetTable() {
 }
 
 function resetBudgetFilters() {
-  BUDGET_FILTERS = { yearMin: 1866, yearMax: 1920, branch: '', units: BUDGET_FILTERS.units };
+  BUDGET_FILTERS = { yearMin: BUDGET_DEFAULT.min, yearMax: BUDGET_DEFAULT.max, branch: '', units: BUDGET_FILTERS.units };
   syncBudgetControls();
   BUDGET_PAGE = 1;
   applyBudget();
@@ -1062,7 +1119,7 @@ function applyBudget() {
 
 function renderBudgetActiveChips() {
   const chips = [];
-  if (BUDGET_FILTERS.yearMin !== 1866 || BUDGET_FILTERS.yearMax !== 1920) {
+  if (BUDGET_FILTERS.yearMin !== BUDGET_DEFAULT.min || BUDGET_FILTERS.yearMax !== BUDGET_DEFAULT.max) {
     const range = BUDGET_FILTERS.yearMin === BUDGET_FILTERS.yearMax
       ? `${BUDGET_FILTERS.yearMin}` : `${BUDGET_FILTERS.yearMin}–${BUDGET_FILTERS.yearMax}`;
     chips.push({ key: 'year', label: 'YEAR', val: range });
@@ -1334,9 +1391,595 @@ function exportBudgetCSV() {
   toast(`Exported ${FILTERED_BUDGET.length.toLocaleString()} records`);
 }
 
+// Compute data-driven year bounds for each view's filter inputs.
+// FILTERS defaults stay at the BOF reporting window for the focused first view;
+// inputs allow expanding to the full data span (and a comfortable margin).
+const PROP_DEFAULT = { min: 1897, max: 1908 };
+const BUDGET_DEFAULT = { min: 1866, max: 1920 };
+const SPENDING_DEFAULT = { min: 1888, max: 1920 };
+
+function setupYearBounds() {
+  const propYears = ALL.map(r => r.year).filter(Number.isFinite);
+  const budgetYears = ALL_BUDGET.map(r => r.year).filter(Number.isFinite);
+  const spendYears = [
+    ...ALL_ALLOTMENTS.map(r => r.year),
+    ...ALL_APPROPRIATIONS.map(r => r.year),
+  ].filter(Number.isFinite);
+
+  const propMin = propYears.length ? Math.min(...propYears) : 1897;
+  const propMax = propYears.length ? Math.max(...propYears) : 1908;
+  const budgetMin = budgetYears.length ? Math.min(...budgetYears) : 1866;
+  const budgetMax = budgetYears.length ? Math.max(...budgetYears) : 1920;
+  const spendMin = spendYears.length ? Math.min(...spendYears) : 1888;
+  const spendMax = spendYears.length ? Math.max(...spendYears) : 1920;
+
+  // Pad inputs by ±5 years so users can manually overshoot if they like.
+  const setBounds = (id, lo, hi) => {
+    const el = document.getElementById(id);
+    if (el) { el.min = lo; el.max = hi; }
+  };
+  setBounds('f-year-min', propMin - 5, propMax + 5);
+  setBounds('f-year-max', propMin - 5, propMax + 5);
+  setBounds('b-year-min', budgetMin - 5, budgetMax + 5);
+  setBounds('b-year-max', budgetMin - 5, budgetMax + 5);
+  setBounds('s-year-min', spendMin - 5, spendMax + 5);
+  setBounds('s-year-max', spendMin - 5, spendMax + 5);
+
+  // Update defaults to match the actual data span (used by reset + active-chip detection).
+  PROP_DEFAULT.min = propMin;     PROP_DEFAULT.max = propMax;
+  BUDGET_DEFAULT.min = budgetMin; BUDGET_DEFAULT.max = budgetMax;
+  SPENDING_DEFAULT.min = spendMin; SPENDING_DEFAULT.max = spendMax;
+
+  // Initial filter values — start at the data span on first load.
+  if (FILTERS.yearMin === 1897 && FILTERS.yearMax === 1908) {
+    FILTERS.yearMin = propMin; FILTERS.yearMax = propMax;
+    document.getElementById('f-year-min').value = propMin;
+    document.getElementById('f-year-max').value = propMax;
+  }
+  if (BUDGET_FILTERS.yearMin === 1866 && BUDGET_FILTERS.yearMax === 1920) {
+    BUDGET_FILTERS.yearMin = budgetMin; BUDGET_FILTERS.yearMax = budgetMax;
+    document.getElementById('b-year-min').value = budgetMin;
+    document.getElementById('b-year-max').value = budgetMax;
+  }
+  if (SPENDING_FILTERS.yearMin === 1888 && SPENDING_FILTERS.yearMax === 1920) {
+    SPENDING_FILTERS.yearMin = spendMin; SPENDING_FILTERS.yearMax = spendMax;
+    document.getElementById('s-year-min').value = spendMin;
+    document.getElementById('s-year-max').value = spendMax;
+  }
+}
+
 function resizeBudgetCharts() {
   requestAnimationFrame(() => {
     ['b-chart-timeline', 'b-chart-branch', 'b-chart-decade', 'b-chart-yoy'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el._fullLayout) {
+        try { Plotly.Plots.resize(el); } catch {}
+      }
+    });
+  });
+}
+
+// ── Timeline view ─────────────────────────────────────────────────────
+// Schema (from Paul B's hohhamnap.github.io):
+//   PERIODS: ["1888-89", ..., "1915-16"] (28 entries)
+//   GROUPS:  [{name, cat, periods: {periodName: [{action, source}]}}]
+let TIMELINE_FILTERS = { category: '', outcome: '', source: '', search: '' };
+
+function timelineOutcome(action) {
+  const s = (action || '').toLowerCase();
+  if (/adopted|recommended\.?$|accepted/.test(s) && !/not\s+rec/.test(s)) return 'a';
+  if (/not\s+rec|rejected|failed|adverse|revoked/.test(s)) return 'r';
+  if (/allotment|under test|provision made|test\b|granted|under review/.test(s)) return 't';
+  return 'o';
+}
+
+function timelineColor(action) {
+  const o = timelineOutcome(action);
+  if (o === 'a') return '#0E7C66';
+  if (o === 'r') return '#B91C1C';
+  if (o === 't') return '#B45309';
+  return '#8C92A4';
+}
+
+function wireTimelineFilters() {
+  document.getElementById('t-category').addEventListener('change', e => {
+    TIMELINE_FILTERS.category = e.target.value; applyTimeline();
+  });
+  document.getElementById('t-outcome').addEventListener('change', e => {
+    TIMELINE_FILTERS.outcome = e.target.value; applyTimeline();
+  });
+  document.getElementById('t-source').addEventListener('change', e => {
+    TIMELINE_FILTERS.source = e.target.value; applyTimeline();
+  });
+  const searchInput = document.getElementById('t-search');
+  const searchWrap = document.getElementById('t-search-wrap');
+  let searchTimer;
+  searchInput.addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    const v = e.target.value;
+    if (v) searchWrap.classList.add('has-value'); else searchWrap.classList.remove('has-value');
+    searchTimer = setTimeout(() => { TIMELINE_FILTERS.search = v.trim().toLowerCase(); applyTimeline(); }, 180);
+  });
+  document.getElementById('t-btn-clear-search').addEventListener('click', () => {
+    searchInput.value = '';
+    searchWrap.classList.remove('has-value');
+    TIMELINE_FILTERS.search = '';
+    applyTimeline();
+  });
+  document.getElementById('btn-clear-timeline').addEventListener('click', () => {
+    TIMELINE_FILTERS = { category: '', outcome: '', source: '', search: '' };
+    document.getElementById('t-category').value = '';
+    document.getElementById('t-outcome').value = '';
+    document.getElementById('t-source').value = '';
+    searchInput.value = '';
+    searchWrap.classList.remove('has-value');
+    applyTimeline();
+  });
+
+  document.addEventListener('mousemove', e => {
+    const tt = document.getElementById('t-tooltip');
+    if (tt && tt.style.display !== 'none') positionTooltip(e);
+  });
+}
+
+// Filter a group's period entries by source. Returns a new periods object
+// containing only entries that match the source filter (or all if no filter).
+function filterPeriodsBySource(periods, source) {
+  if (!source) return periods;
+  const out = {};
+  for (const [p, entries] of Object.entries(periods)) {
+    const kept = entries.filter(e => e.source === source);
+    if (kept.length) out[p] = kept;
+  }
+  return out;
+}
+
+// Determine the "last" entry across periods for outcome classification.
+// Periods are ordered chronologically by TIMELINE_PERIODS.
+function lastEntryAcrossPeriods(periodsObj) {
+  const order = window.TIMELINE_PERIODS;
+  for (let i = order.length - 1; i >= 0; i--) {
+    const entries = periodsObj[order[i]];
+    if (entries && entries.length) return entries[entries.length - 1];
+  }
+  return null;
+}
+
+function applyTimeline() {
+  const groups = window.TIMELINE_GROUPS || [];
+  const f = TIMELINE_FILTERS;
+
+  // Build filtered groups — each gets source-filtered periods, drop empties.
+  let entries = groups.map(g => ({
+    name: g.name,
+    cat: g.cat,
+    periods: filterPeriodsBySource(g.periods, f.source),
+  })).filter(g => Object.keys(g.periods).length > 0);
+
+  if (f.category) entries = entries.filter(g => g.cat === f.category);
+
+  if (f.search) {
+    entries = entries.filter(g => {
+      if (g.name.toLowerCase().includes(f.search)) return true;
+      for (const arr of Object.values(g.periods))
+        for (const e of arr)
+          if (e.action.toLowerCase().includes(f.search)) return true;
+      return false;
+    });
+  }
+
+  if (f.outcome) {
+    entries = entries.filter(g => {
+      for (const arr of Object.values(g.periods))
+        for (const e of arr)
+          if (timelineOutcome(e.action) === f.outcome) return true;
+      return false;
+    });
+  }
+
+  entries.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Stats — outcome from the chronologically last entry per group.
+  let acc = 0, rej = 0, tst = 0, oth = 0;
+  for (const g of entries) {
+    const last = lastEntryAcrossPeriods(g.periods);
+    if (!last) { oth++; continue; }
+    const o = timelineOutcome(last.action);
+    if (o === 'a') acc++; else if (o === 'r') rej++; else if (o === 't') tst++; else oth++;
+  }
+
+  const total = entries.length;
+  document.querySelector('[data-tkpi="total"]').textContent = total;
+  document.querySelector('[data-tkpi="accepted"]').textContent = acc;
+  document.querySelector('[data-tkpi="rejected"]').textContent = rej;
+  document.querySelector('[data-tkpi="testing"]').textContent = tst;
+  document.querySelector('[data-tkpi="other"]').textContent = oth;
+  document.getElementById('tkpi-accepted-sub').innerHTML = total > 0
+    ? `<strong>${(acc / total * 100).toFixed(1)}%</strong> of filtered`
+    : '—';
+  document.getElementById('t-match-n').textContent = total;
+
+  renderTimelineTable(entries);
+  updateHash();
+}
+
+function renderTimelineTable(entries) {
+  const wrap = document.getElementById('t-table-wrap');
+  if (entries.length === 0) {
+    wrap.innerHTML = '<div class="t-empty">⊘ No technologies match this filter</div>';
+    return;
+  }
+
+  const periods = window.TIMELINE_PERIODS;
+  let h = '<table class="timeline-table"><thead><tr>';
+  h += `<th>Technology (${entries.length})</th>`;
+  for (const p of periods) h += `<th>${p}</th>`;
+  h += '</tr></thead><tbody>';
+
+  for (const g of entries) {
+    const safeName = escapeHTML(g.name);
+    let totalEntries = 0;
+    for (const arr of Object.values(g.periods)) totalEntries += arr.length;
+
+    h += `<tr><td title="${safeName}">${safeName}${totalEntries > 1 ? `<span class="t-cnt">${totalEntries}×</span>` : ''}</td>`;
+    for (const p of periods) {
+      const arr = g.periods[p];
+      h += '<td class="tlc">';
+      if (arr && arr.length) {
+        // Color = last entry's action; source mix dictates bar style.
+        const last = arr[arr.length - 1];
+        const c = timelineColor(last.action);
+        const sources = new Set(arr.map(e => e.source));
+        const isDashed = sources.size === 1 && sources.has('financial');
+        const dashStyle = isDashed
+          ? `background:repeating-linear-gradient(45deg, ${c}, ${c} 4px, transparent 4px, transparent 7px); border:1.5px solid ${c};`
+          : `background:${c};`;
+        const meta = encodeURIComponent(JSON.stringify({
+          n: g.name,
+          a: last.action,
+          y: p,
+          cnt: arr.length,
+          src: [...sources].join(' + ')
+        }));
+        h += `<div class="t-bar" style="${dashStyle}" data-meta="${meta}"></div>`;
+      }
+      h += '</td>';
+    }
+    h += '</tr>';
+  }
+  h += '</tbody></table>';
+  wrap.innerHTML = h;
+
+  wrap.querySelectorAll('.t-bar').forEach(el => {
+    el.addEventListener('mouseenter', e => showTimelineTooltip(e, el));
+    el.addEventListener('mouseleave', hideTimelineTooltip);
+  });
+}
+
+function showTimelineTooltip(e, el) {
+  const d = JSON.parse(decodeURIComponent(el.dataset.meta));
+  document.getElementById('t-tt-name').textContent = d.n;
+  document.getElementById('t-tt-action').textContent = d.a;
+  const meta = [d.y];
+  if (d.cnt > 1) meta.push(`${d.cnt} entries`);
+  if (d.src) meta.push(`source: ${d.src}`);
+  document.getElementById('t-tt-meta').textContent = meta.join(' · ');
+  document.getElementById('t-tooltip').style.display = 'block';
+  positionTooltip(e);
+}
+
+function hideTimelineTooltip() {
+  document.getElementById('t-tooltip').style.display = 'none';
+}
+
+function positionTooltip(e) {
+  const t = document.getElementById('t-tooltip');
+  let x = e.clientX + 14, y = e.clientY - 12;
+  if (x + 310 > window.innerWidth) x = e.clientX - 320;
+  if (y + 100 > window.innerHeight) y = e.clientY - 110;
+  t.style.left = x + 'px';
+  t.style.top = y + 'px';
+}
+
+// ── Spending view ─────────────────────────────────────────────────────
+function wireSpendingFilters() {
+  document.getElementById('s-year-min').addEventListener('change', e => {
+    SPENDING_FILTERS.yearMin = parseInt(e.target.value, 10); SPENDING_PAGE = 1; applySpending();
+  });
+  document.getElementById('s-year-max').addEventListener('change', e => {
+    SPENDING_FILTERS.yearMax = parseInt(e.target.value, 10); SPENDING_PAGE = 1; applySpending();
+  });
+  document.getElementById('s-revoked').addEventListener('change', e => {
+    SPENDING_FILTERS.revoked = e.target.value; SPENDING_PAGE = 1; applySpending();
+  });
+  const searchInput = document.getElementById('s-search');
+  const searchWrap = document.getElementById('s-search-wrap');
+  let searchTimer;
+  searchInput.addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    const v = e.target.value;
+    if (v) searchWrap.classList.add('has-value'); else searchWrap.classList.remove('has-value');
+    searchTimer = setTimeout(() => { SPENDING_FILTERS.search = v.trim().toLowerCase(); SPENDING_PAGE = 1; applySpending(); }, 180);
+  });
+  document.getElementById('s-btn-clear-search').addEventListener('click', () => {
+    searchInput.value = '';
+    searchWrap.classList.remove('has-value');
+    SPENDING_FILTERS.search = '';
+    SPENDING_PAGE = 1;
+    applySpending();
+  });
+  document.getElementById('btn-clear-spending').addEventListener('click', () => {
+    SPENDING_FILTERS = { yearMin: SPENDING_DEFAULT.min, yearMax: SPENDING_DEFAULT.max, revoked: '', search: '' };
+    syncSpendingControls();
+    SPENDING_PAGE = 1;
+    applySpending();
+  });
+  document.getElementById('btn-export-spending').addEventListener('click', exportSpendingCSV);
+}
+
+function syncSpendingControls() {
+  document.getElementById('s-year-min').value = SPENDING_FILTERS.yearMin;
+  document.getElementById('s-year-max').value = SPENDING_FILTERS.yearMax;
+  document.getElementById('s-revoked').value = SPENDING_FILTERS.revoked;
+  const search = document.getElementById('s-search');
+  search.value = SPENDING_FILTERS.search;
+  document.getElementById('s-search-wrap').classList.toggle('has-value', !!SPENDING_FILTERS.search);
+}
+
+function wireSpendingTable() {
+  document.querySelectorAll('#s-records-table thead th').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.ssort;
+      if (SPENDING_SORT.key === key) SPENDING_SORT.dir = SPENDING_SORT.dir === 'asc' ? 'desc' : 'asc';
+      else { SPENDING_SORT.key = key; SPENDING_SORT.dir = 'asc'; }
+      renderSpendingTable();
+    });
+  });
+}
+
+function applySpending() {
+  const q = SPENDING_FILTERS.search;
+  FILTERED_ALLOTMENTS = ALL_ALLOTMENTS.filter(r =>
+    r.year >= SPENDING_FILTERS.yearMin &&
+    r.year <= SPENDING_FILTERS.yearMax &&
+    (SPENDING_FILTERS.revoked === '' ||
+     (SPENDING_FILTERS.revoked === 'active' && !r.revoked) ||
+     (SPENDING_FILTERS.revoked === 'revoked' && r.revoked)) &&
+    (!q || r.description.toLowerCase().includes(q) || (r.notes && r.notes.toLowerCase().includes(q)))
+  );
+
+  renderSpendingKPIs();
+  renderSpendingTimeline();
+  renderSpendingRevoked();
+  renderSpendingTop();
+  renderSpendingTable();
+  updateHash();
+  resizeSpendingCharts();
+}
+
+function renderSpendingKPIs() {
+  const totalAllot = FILTERED_ALLOTMENTS.reduce((s, r) => s + r.amount, 0);
+  const revokedCount = FILTERED_ALLOTMENTS.filter(r => r.revoked).length;
+  const revokeRate = FILTERED_ALLOTMENTS.length > 0 ? (revokedCount / FILTERED_ALLOTMENTS.length * 100) : 0;
+
+  // Total appropriated within filter
+  const filteredAppro = ALL_APPROPRIATIONS.filter(r =>
+    r.year >= SPENDING_FILTERS.yearMin && r.year <= SPENDING_FILTERS.yearMax
+  );
+  const totalAppro = filteredAppro.reduce((s, r) => s + r.amount, 0);
+
+  // Top year by allotment count
+  const yearCounts = {};
+  for (const r of FILTERED_ALLOTMENTS) yearCounts[r.year] = (yearCounts[r.year] || 0) + 1;
+  const topYearEntry = Object.entries(yearCounts).sort((a, b) => b[1] - a[1])[0];
+  const topYear = topYearEntry ? topYearEntry[0] : '—';
+  const topYearCount = topYearEntry ? topYearEntry[1] : 0;
+
+  document.querySelector('[data-skpi="total"]').textContent = fmtUSD(totalAllot);
+  document.getElementById('skpi-total-sub').innerHTML = `across <strong>${new Set(FILTERED_ALLOTMENTS.map(r => r.year)).size}</strong> years`;
+
+  document.querySelector('[data-skpi="appropriated"]').textContent = fmtUSD(totalAppro);
+  document.getElementById('skpi-appropriated-sub').innerHTML = `<strong>${filteredAppro.length}</strong> annual acts`;
+
+  document.querySelector('[data-skpi="count"]').textContent = FILTERED_ALLOTMENTS.length.toLocaleString();
+
+  const revokeEl = document.querySelector('[data-skpi="revoke"]');
+  revokeEl.innerHTML = `${revokeRate.toFixed(1)}<span class="unit">%</span>`;
+  document.getElementById('skpi-revoke-sub').innerHTML = `<strong>${revokedCount}</strong> of ${FILTERED_ALLOTMENTS.length} returned`;
+
+  document.querySelector('[data-skpi="topyear"]').textContent = topYear;
+  document.getElementById('skpi-topyear-sub').innerHTML = topYearCount > 0 ? `<strong>${topYearCount}</strong> allotments` : '—';
+
+  document.getElementById('s-match-n').textContent = FILTERED_ALLOTMENTS.length.toLocaleString();
+  document.getElementById('s-match-sum').textContent = fmtUSD(totalAllot);
+}
+
+function renderSpendingTimeline() {
+  const yearsAll = [];
+  for (let y = SPENDING_FILTERS.yearMin; y <= SPENDING_FILTERS.yearMax; y++) yearsAll.push(y);
+
+  const allotByYear = yearsAll.map(y =>
+    FILTERED_ALLOTMENTS.filter(r => r.year === y).reduce((s, r) => s + r.amount, 0)
+  );
+  const approByYear = yearsAll.map(y => {
+    const a = ALL_APPROPRIATIONS.find(r => r.year === y);
+    return a ? a.amount : 0;
+  });
+
+  Plotly.react('s-chart-timeline', [
+    {
+      type: 'bar',
+      name: 'Allotted',
+      x: yearsAll,
+      y: allotByYear,
+      marker: { color: COLORS.accent, line: { width: 0 } },
+      hovertemplate: '<b>%{x}</b><br>Allotted: %{y:$,.0f}<extra></extra>',
+    },
+    {
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: 'Appropriated by Congress',
+      x: yearsAll,
+      y: approByYear,
+      line: { color: COLORS.cyan, width: 2 },
+      marker: { color: COLORS.cyan, size: 6 },
+      hovertemplate: '<b>%{x}</b><br>Appropriated: %{y:$,.0f}<extra></extra>',
+    },
+  ], {
+    ...PLOT_BASE_LAYOUT,
+    showlegend: true,
+    legend: { orientation: 'h', x: 0, y: 1.16, font: { color: COLORS.textMid, size: 10 } },
+    xaxis: { ...PLOT_AXIS, dtick: 2, title: '' },
+    yaxis: { ...PLOT_AXIS, title: '', tickformat: '$.2s' },
+    margin: { l: 64, r: 16, t: 36, b: 36 },
+  }, PLOT_CONFIG);
+}
+
+function renderSpendingRevoked() {
+  const active = FILTERED_ALLOTMENTS.filter(r => !r.revoked).reduce((s, r) => s + r.amount, 0);
+  const revoked = FILTERED_ALLOTMENTS.filter(r => r.revoked).reduce((s, r) => s + r.amount, 0);
+  const total = active + revoked;
+
+  Plotly.react('s-chart-revoked', [{
+    type: 'pie',
+    hole: 0.62,
+    labels: ['Active', 'Revoked'],
+    values: [active, revoked],
+    marker: { colors: [COLORS.accent, COLORS.red], line: { color: COLORS.bg, width: 1 } },
+    textinfo: 'none',
+    hovertemplate: '<b>%{label}</b><br>%{value:$,.0f} (%{percent})<extra></extra>',
+  }], {
+    ...PLOT_BASE_LAYOUT,
+    showlegend: true,
+    legend: { orientation: 'v', x: 1.05, y: 0.5, font: { color: COLORS.textMid, size: 10 } },
+    margin: { l: 6, r: 0, t: 6, b: 6 },
+    annotations: [{
+      text: `<b>${fmtUSD(total)}</b><br><span style="color:${COLORS.textMid};font-size:9px;letter-spacing:1.4px;">TOTAL</span>`,
+      showarrow: false, font: { color: COLORS.text, size: 16, family: PLOT_FONT.family },
+      x: 0.5, y: 0.5,
+    }],
+  }, PLOT_CONFIG);
+}
+
+function renderSpendingTop() {
+  const top = [...FILTERED_ALLOTMENTS].sort((a, b) => b.amount - a.amount).slice(0, 15).reverse();
+  const labels = top.map(r => {
+    const desc = r.description.length > 60 ? r.description.slice(0, 60) + '…' : r.description;
+    return `${r.year} · ${desc}`;
+  });
+  const values = top.map(r => r.amount);
+  const colors = top.map(r => r.revoked ? COLORS.red : COLORS.accent);
+
+  Plotly.react('s-chart-top', [{
+    type: 'bar',
+    orientation: 'h',
+    x: values,
+    y: labels,
+    marker: { color: colors, line: { width: 0 } },
+    text: values.map(v => fmtUSD(v)),
+    textposition: 'outside',
+    textfont: { color: COLORS.textMid, size: 10, family: PLOT_FONT.family },
+    customdata: top.map(r => r.description),
+    hovertemplate: '<b>%{customdata}</b><br>%{x:$,.0f}<extra></extra>',
+  }], {
+    ...PLOT_BASE_LAYOUT,
+    xaxis: { ...PLOT_AXIS, tickformat: '$.2s', title: '' },
+    yaxis: { ...PLOT_AXIS, automargin: true, tickfont: { ...PLOT_AXIS.tickfont, size: 9 } },
+    margin: { l: 8, r: 56, t: 12, b: 36 },
+  }, PLOT_CONFIG);
+}
+
+function renderSpendingTable() {
+  const sorted = [...FILTERED_ALLOTMENTS].sort((a, b) => {
+    let av = a[SPENDING_SORT.key], bv = b[SPENDING_SORT.key];
+    if (SPENDING_SORT.key === 'revoked') { av = a.revoked ? 1 : 0; bv = b.revoked ? 1 : 0; }
+    if (typeof av === 'number') return SPENDING_SORT.dir === 'asc' ? av - bv : bv - av;
+    return SPENDING_SORT.dir === 'asc' ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+  });
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  if (SPENDING_PAGE > totalPages) SPENDING_PAGE = 1;
+  const start = (SPENDING_PAGE - 1) * PAGE_SIZE;
+  const slice = sorted.slice(start, start + PAGE_SIZE);
+
+  document.querySelectorAll('#s-records-table thead th').forEach(th => {
+    th.classList.toggle('sorted', th.dataset.ssort === SPENDING_SORT.key);
+    const ind = th.querySelector('.sort-ind');
+    if (ind) ind.textContent = SPENDING_SORT.dir === 'asc' ? '▲' : '▼';
+  });
+
+  const tbody = document.getElementById('s-records-tbody');
+  if (sorted.length === 0) {
+    tbody.innerHTML = '';
+    document.getElementById('s-records-empty').style.display = 'block';
+    document.getElementById('s-records-table').style.display = 'none';
+  } else {
+    document.getElementById('s-records-empty').style.display = 'none';
+    document.getElementById('s-records-table').style.display = '';
+    tbody.innerHTML = slice.map(r => `
+      <tr title="${escapeHTML(r.description)}${r.notes ? ' | Notes: ' + escapeHTML(r.notes) : ''}">
+        <td class="col-year">${r.year}</td>
+        <td class="col-subject">${escapeHTML(r.description.length > 80 ? r.description.slice(0, 80) + '…' : r.description)}</td>
+        <td class="col-proposer">${fmtUSD(r.amount)}</td>
+        <td class="col-cluster">${escapeHTML(r.dateAllotted)}</td>
+        <td class="col-status">${r.revoked
+          ? `<span class="badge b-rejected">REVOKED</span>`
+          : `<span class="badge b-approved">ACTIVE</span>`}</td>
+      </tr>
+    `).join('');
+  }
+
+  if (sorted.length > 0) {
+    document.getElementById('s-rec-range').textContent = `${start + 1}–${Math.min(start + PAGE_SIZE, sorted.length)}`;
+  } else {
+    document.getElementById('s-rec-range').textContent = '0';
+  }
+  document.getElementById('s-rec-total').textContent = sorted.length.toLocaleString();
+
+  renderSpendingPager(totalPages);
+}
+
+function renderSpendingPager(totalPages) {
+  const pager = document.getElementById('s-pager');
+  if (totalPages <= 1) { pager.innerHTML = ''; return; }
+  const buttons = [];
+  buttons.push(`<button id="s-pg-prev" ${SPENDING_PAGE === 1 ? 'disabled' : ''}>‹ prev</button>`);
+  const pages = new Set([1, totalPages, SPENDING_PAGE - 1, SPENDING_PAGE, SPENDING_PAGE + 1]);
+  const sortedPages = [...pages].filter(p => p >= 1 && p <= totalPages).sort((a, b) => a - b);
+  let last = 0;
+  for (const p of sortedPages) {
+    if (last && p - last > 1) buttons.push('<span style="color:var(--text-soft);padding:0 4px;">…</span>');
+    buttons.push(`<button data-spage="${p}" class="${p === SPENDING_PAGE ? 'active' : ''}">${p}</button>`);
+    last = p;
+  }
+  buttons.push(`<button id="s-pg-next" ${SPENDING_PAGE === totalPages ? 'disabled' : ''}>next ›</button>`);
+  buttons.push(`<span class="pg-info">page ${SPENDING_PAGE} of ${totalPages}</span>`);
+  pager.innerHTML = buttons.join('');
+  pager.querySelectorAll('button[data-spage]').forEach(b => b.addEventListener('click', () => { SPENDING_PAGE = parseInt(b.dataset.spage, 10); renderSpendingTable(); }));
+  const prev = document.getElementById('s-pg-prev'); if (prev) prev.addEventListener('click', () => { SPENDING_PAGE = Math.max(1, SPENDING_PAGE - 1); renderSpendingTable(); });
+  const next = document.getElementById('s-pg-next'); if (next) next.addEventListener('click', () => { SPENDING_PAGE = Math.min(totalPages, SPENDING_PAGE + 1); renderSpendingTable(); });
+}
+
+function exportSpendingCSV() {
+  if (FILTERED_ALLOTMENTS.length === 0) { toast('Nothing to export'); return; }
+  const headers = ['year', 'description', 'amount', 'dateAllotted', 'revoked', 'dateRevoked', 'page', 'notes'];
+  const rows = FILTERED_ALLOTMENTS.map(r => [
+    r.year, r.description, r.amount, r.dateAllotted, r.revoked ? 'Yes' : 'No', r.dateRevoked, r.page, r.notes
+  ].map(v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`).join(','));
+  const csv = headers.join(',') + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bof-allotments-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast(`Exported ${FILTERED_ALLOTMENTS.length} allotments`);
+}
+
+function resizeSpendingCharts() {
+  requestAnimationFrame(() => {
+    ['s-chart-timeline', 's-chart-revoked', 's-chart-top'].forEach(id => {
       const el = document.getElementById(id);
       if (el && el._fullLayout) {
         try { Plotly.Plots.resize(el); } catch {}
@@ -1352,24 +1995,34 @@ function wireViewTabs() {
   });
 }
 
+let TIMELINE_RENDERED = false;
+
 function setView(name) {
-  if (name !== 'proposals' && name !== 'budget') name = 'proposals';
+  if (!['proposals', 'budget', 'timeline', 'spending'].includes(name)) name = 'proposals';
   VIEW = name;
   document.getElementById('view-proposals').hidden = (name !== 'proposals');
   document.getElementById('view-budget').hidden    = (name !== 'budget');
+  document.getElementById('view-timeline').hidden  = (name !== 'timeline');
+  document.getElementById('view-spending').hidden  = (name !== 'spending');
   document.querySelectorAll('.view-tab').forEach(b => {
     const active = b.dataset.view === name;
     b.classList.toggle('active', active);
     b.setAttribute('aria-selected', active ? 'true' : 'false');
   });
-  // Use rAF so the panel-body has a measurable size after the hidden swap
-  // (Plotly's autosize would compute 0px while the parent was display:none).
   requestAnimationFrame(() => {
     if (name === 'budget' && !BUDGET_RENDERED) {
       applyBudget();
       BUDGET_RENDERED = true;
     } else if (name === 'budget') {
       resizeBudgetCharts();
+    } else if (name === 'timeline' && !TIMELINE_RENDERED) {
+      applyTimeline();
+      TIMELINE_RENDERED = true;
+    } else if (name === 'spending' && !SPENDING_RENDERED) {
+      applySpending();
+      SPENDING_RENDERED = true;
+    } else if (name === 'spending') {
+      resizeSpendingCharts();
     } else if (name === 'proposals') {
       resizeCharts();
     }

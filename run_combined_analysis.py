@@ -23,11 +23,13 @@ def parse_args() -> argparse.Namespace:
         description="Generate combined subjects + budget visualizations for 1897-1908."
     )
     parser.add_argument(
-        "--input-dir", type=Path, default=Path("Subject"),
+        "--input-dir", type=Path,
+        default=Path("Data/Subjects Considered Data Visualization Assignment"),
         help="Directory containing BOF Excel files.",
     )
     parser.add_argument(
-        "--budget", type=Path, default=Path("Military Budgets, 1865-1920.xlsx"),
+        "--budget", type=Path,
+        default=Path("Data/Defense Budget Visualization Assignment/Military Budgets, 1865-1920.xlsx"),
         help="Path to the budget Excel workbook.",
     )
     parser.add_argument(

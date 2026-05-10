@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fortify the Ordnance · Brand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,900&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path fill-rule='evenodd' clip-rule='evenodd' d='M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z' fill='%23C9A24C'/><circle cx='32' cy='32' r='2.2' fill='%23C9A24C'/></svg>">
+<style>
+  :root {
+    --ink:        #0B0E14;
+    --ink-2:      #11151D;
+    --ink-3:      #1A2030;
+    --line:       #2A3346;
+    --line-soft:  #1F2737;
+    --paper:      #F1E8CF;
+    --paper-2:    #E8DDBE;
+    --paper-line: #D4C8A2;
+    --brass:      #C9A24C;
+    --brass-2:    #A8852E;
+    --brass-soft: #E6D194;
+    --vermillion: #C5483D;
+    --steel:      #6B89A8;
+    --bone:       #EBE2CC;
+    --slate:      #94A3B8;
+    --slate-soft: #5C6779;
+
+    --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --sans:  'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono:  'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--ink);
+    color: var(--bone);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection { background: var(--brass); color: var(--ink); }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ── Top utility bar ────────────────────────────────────────── */
+  .util {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--line-soft);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+  .util .left { display: flex; gap: 18px; align-items: center; }
+  .util .crumb { color: var(--slate-soft); }
+  .util .crumb strong { color: var(--bone); font-weight: 600; }
+  .util a.back { color: var(--slate); transition: color .15s; }
+  .util a.back:hover { color: var(--brass); }
+  .util .ver { color: var(--brass); }
+
+  /* ── Hero stage ─────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    min-height: 92vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 80px 28px 120px;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(201,162,76,0.06) 0%, transparent 60%),
+      linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size: 64px 64px;
+    opacity: 0.25;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+    width: 1px; height: 40px;
+    background: linear-gradient(180deg, transparent, var(--brass));
+  }
+
+  .hero-mark {
+    position: relative;
+    width: 240px; height: 240px;
+    color: var(--brass);
+    filter: drop-shadow(0 10px 60px rgba(201,162,76,0.15));
+    transition: transform 1.2s cubic-bezier(.2,.8,.2,1);
+  }
+  .hero:hover .hero-mark { transform: rotate(45deg); }
+  .hero-mark svg { width: 100%; height: 100%; display: block; }
+
+  .hero-orbit {
+    position: absolute; inset: -40px;
+    border: 1px dashed rgba(201,162,76,0.25);
+    border-radius: 50%;
+    animation: orbit 60s linear infinite;
+  }
+  .hero-orbit::before, .hero-orbit::after {
+    content: ''; position: absolute;
+    width: 6px; height: 6px;
+    background: var(--brass);
+    border-radius: 50%;
+  }
+  .hero-orbit::before { top: -3px; left: 50%; transform: translateX(-50%); }
+  .hero-orbit::after  { bottom: -3px; left: 50%; transform: translateX(-50%); opacity: 0.4; }
+  @keyframes orbit { to { transform: rotate(360deg); } }
+
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(48px, 8vw, 96px);
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    margin-top: 56px;
+    text-align: center;
+    color: var(--bone);
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--brass);
+  }
+
+  .hero .meta {
+    display: flex; gap: 24px; align-items: center;
+    margin-top: 28px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+  .hero .meta .sep { width: 24px; height: 1px; background: var(--line); }
+  .hero .meta .accent { color: var(--brass); }
+
+  .hero .tagline {
+    margin-top: 36px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 18px;
+    color: var(--slate);
+    text-align: center;
+    max-width: 540px;
+  }
+
+  /* ── Section frame ──────────────────────────────────────────── */
+  section {
+    padding: 100px 28px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .section-head {
+    display: flex; align-items: baseline; gap: 24px;
+    margin-bottom: 56px;
+  }
+  .section-head .num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--brass);
+    letter-spacing: 1px;
+  }
+  .section-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 36px;
+    letter-spacing: -0.01em;
+    color: var(--bone);
+  }
+  .section-head .lede {
+    margin-left: auto;
+    max-width: 480px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 16px;
+    color: var(--slate);
+  }
+
+  /* ── Mark variations grid ───────────────────────────────────── */
+  .mark-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .mark-cell {
+    aspect-ratio: 1;
+    border: 1px solid var(--line-soft);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    transition: border-color .2s;
+  }
+  .mark-cell:hover { border-color: var(--brass); }
+  .mark-cell svg { width: 50%; height: 50%; }
+  .mark-cell .label {
+    position: absolute; bottom: 14px; left: 14px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--slate-soft);
+  }
+
+  .mark-cell.dark   { background: var(--ink-2); color: var(--brass); }
+  .mark-cell.darker { background: var(--ink); color: var(--bone); }
+  .mark-cell.brass  { background: var(--brass); color: var(--ink); }
+  .mark-cell.paper  { background: var(--paper); color: var(--ink); }
+  .mark-cell.bone   { background: var(--bone); color: var(--ink); }
+  .mark-cell.steel  { background: var(--steel); color: var(--bone); }
+  .mark-cell.vermil { background: var(--vermillion); color: var(--bone); }
+  .mark-cell.outline{ background: transparent; color: var(--bone); }
+
+  /* ── Concept showcase ───────────────────────────────────────── */
+  .concepts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line-soft);
+    border: 1px solid var(--line-soft);
+  }
+  .concept {
+    background: var(--ink-2);
+    padding: 48px 32px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .concept .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--brass);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .concept .glyph {
+    width: 140px; height: 140px;
+    color: var(--bone);
+    margin-bottom: 32px;
+  }
+  .concept .glyph.gold { color: var(--brass); }
+  .concept h3 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--bone);
+    margin-bottom: 8px;
+  }
+  .concept p {
+    font-family: var(--serif);
+    font-size: 14px;
+    color: var(--slate);
+    text-align: center;
+    line-height: 1.55;
+    max-width: 280px;
+  }
+
+  /* ── Sizes ──────────────────────────────────────────────────── */
+  .sizes {
+    background: var(--ink-2);
+    border: 1px solid var(--line-soft);
+    padding: 64px 32px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .size-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    color: var(--bone);
+  }
+  .size-cell .swatch {
+    color: var(--brass);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .size-cell .px {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.6px;
+    color: var(--slate);
+  }
+  .size-cell .use {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.6px;
+    color: var(--slate-soft);
+    text-transform: uppercase;
+  }
+
+  /* ── Mockups (app icons in context) ─────────────────────────── */
+  .mockups {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .mockup {
+    background: var(--ink-2);
+    border: 1px solid var(--line-soft);
+    padding: 36px 24px;
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+  }
+  .mockup .frame {
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mockup .name {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--slate);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  /* iOS squircle */
+  .icon-ios {
+    width: 128px; height: 128px;
+    border-radius: 28px;
+    background: linear-gradient(160deg, #1A2030 0%, #0B0E14 100%);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 8px 28px rgba(0,0,0,0.5);
+    color: var(--brass);
+    position: relative;
+    overflow: hidden;
+  }
+  .icon-ios::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent);
+  }
+  .icon-ios svg { width: 70%; height: 70%; position: relative; z-index: 1; }
+
+  /* macOS dock */
+  .icon-mac {
+    width: 128px; height: 128px;
+    border-radius: 24px;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(201,162,76,0.18), transparent 70%),
+      linear-gradient(180deg, var(--ink-3), var(--ink));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow:
+      0 1px 0 rgba(201,162,76,0.2) inset,
+      0 -1px 0 rgba(0,0,0,0.6) inset,
+      0 12px 32px rgba(0,0,0,0.6);
+    color: var(--brass);
+  }
+  .icon-mac svg { width: 65%; height: 65%; }
+
+  /* Android circular */
+  .icon-android {
+    width: 128px; height: 128px;
+    border-radius: 50%;
+    background: var(--brass);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+  }
+  .icon-android svg { width: 56%; height: 56%; }
+
+  /* Browser tab favicon */
+  .icon-tab {
+    width: 240px;
+    background: var(--ink-3);
+    border-radius: 8px 8px 0 0;
+    border-top: 2px solid var(--brass);
+    padding: 12px 14px;
+    display: flex; align-items: center; gap: 10px;
+    color: var(--bone);
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .icon-tab svg { width: 14px; height: 14px; color: var(--brass); flex-shrink: 0; }
+  .icon-tab .url {
+    flex: 1;
+    color: var(--slate);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .icon-tab .x { color: var(--slate-soft); }
+
+  /* ── Wordmark lockups ───────────────────────────────────────── */
+  .lockups {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .lockup {
+    background: var(--ink-2);
+    border: 1px solid var(--line-soft);
+    padding: 56px 32px;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 200px;
+    position: relative;
+  }
+  .lockup .cap {
+    position: absolute; top: 14px; left: 14px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.8px;
+    color: var(--slate-soft);
+    text-transform: uppercase;
+  }
+  .lockup.light { background: var(--paper); }
+  .lockup.light .wm { color: var(--ink); }
+  .lockup.light .wm svg { color: var(--ink); }
+
+  .wm-stack { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .wm-stack svg { width: 56px; height: 56px; color: var(--brass); }
+  .wm-stack .text {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 22px;
+    text-align: center;
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+  }
+  .wm-stack .text .small { display: block; font-size: 12px; font-weight: 400; letter-spacing: 0.3em; color: var(--slate); margin-top: 6px; }
+
+  .wm-horiz { display: flex; align-items: center; gap: 18px; }
+  .wm-horiz svg { width: 48px; height: 48px; color: var(--brass); flex-shrink: 0; }
+  .wm-horiz .text {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+  }
+  .wm-horiz .text .small { display: block; font-size: 10px; font-weight: 400; letter-spacing: 0.25em; color: var(--slate); margin-top: 4px; text-transform: uppercase; }
+
+  .wm-mono {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: 80px;
+    color: var(--brass);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .wm-mono .slash { color: var(--slate-soft); font-weight: 400; }
+
+  .wm-text {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 36px;
+    text-align: center;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    color: var(--bone);
+  }
+  .wm-text em { font-style: italic; font-weight: 400; color: var(--brass); }
+  .wm-text .rule { display: block; width: 80px; height: 1px; background: var(--brass); margin: 18px auto; }
+  .wm-text .meta { display: block; font-family: var(--mono); font-size: 11px; font-weight: 400; letter-spacing: 0.4em; color: var(--slate); }
+
+  /* ── Color system ───────────────────────────────────────────── */
+  .palette {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1px;
+    background: var(--line-soft);
+    border: 1px solid var(--line-soft);
+  }
+  .swatch-cell {
+    background: var(--ink-2);
+    aspect-ratio: 1;
+    padding: 18px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .swatch-cell .chip {
+    width: 100%;
+    flex: 1;
+    border-radius: 2px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .swatch-cell .name {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--bone);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .swatch-cell .hex {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--slate);
+    margin-top: 2px;
+  }
+
+  /* ── Typography spec ────────────────────────────────────────── */
+  .type-spec {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .type-card {
+    background: var(--ink-2);
+    border: 1px solid var(--line-soft);
+    padding: 36px;
+  }
+  .type-card .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--brass);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .type-card .specimen {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 56px;
+    color: var(--bone);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    margin-bottom: 18px;
+  }
+  .type-card .specimen.sans {
+    font-family: var(--sans);
+    font-weight: 700;
+  }
+  .type-card .specimen.mono {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 40px;
+    letter-spacing: -0.01em;
+  }
+  .type-card .info {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--slate);
+    border-top: 1px solid var(--line-soft);
+    padding-top: 14px;
+  }
+  .type-card .info span { color: var(--bone); }
+
+  /* ── Downloads ──────────────────────────────────────────────── */
+  .downloads {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .dl-card {
+    background: var(--ink-2);
+    border: 1px solid var(--line-soft);
+    padding: 28px;
+    display: flex; flex-direction: column; gap: 18px;
+    transition: border-color .15s;
+  }
+  .dl-card:hover { border-color: var(--brass); }
+  .dl-card .top { display: flex; align-items: center; gap: 14px; }
+  .dl-card .ico {
+    width: 40px; height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brass);
+  }
+  .dl-card .ico svg { width: 22px; height: 22px; }
+  .dl-card .ttl {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--bone);
+  }
+  .dl-card .desc {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--slate);
+  }
+  .dl-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .dl-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--ink);
+    color: var(--bone);
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all .15s;
+  }
+  .dl-btn:hover {
+    background: var(--brass);
+    color: var(--ink);
+    border-color: var(--brass);
+  }
+
+  /* ── Footer ─────────────────────────────────────────────────── */
+  footer {
+    padding: 56px 28px;
+    border-top: 1px solid var(--line-soft);
+    background: var(--ink-2);
+    color: var(--slate);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  footer .top {
+    display: flex; justify-content: center; align-items: center; gap: 16px;
+    margin-bottom: 14px;
+  }
+  footer .top svg { width: 22px; height: 22px; color: var(--brass); }
+  footer .meta { color: var(--slate-soft); }
+
+  /* ── Responsive ─────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .mark-grid { grid-template-columns: repeat(2, 1fr); }
+    .concepts { grid-template-columns: 1fr; }
+    .mockups { grid-template-columns: repeat(2, 1fr); }
+    .lockups { grid-template-columns: 1fr; }
+    .palette { grid-template-columns: repeat(3, 1fr); }
+    .type-spec { grid-template-columns: 1fr; }
+    .downloads { grid-template-columns: 1fr; }
+    .section-head { flex-direction: column; gap: 14px; }
+    .section-head .lede { margin-left: 0; }
+    .hero h1 { font-size: 48px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Top utility bar ─────────────────────────────────────────── -->
+<div class="util">
+  <div class="left">
+    <span class="crumb"><strong>FORTIFY THE ORDNANCE</strong> &nbsp;/&nbsp; Brand</span>
+  </div>
+  <div class="right">
+    <a class="back" href="index.html">← back to terminal</a>
+    &nbsp;&nbsp;<span class="ver">v1 · 2026</span>
+  </div>
+</div>
+
+<!-- ── HERO ────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-mark" id="hero-mark">
+    <div class="hero-orbit"></div>
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd" clip-rule="evenodd"
+            d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z"
+            fill="currentColor"/>
+      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+    </svg>
+  </div>
+
+  <h1>Fortify <em>the</em><br>Ordnance</h1>
+
+  <div class="meta">
+    <span>Board of Ordnance &amp; Fortification</span>
+    <span class="sep"></span>
+    <span class="accent">1897 — 1908</span>
+    <span class="sep"></span>
+    <span>1,901 records</span>
+  </div>
+
+  <p class="tagline">
+    A working archive of American military innovation in the years between<br>
+    the Spanish-American War and the Great War.
+  </p>
+</section>
+
+<!-- ── 01 · The Mark ───────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="section-head">
+      <span class="num">01</span>
+      <h2>The Mark</h2>
+      <p class="lede">
+        A four-bastion star fort — the <em>trace italienne</em> — drawn from above.
+        It was the prevailing fortification geometry the Board was charged with reviewing.
+      </p>
+    </div>
+
+    <div class="mark-grid">
+      <div class="mark-cell darker">
+        <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+        <span class="label">primary · brass on ink</span>
+      </div>
+      <div class="mark-cell brass" style="color: var(--ink);">
+        <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+        <span class="label" style="color: rgba(11,14,20,0.65);">inverse · ink on brass</span>
+      </div>
+      <div class="mark-cell paper" style="color: var(--ink);">
+        <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+        <span class="label" style="color: rgba(11,14,20,0.55);">paper · ink on parchment</span>
+      </div>
+      <div class="mark-cell outline">
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="miter">
+          <path d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z"/>
+          <circle cx="32" cy="32" r="6"/>
+          <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+        </svg>
+        <span class="label">outline · stroke only</span>
+      </div>
+      <div class="mark-cell vermil">
+        <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+        <span class="label" style="color: rgba(235,226,204,0.65);">accent · vermillion ground</span>
+      </div>
+      <div class="mark-cell steel">
+        <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+        <span class="label" style="color: rgba(235,226,204,0.65);">steel · service blue</span>
+      </div>
+      <div class="mark-cell bone" style="color: var(--ink);">
+        <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+        <span class="label" style="color: rgba(11,14,20,0.55);">bone · ivory ground</span>
+      </div>
+      <div class="mark-cell dark" style="color: var(--bone);">
+        <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+        <span class="label">monochrome · bone on ink</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 02 · Concepts ───────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2>Three Concepts</h2>
+      <p class="lede">
+        The system carries one primary mark and two supporting glyphs — for stamps, monograms,
+        and small contexts where the star fort would lose detail.
+      </p>
+    </div>
+
+    <div class="concepts">
+      <div class="concept">
+        <span class="badge">A · primary</span>
+        <div class="glyph gold">
+          <svg viewBox="0 0 64 64">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+            <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3>Star Fort</h3>
+        <p>Four-bastion <em>trace italienne</em>. The plan view of a permanent fortification, reduced to its load-bearing geometry.</p>
+      </div>
+
+      <div class="concept">
+        <span class="badge">B · ordnance</span>
+        <div class="glyph gold">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <!-- Crossed cannon barrels -->
+            <line x1="14" y1="14" x2="50" y2="50"/>
+            <line x1="50" y1="14" x2="14" y2="50"/>
+            <!-- Cannonball at center -->
+            <circle cx="32" cy="32" r="6" fill="currentColor" stroke="none"/>
+            <!-- Outer ring -->
+            <circle cx="32" cy="32" r="26"/>
+          </svg>
+        </div>
+        <h3>Crossed Ordnance</h3>
+        <p>Two cannon barrels saltire through a cannonball. A heraldic stamp for letterheads, seals, and footers.</p>
+      </div>
+
+      <div class="concept">
+        <span class="badge">C · monogram</span>
+        <div class="glyph gold" style="display: flex; align-items: center; justify-content: center;">
+          <svg viewBox="0 0 100 64">
+            <text x="0" y="52" font-family="Source Serif 4, serif" font-weight="800" font-size="64" fill="currentColor" letter-spacing="-2">F</text>
+            <line x1="34" y1="18" x2="60" y2="46" stroke="currentColor" stroke-width="3"/>
+            <text x="60" y="52" font-family="Source Serif 4, serif" font-weight="800" font-size="64" fill="currentColor" letter-spacing="-2">O</text>
+          </svg>
+        </div>
+        <h3>F / O Monogram</h3>
+        <p>Slash lockup of the initials. A nod to the <code style="font-family: var(--mono); font-size: 12px; color: var(--brass);">BOF/ARCHIVE</code> wordmark already in the terminal.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 03 · Sizes ──────────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>Size System</h2>
+      <p class="lede">
+        The mark holds at every scale from a 16px favicon to a 512px application icon.
+        Geometry stays angular — no anti-alias rounding required.
+      </p>
+    </div>
+
+    <div class="sizes" id="sizes-row"></div>
+  </div>
+</section>
+
+<!-- ── 04 · Mockups in context ─────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2>In Context</h2>
+      <p class="lede">
+        The mark across surfaces it will actually live on — desktop docks, mobile home screens,
+        adaptive icons, and the browser tab.
+      </p>
+    </div>
+
+    <div class="mockups">
+      <div class="mockup">
+        <div class="frame">
+          <div class="icon-ios">
+            <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+          </div>
+        </div>
+        <span class="name">iOS · 1024px squircle</span>
+      </div>
+
+      <div class="mockup">
+        <div class="frame">
+          <div class="icon-mac">
+            <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+          </div>
+        </div>
+        <span class="name">macOS · dock icon</span>
+      </div>
+
+      <div class="mockup">
+        <div class="frame">
+          <div class="icon-android">
+            <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+          </div>
+        </div>
+        <span class="name">Android · adaptive</span>
+      </div>
+
+      <div class="mockup">
+        <div class="frame">
+          <div class="icon-tab">
+            <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+            <span class="url">fortify-the-ordnance</span>
+            <span class="x">×</span>
+          </div>
+        </div>
+        <span class="name">browser · favicon</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 05 · Wordmark lockups ───────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="section-head">
+      <span class="num">05</span>
+      <h2>Wordmark Lockups</h2>
+      <p class="lede">
+        Five approved lockups. The serif voice (Source Serif 4) reads as period; the brass marks the institution.
+      </p>
+    </div>
+
+    <div class="lockups">
+      <div class="lockup">
+        <span class="cap">primary · stacked</span>
+        <div class="wm-stack wm">
+          <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+          <div class="text">
+            FORTIFY THE ORDNANCE
+            <span class="small">B · O · F · &nbsp; 1897 — 1908</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lockup">
+        <span class="cap">horizontal</span>
+        <div class="wm-horiz wm">
+          <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+          <div class="text">
+            Fortify the Ordnance
+            <span class="small">Board of Ordnance &amp; Fortification</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lockup">
+        <span class="cap">monogram</span>
+        <div class="wm-mono wm">F<span class="slash">/</span>O</div>
+      </div>
+
+      <div class="lockup light">
+        <span class="cap" style="color: rgba(11,14,20,0.45);">paper · editorial</span>
+        <div class="wm wm-text" style="color: var(--ink);">
+          Fortify <em style="color: var(--brass-2);">the</em> Ordnance
+          <span class="rule" style="background: var(--brass-2);"></span>
+          <span class="meta" style="color: var(--slate-soft);">EST · MMXXVI</span>
+        </div>
+      </div>
+
+      <div class="lockup" style="grid-column: 1 / -1;">
+        <span class="cap">full lockup · headline</span>
+        <div class="wm-text">
+          Fortify <em>the</em> Ordnance
+          <span class="rule"></span>
+          <span class="meta">A WORKING ARCHIVE · 1897 — 1908</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 06 · Color ──────────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="section-head">
+      <span class="num">06</span>
+      <h2>Color System</h2>
+      <p class="lede">
+        Brass on ink for the institutional voice. Parchment, vermillion, and steel reserved for surfaces and accents.
+      </p>
+    </div>
+
+    <div class="palette">
+      <div class="swatch-cell">
+        <div class="chip" style="background: var(--ink);"></div>
+        <div>
+          <div class="name">Ink</div>
+          <div class="hex">#0B0E14</div>
+        </div>
+      </div>
+      <div class="swatch-cell">
+        <div class="chip" style="background: var(--brass);"></div>
+        <div>
+          <div class="name">Brass</div>
+          <div class="hex">#C9A24C</div>
+        </div>
+      </div>
+      <div class="swatch-cell">
+        <div class="chip" style="background: var(--paper);"></div>
+        <div>
+          <div class="name">Parchment</div>
+          <div class="hex">#F1E8CF</div>
+        </div>
+      </div>
+      <div class="swatch-cell">
+        <div class="chip" style="background: var(--bone);"></div>
+        <div>
+          <div class="name">Bone</div>
+          <div class="hex">#EBE2CC</div>
+        </div>
+      </div>
+      <div class="swatch-cell">
+        <div class="chip" style="background: var(--steel);"></div>
+        <div>
+          <div class="name">Steel</div>
+          <div class="hex">#6B89A8</div>
+        </div>
+      </div>
+      <div class="swatch-cell">
+        <div class="chip" style="background: var(--vermillion);"></div>
+        <div>
+          <div class="name">Vermillion</div>
+          <div class="hex">#C5483D</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 07 · Type ───────────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="section-head">
+      <span class="num">07</span>
+      <h2>Typography</h2>
+      <p class="lede">
+        Three voices. Source Serif for headlines, Inter for interface, JetBrains Mono for tabular and label work.
+      </p>
+    </div>
+
+    <div class="type-spec">
+      <div class="type-card">
+        <div class="label">Display · headlines &amp; lockups</div>
+        <div class="specimen">Fortify <em style="color: var(--brass); font-weight: 400;">the</em> Ordnance</div>
+        <div class="info">
+          <span>Source Serif 4</span> &nbsp;·&nbsp; 700 / 400 italic &nbsp;·&nbsp; <span>variable</span>
+        </div>
+      </div>
+
+      <div class="type-card">
+        <div class="label">Interface · ui &amp; navigation</div>
+        <div class="specimen sans">1,901 records, archived.</div>
+        <div class="info">
+          <span>Inter</span> &nbsp;·&nbsp; 400 / 500 / 600 / 700 &nbsp;·&nbsp; <span>variable</span>
+        </div>
+      </div>
+
+      <div class="type-card" style="grid-column: 1 / -1;">
+        <div class="label">Mono · labels, tabular data, system</div>
+        <div class="specimen mono">FORTIFY · THE · ORDNANCE · 1897—1908 · 1901_SURGE</div>
+        <div class="info">
+          <span>JetBrains Mono</span> &nbsp;·&nbsp; 400 / 500 / 600 / 700 &nbsp;·&nbsp; <span>fixed-width</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 08 · Downloads ──────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="section-head">
+      <span class="num">08</span>
+      <h2>Downloads</h2>
+      <p class="lede">
+        Generated client-side. Click any size to save the asset locally.
+      </p>
+    </div>
+
+    <div class="downloads">
+      <div class="dl-card">
+        <div class="top">
+          <div class="ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 3v5h5M5 3h9l5 5v13H5z"/><text x="7" y="17" font-family="JetBrains Mono" font-size="6" fill="currentColor" stroke="none">SVG</text></svg>
+          </div>
+          <div>
+            <div class="ttl">Vector · SVG</div>
+            <div class="desc">Lossless. Use everywhere.</div>
+          </div>
+        </div>
+        <div class="dl-row">
+          <button class="dl-btn" data-svg="primary">Mark</button>
+          <button class="dl-btn" data-svg="ordnance">Ordnance</button>
+          <button class="dl-btn" data-svg="monogram">Monogram</button>
+        </div>
+      </div>
+
+      <div class="dl-card">
+        <div class="top">
+          <div class="ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <div>
+            <div class="ttl">Raster · PNG</div>
+            <div class="desc">Transparent ground.</div>
+          </div>
+        </div>
+        <div class="dl-row">
+          <button class="dl-btn" data-png="64">64</button>
+          <button class="dl-btn" data-png="128">128</button>
+          <button class="dl-btn" data-png="256">256</button>
+          <button class="dl-btn" data-png="512">512</button>
+          <button class="dl-btn" data-png="1024">1024</button>
+        </div>
+      </div>
+
+      <div class="dl-card">
+        <div class="top">
+          <div class="ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+          </div>
+          <div>
+            <div class="ttl">Browser · favicon</div>
+            <div class="desc">SVG favicon, ready to drop into <code style="font-family: var(--mono); font-size: 11px; color: var(--brass);">&lt;link rel="icon"&gt;</code>.</div>
+          </div>
+        </div>
+        <div class="dl-row">
+          <button class="dl-btn" data-fav="brass">Brass</button>
+          <button class="dl-btn" data-fav="bone">Bone</button>
+          <button class="dl-btn" data-fav="ink">Ink</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="top">
+    <svg viewBox="0 0 64 64"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/><circle cx="32" cy="32" r="2.2" fill="currentColor"/></svg>
+    <span>Fortify the Ordnance</span>
+  </div>
+  <div class="meta">An archive of American military innovation · 1897–1908 · Built by Thomas Ou</div>
+</footer>
+
+<script>
+/* ── Render the size system row ────────────────────────────────── */
+(function renderSizes() {
+  const row = document.getElementById('sizes-row');
+  const sizes = [
+    { px: 16,  use: 'favicon' },
+    { px: 24,  use: 'inline' },
+    { px: 32,  use: 'ui' },
+    { px: 48,  use: 'tab' },
+    { px: 64,  use: 'tile' },
+    { px: 96,  use: 'card' },
+    { px: 128, use: 'app' },
+    { px: 256, use: 'splash' },
+  ];
+  const markSvg = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+    <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+  </svg>`;
+  row.innerHTML = sizes.map(s => `
+    <div class="size-cell">
+      <div class="swatch" style="width:${s.px}px; height:${s.px}px;">${markSvg}</div>
+      <div class="px">${s.px} × ${s.px}</div>
+      <div class="use">${s.use}</div>
+    </div>
+  `).join('');
+})();
+
+/* ── SVG asset library ─────────────────────────────────────────── */
+const svgLib = {
+  primary: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512">
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="#C9A24C"/>
+  <circle cx="32" cy="32" r="2.2" fill="#C9A24C"/>
+</svg>`,
+  ordnance: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512" fill="none" stroke="#C9A24C" stroke-width="3" stroke-linecap="round">
+  <line x1="14" y1="14" x2="50" y2="50"/>
+  <line x1="50" y1="14" x2="14" y2="50"/>
+  <circle cx="32" cy="32" r="6" fill="#C9A24C" stroke="none"/>
+  <circle cx="32" cy="32" r="26"/>
+</svg>`,
+  monogram: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 64" width="800" height="512">
+  <text x="0" y="52" font-family="Source Serif 4, Georgia, serif" font-weight="800" font-size="64" fill="#C9A24C" letter-spacing="-2">F</text>
+  <line x1="34" y1="18" x2="60" y2="46" stroke="#C9A24C" stroke-width="3"/>
+  <text x="60" y="52" font-family="Source Serif 4, Georgia, serif" font-weight="800" font-size="64" fill="#C9A24C" letter-spacing="-2">O</text>
+</svg>`
+};
+
+const favLib = {
+  brass: '#C9A24C',
+  bone:  '#EBE2CC',
+  ink:   '#0B0E14',
+};
+
+/* ── Download helpers ──────────────────────────────────────────── */
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function downloadSvg(name) {
+  const svg = svgLib[name];
+  if (!svg) return;
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  triggerDownload(blob, `fortify-${name}.svg`);
+}
+
+function downloadPng(size) {
+  const svg = svgLib.primary;
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, size, size);
+    canvas.toBlob(b => {
+      triggerDownload(b, `fortify-mark-${size}.png`);
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  };
+  img.src = url;
+}
+
+function downloadFavicon(variant) {
+  const color = favLib[variant];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="${color}"/>
+  <circle cx="32" cy="32" r="2.2" fill="${color}"/>
+</svg>`;
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  triggerDownload(blob, `favicon-${variant}.svg`);
+}
+
+document.querySelectorAll('[data-svg]').forEach(b => b.addEventListener('click', () => downloadSvg(b.dataset.svg)));
+document.querySelectorAll('[data-png]').forEach(b => b.addEventListener('click', () => downloadPng(parseInt(b.dataset.png, 10))));
+document.querySelectorAll('[data-fav]').forEach(b => b.addEventListener('click', () => downloadFavicon(b.dataset.fav)));
+</script>
+
+</body>
+</html>

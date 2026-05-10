@@ -1,7 +1,9 @@
 """Run BOF military budget analysis pipeline.
 
 Usage:
-    python run_budget_analysis.py --input "Military Budgets, 1865-1920.xlsx" --output-dir output
+    python run_budget_analysis.py \\
+        --input "Data/Defense Budget Visualization Assignment/Military Budgets, 1865-1920.xlsx" \\
+        --output-dir output
 """
 
 from __future__ import annotations
@@ -24,7 +26,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--input",
         type=Path,
-        default=Path("Military Budgets, 1865-1920.xlsx"),
+        default=Path("Data/Defense Budget Visualization Assignment/Military Budgets, 1865-1920.xlsx"),
         help="Path to the budget Excel workbook.",
     )
     parser.add_argument(

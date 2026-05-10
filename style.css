@@ -142,14 +142,30 @@ a { color: inherit; text-decoration: none; }
   0%, 100% { opacity: 1; }
   50% { opacity: 0.35; }
 }
+.brand .mark {
+  width: 18px; height: 18px;
+  color: #C9A24C;
+  flex-shrink: 0;
+  display: block;
+  filter: drop-shadow(0 0 6px rgba(201,162,76,0.18));
+  transition: transform .6s cubic-bezier(.2,.8,.2,1);
+}
+.brand:hover .mark { transform: rotate(45deg); }
 .brand .name {
   font-weight: 700;
   letter-spacing: 1.2px;
   color: var(--text);
 }
+.brand .name em {
+  font-style: italic;
+  font-weight: 400;
+  color: #C9A24C;
+  margin: 0 4px;
+  letter-spacing: 0;
+}
 .brand .name .div { color: var(--text-soft); margin: 0 8px; }
 .brand .sub { color: var(--text-mid); }
-.topbar .right { display: flex; gap: 24px; color: var(--text-mid); }
+.topbar .right { display: flex; gap: 24px; color: var(--text-mid); align-items: center; }
 .topbar .right strong { color: var(--text); margin-right: 4px; }
 
 /* ── Ticker ─────────────────────────────────────────────────────────── */
@@ -427,6 +443,34 @@ main { padding: 18px; }
 :root.theme-slate .archive-card img {
   filter: brightness(0.88) saturate(0.85);
 }
+
+/* ── Master-ledger cards: inline SVG preview instead of <img> ───────── */
+.archive-card.master-card .preview {
+  width: 100%;
+  aspect-ratio: 16/10;
+  background: #EAE3D8;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.archive-card.master-card .preview svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+:root.theme-terminal .archive-card.master-card .preview,
+:root.theme-slate .archive-card.master-card .preview {
+  filter: brightness(0.88) saturate(0.85);
+}
+.archive-card.master-card {
+  border-color: color-mix(in srgb, #C9A24C 30%, var(--border));
+}
+.archive-card.master-card:hover {
+  border-color: #C9A24C;
+}
+
 .archive-card .meta {
   padding: 12px 14px;
   font-family: var(--label-font);
@@ -883,6 +927,129 @@ button.export:hover {
   text-transform: uppercase;
   font-weight: 600;
 }
+
+/* ── Timeline view (technology review matrix) ─────────────────────── */
+.timeline-legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-family: var(--label-font);
+  font-size: 11px;
+  color: var(--text-mid);
+  padding: 4px 0 16px;
+}
+.timeline-legend .li { display: flex; align-items: center; gap: 7px; }
+.timeline-legend .ld { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+.timeline-matrix { margin-bottom: 18px; }
+
+.timeline-scroll {
+  overflow: auto;
+  max-height: 72vh;
+  background: var(--panel);
+}
+
+.timeline-table {
+  border-collapse: collapse;
+  min-width: 100%;
+  font-family: var(--body-font);
+  font-size: 12px;
+}
+.timeline-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--panel-2);
+  font-family: var(--label-font);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-mid);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  text-align: center;
+}
+.timeline-table thead th:first-child {
+  text-align: left;
+  min-width: 250px;
+  max-width: 280px;
+  position: sticky;
+  left: 0;
+  z-index: 6;
+  background: var(--panel-2);
+  padding-left: 14px;
+}
+.timeline-table tbody tr { border-bottom: 1px solid var(--border); }
+.timeline-table tbody tr:hover { background: color-mix(in srgb, var(--cyan) 6%, transparent); }
+.timeline-table td {
+  padding: 0;
+  border-right: 1px solid var(--border);
+  vertical-align: middle;
+}
+.timeline-table td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--panel);
+  z-index: 2;
+  padding: 6px 14px;
+  min-width: 250px;
+  max-width: 280px;
+  line-height: 1.4;
+  color: var(--text);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.timeline-table tbody tr:hover td:first-child { background: color-mix(in srgb, var(--cyan) 6%, transparent); }
+.timeline-table td.tlc { width: 84px; min-width: 84px; padding: 3px 4px; }
+.timeline-table .t-bar {
+  width: 72px;
+  height: 18px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: opacity 0.12s, transform 0.1s;
+  display: block;
+  margin: 0 auto;
+}
+.timeline-table .t-bar:hover { opacity: 0.78; transform: scaleX(0.96); }
+.timeline-table .t-cnt {
+  font-size: 9px;
+  background: var(--bg-2);
+  color: var(--text-soft);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-left: 6px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+.timeline-table .t-empty {
+  padding: 60px 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+#t-tooltip {
+  position: fixed;
+  background: var(--panel);
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: var(--body-font);
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 9999;
+  max-width: 300px;
+  display: none;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.16);
+}
+#t-tooltip strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+#t-tooltip .t-tt-action { color: var(--text); margin-bottom: 3px; }
+#t-tooltip .t-tt-meta { color: var(--text-soft); font-size: 11px; }
 
 /* ── Toast ──────────────────────────────────────────────────────────── */
 .toast {
