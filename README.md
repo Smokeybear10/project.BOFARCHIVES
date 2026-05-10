@@ -23,7 +23,9 @@ pip install -r requirements.txt
 python run_bof_analysis.py
 python run_budget_analysis.py
 python run_combined_analysis.py
-python run_master_ledger.py      # 1888-1919 master ledger + waterfall + pareto
+python run_master_ledger.py        # 1888-1919 master ledger + waterfall + pareto
+python run_historical_timeline.py  # 885-event BOF events timeline (1888-1930)
+python run_tanisha_charts.py       # Tanisha's tech-prevalence stacked / heatmap / ranking
 
 # rebuild paper-themed dashboard charts
 python regenerate_paper.py
@@ -176,6 +178,12 @@ It's idempotent — run it any time you want to refresh the data from the privat
 
 The pipelines all read from `Data/`. If your raw data lives somewhere else, edit `bootstrap-data.sh` to point at it, or symlink `Data/` manually.
 
+## Team contributions
+
+- **Thomas Ou** — pipeline architecture, dashboard, brand identity, master ledger 1888–1919, historical events timeline
+- **Tanisha** — Technology Type Prevalence analysis: stacked bars, heatmap, and category ranking covering 13 categories × 9 reporting periods (1897–1908). Original R/ggplot2 source preserved at [`team/tanisha/technology_prevalence.R`](team/tanisha/technology_prevalence.R); Plotly port at [`bof_pipeline/tanisha_charts.py`](bof_pipeline/tanisha_charts.py).
+- **Paul B** — Technology review timeline covering 1888–1916, hand-classified into 9 fine-grained technology categories. See `timeline-data.js` and the live Timeline view; original site at [hohhamnap.github.io](https://hohhamnap.github.io/).
+
 ---
 
-Built by Thomas Ou
+Built by Thomas Ou with the BOF research team
