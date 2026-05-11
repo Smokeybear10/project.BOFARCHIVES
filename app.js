@@ -8,6 +8,21 @@ const BUDGET_CSV_URL = 'output/budget_master_ledger.csv';
 const APPROPRIATIONS_CSV_URL = 'output/bof_appropriations.csv';
 const ALLOTMENTS_CSV_URL = 'output/bof_allotments.csv';
 
+// Null-safe Plotly.react: skip rendering if the target div was removed
+// from the DOM (so cutting chart panels in index.html doesn't blow up
+// the rest of the dashboard). Returns a resolved Promise to keep
+// chained `.then(() => attachClick(...))` calls happy.
+(function hardenPlotly() {
+  if (typeof Plotly === 'undefined' || Plotly.__hardened) return;
+  Plotly.__hardened = true;
+  const _react = Plotly.react.bind(Plotly);
+  Plotly.react = function (target, ...rest) {
+    const el = typeof target === 'string' ? document.getElementById(target) : target;
+    if (!el) return Promise.resolve();
+    return _react(el, ...rest);
+  };
+})();
+
 const THEMES = {
   slate: {
     bg: '#131316', panel: '#131316', border: '#232327',
@@ -466,6 +481,7 @@ function syncPresetActive() {
 }
 
 function computePresetCounts() {
+  if (!document.getElementById('cnt-approved')) return;  // presets cut from index.html
   const c = id => document.getElementById(id);
   c('cnt-approved').textContent  = ALL.filter(r => r.status === 'Approved').length;
   c('cnt-1901').textContent      = ALL.filter(r => r.year === 1901).length;
@@ -478,6 +494,7 @@ function computePresetCounts() {
 let lastKPIs = { total: 0, approved: 0, rate: 0 };
 
 function renderKPIs() {
+  if (!document.querySelector('[data-kpi="total"]')) return;  // KPIs cut from index.html
   const total    = FILTERED.length;
   const approved = FILTERED.filter(r => r.status === 'Approved').length;
   const rate     = total > 0 ? (approved / total * 100) : 0;
@@ -534,8 +551,9 @@ const CLICK_ATTACHED = new Set();
 
 function attachClick(divId, handler) {
   if (CLICK_ATTACHED.has(divId)) return;
-  CLICK_ATTACHED.add(divId);
   const el = document.getElementById(divId);
+  if (!el || !el.on) return;  // chart was cut from index.html
+  CLICK_ATTACHED.add(divId);
   el.on('plotly_click', handler);
 }
 
@@ -1144,6 +1162,7 @@ function clearBudgetFilter(key) {
 }
 
 function renderBudgetKPIs() {
+  if (!document.querySelector('[data-bkpi="total"]')) return;  // KPIs cut from index.html
   const total = FILTERED_BUDGET.reduce((s, r) => s + budgetVal(r), 0);
   const years = [...new Set(FILTERED_BUDGET.map(r => r.year))];
   const yearTotals = {};
@@ -1589,15 +1608,19 @@ function applyTimeline() {
   }
 
   const total = entries.length;
-  document.querySelector('[data-tkpi="total"]').textContent = total;
-  document.querySelector('[data-tkpi="accepted"]').textContent = acc;
-  document.querySelector('[data-tkpi="rejected"]').textContent = rej;
-  document.querySelector('[data-tkpi="testing"]').textContent = tst;
-  document.querySelector('[data-tkpi="other"]').textContent = oth;
-  document.getElementById('tkpi-accepted-sub').innerHTML = total > 0
-    ? `<strong>${(acc / total * 100).toFixed(1)}%</strong> of filtered`
-    : '—';
-  document.getElementById('t-match-n').textContent = total;
+  if (document.querySelector('[data-tkpi="total"]')) {  // KPIs may be cut from index.html
+    document.querySelector('[data-tkpi="total"]').textContent = total;
+    document.querySelector('[data-tkpi="accepted"]').textContent = acc;
+    document.querySelector('[data-tkpi="rejected"]').textContent = rej;
+    document.querySelector('[data-tkpi="testing"]').textContent = tst;
+    document.querySelector('[data-tkpi="other"]').textContent = oth;
+    const subEl = document.getElementById('tkpi-accepted-sub');
+    if (subEl) subEl.innerHTML = total > 0
+      ? `<strong>${(acc / total * 100).toFixed(1)}%</strong> of filtered`
+      : '—';
+  }
+  const matchEl = document.getElementById('t-match-n');
+  if (matchEl) matchEl.textContent = total;
 
   renderTimelineTable(entries);
   updateHash();
@@ -1758,6 +1781,7 @@ function applySpending() {
 }
 
 function renderSpendingKPIs() {
+  if (!document.querySelector('[data-skpi="total"]')) return;  // KPIs cut from index.html
   const totalAllot = FILTERED_ALLOTMENTS.reduce((s, r) => s + r.amount, 0);
   const revokedCount = FILTERED_ALLOTMENTS.filter(r => r.revoked).length;
   const revokeRate = FILTERED_ALLOTMENTS.length > 0 ? (revokedCount / FILTERED_ALLOTMENTS.length * 100) : 0;

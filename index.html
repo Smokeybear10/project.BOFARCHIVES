@@ -39,10 +39,6 @@
   <div class="right">
     <span><strong id="rec-count">—</strong>RECORDS</span>
     <span id="clock">—</span>
-    <div class="theme-switch" role="tablist" aria-label="Theme">
-      <button data-theme="paper"    title="Paper · light professional">PAPER</button>
-      <button data-theme="slate"    title="Slate · refined dark">SLATE</button>
-    </div>
   </div>
 </div>
 
@@ -110,45 +106,10 @@
 <!-- Active filter chips -->
 <div class="active-chips" id="active-chips"></div>
 
-<!-- Quick presets -->
+<!-- Export -->
 <div class="presets">
-  <span class="pre-label">QUICK</span>
-  <button class="preset" data-preset="approved">Approved <span class="count" id="cnt-approved">—</span></button>
-  <button class="preset" data-preset="1901">1901 surge <span class="count" id="cnt-1901">—</span></button>
-  <button class="preset" data-preset="private">Private inventors <span class="count" id="cnt-private">—</span></button>
-  <button class="preset" data-preset="comm-zero">Communications (0 approved) <span class="count" id="cnt-comm">—</span></button>
-  <button class="preset" data-preset="artillery">Artillery only <span class="count" id="cnt-art">—</span></button>
   <span class="preset-spacer"></span>
   <button class="export" id="btn-export">↓ EXPORT CSV</button>
-</div>
-
-<!-- KPIs -->
-<div class="kpis">
-  <div class="kpi">
-    <div class="kpi-label">Total submissions</div>
-    <div class="kpi-value" data-kpi="total">0</div>
-    <div class="kpi-sub" id="kpi-total-sub">—</div>
-  </div>
-  <div class="kpi accent">
-    <div class="kpi-label">Approved</div>
-    <div class="kpi-value" data-kpi="approved">0</div>
-    <div class="kpi-sub" id="kpi-approved-sub">—</div>
-  </div>
-  <div class="kpi warn">
-    <div class="kpi-label">Approval rate</div>
-    <div class="kpi-value" data-kpi="rate">0<span class="unit">%</span></div>
-    <div class="kpi-sub" id="kpi-rate-sub">—</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-label">Top cluster</div>
-    <div class="kpi-value" data-kpi="top-cluster" style="font-size:16px;line-height:1.2;">—</div>
-    <div class="kpi-sub" id="kpi-cluster-sub">—</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-label">Top proposer</div>
-    <div class="kpi-value" data-kpi="top-proposer" style="font-size:14px;line-height:1.2;">—</div>
-    <div class="kpi-sub" id="kpi-proposer-sub">—</div>
-  </div>
 </div>
 
 <!-- Chart grid -->
@@ -169,30 +130,6 @@
         <span class="panel-tag">live</span>
       </div>
       <div class="panel-body"><div id="chart-cluster"></div></div>
-    </div>
-
-    <div class="panel col-6">
-      <div class="panel-header">
-        <span class="panel-title">▤ Status × Cluster</span>
-        <span class="panel-tag">live</span>
-      </div>
-      <div class="panel-body"><div id="chart-status"></div></div>
-    </div>
-
-    <div class="panel col-6">
-      <div class="panel-header">
-        <span class="panel-title">⌥ Top Proposers (top 12)</span>
-        <span class="panel-tag">live</span>
-      </div>
-      <div class="panel-body"><div id="chart-proposers"></div></div>
-    </div>
-
-    <div class="panel col-12" style="height:340px;">
-      <div class="panel-header">
-        <span class="panel-title">▦ Year × Cluster Heatmap</span>
-        <span class="panel-tag">live</span>
-      </div>
-      <div class="panel-body"><div id="chart-heatmap"></div></div>
     </div>
   </div>
 
@@ -256,45 +193,10 @@
 <!-- Budget active filter chips -->
 <div class="active-chips" id="budget-active-chips"></div>
 
-<!-- Budget quick presets -->
+<!-- Budget export -->
 <div class="presets">
-  <span class="pre-label">QUICK</span>
-  <button class="preset" data-budget-preset="reconstruction">Reconstruction <span class="count">1866–1879</span></button>
-  <button class="preset" data-budget-preset="gilded">Gilded Age <span class="count">1880–1897</span></button>
-  <button class="preset" data-budget-preset="span-am">Spanish-American <span class="count">1898–1900</span></button>
-  <button class="preset" data-budget-preset="prewwi">Pre-WWI <span class="count">1901–1916</span></button>
-  <button class="preset" data-budget-preset="wwi">WWI mobilization <span class="count">1917–1920</span></button>
   <span class="preset-spacer"></span>
   <button class="export" id="btn-export-budget">↓ EXPORT CSV</button>
-</div>
-
-<!-- Budget KPIs -->
-<div class="kpis">
-  <div class="kpi">
-    <div class="kpi-label">Total spend</div>
-    <div class="kpi-value" data-bkpi="total" style="font-size:24px;">—</div>
-    <div class="kpi-sub" id="bkpi-total-sub">—</div>
-  </div>
-  <div class="kpi accent">
-    <div class="kpi-label">Peak year</div>
-    <div class="kpi-value" data-bkpi="peak-year">—</div>
-    <div class="kpi-sub" id="bkpi-peak-sub">—</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-label">Avg / year</div>
-    <div class="kpi-value" data-bkpi="avg" style="font-size:22px;">—</div>
-    <div class="kpi-sub" id="bkpi-avg-sub">—</div>
-  </div>
-  <div class="kpi warn">
-    <div class="kpi-label">Army share</div>
-    <div class="kpi-value" data-bkpi="army-share">—<span class="unit">%</span></div>
-    <div class="kpi-sub" id="bkpi-army-sub">—</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-label">Years covered</div>
-    <div class="kpi-value" data-bkpi="years">—</div>
-    <div class="kpi-sub" id="bkpi-years-sub">—</div>
-  </div>
 </div>
 
 <!-- Budget chart grid -->
@@ -316,21 +218,6 @@
       <div class="panel-body"><div id="b-chart-branch"></div></div>
     </div>
 
-    <div class="panel col-6">
-      <div class="panel-header">
-        <span class="panel-title">▤ Decade Totals</span>
-        <span class="panel-tag">live</span>
-      </div>
-      <div class="panel-body"><div id="b-chart-decade"></div></div>
-    </div>
-
-    <div class="panel col-6">
-      <div class="panel-header">
-        <span class="panel-title">⌥ Year-over-Year Change</span>
-        <span class="panel-tag">live</span>
-      </div>
-      <div class="panel-body"><div id="b-chart-yoy"></div></div>
-    </div>
   </div>
 
   <!-- Budget records table -->
@@ -406,35 +293,6 @@
   <span class="match-count">SHOWING <strong id="t-match-n">—</strong> TECHNOLOGIES</span>
 </div>
 
-<!-- Timeline KPIs -->
-<div class="kpis">
-  <div class="kpi">
-    <div class="kpi-label">Technologies</div>
-    <div class="kpi-value" data-tkpi="total">0</div>
-    <div class="kpi-sub">unique tracks across periods</div>
-  </div>
-  <div class="kpi accent">
-    <div class="kpi-label">Accepted</div>
-    <div class="kpi-value" data-tkpi="accepted">0</div>
-    <div class="kpi-sub" id="tkpi-accepted-sub">—</div>
-  </div>
-  <div class="kpi" style="--kpi-color: var(--reject);">
-    <div class="kpi-label">Rejected</div>
-    <div class="kpi-value" data-tkpi="rejected" style="color: var(--red);">0</div>
-    <div class="kpi-sub">not recommended</div>
-  </div>
-  <div class="kpi warn">
-    <div class="kpi-label">Under test</div>
-    <div class="kpi-value" data-tkpi="testing">0</div>
-    <div class="kpi-sub">allotment / further tests</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-label">Other</div>
-    <div class="kpi-value" data-tkpi="other">0</div>
-    <div class="kpi-sub">referred / filed</div>
-  </div>
-</div>
-
 <!-- Timeline legend + matrix -->
 <main>
   <div class="timeline-legend">
@@ -490,35 +348,6 @@
   <span class="match-count">SHOWING <strong id="s-match-n">—</strong> · <strong id="s-match-sum">—</strong></span>
 </div>
 
-<!-- Spending KPIs -->
-<div class="kpis">
-  <div class="kpi">
-    <div class="kpi-label">Total allotted</div>
-    <div class="kpi-value" data-skpi="total" style="font-size:24px;">—</div>
-    <div class="kpi-sub" id="skpi-total-sub">in current filter</div>
-  </div>
-  <div class="kpi accent">
-    <div class="kpi-label">Congressional appropriations</div>
-    <div class="kpi-value" data-skpi="appropriated" style="font-size:24px;">—</div>
-    <div class="kpi-sub" id="skpi-appropriated-sub">total Congress gave</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-label">Allotment count</div>
-    <div class="kpi-value" data-skpi="count">0</div>
-    <div class="kpi-sub" id="skpi-count-sub">individual line items</div>
-  </div>
-  <div class="kpi warn">
-    <div class="kpi-label">Revoke rate</div>
-    <div class="kpi-value" data-skpi="revoke">0<span class="unit">%</span></div>
-    <div class="kpi-sub" id="skpi-revoke-sub">returned to Treasury</div>
-  </div>
-  <div class="kpi">
-    <div class="kpi-label">Top year</div>
-    <div class="kpi-value" data-skpi="topyear">—</div>
-    <div class="kpi-sub" id="skpi-topyear-sub">—</div>
-  </div>
-</div>
-
 <!-- Spending chart grid -->
 <main>
   <div class="grid">
@@ -538,13 +367,6 @@
       <div class="panel-body"><div id="s-chart-revoked"></div></div>
     </div>
 
-    <div class="panel col-12" style="height:340px;">
-      <div class="panel-header">
-        <span class="panel-title">⌥ Top 15 Allotments by Amount</span>
-        <span class="panel-tag">live</span>
-      </div>
-      <div class="panel-body"><div id="s-chart-top"></div></div>
-    </div>
   </div>
 
   <!-- Spending records table -->
@@ -1047,71 +869,10 @@
     </a>
   </div>
 
-  <!-- Archive: pre-rendered context charts -->
-  <div class="section-rule">▼ Full archive · pre-rendered context</div>
-
-  <div class="archive-grid">
-    <a class="archive-card" href="charts/budget_area.html" target="_blank" rel="noopener">
-      <img src="charts/budget_area.png" alt="Military appropriations area chart">
-      <div class="meta">
-        <div class="tag">Budget · 1865–1920</div>
-        <div class="ttl">U.S. Military Appropriations</div>
-      </div>
-    </a>
-    <a class="archive-card" href="charts/proposal_sankey.html" target="_blank" rel="noopener">
-      <img src="charts/proposal_sankey.png" alt="Sankey flow diagram">
-      <div class="meta">
-        <div class="tag">Sankey · 1897–1908</div>
-        <div class="ttl">Cluster → Decision Flow</div>
-      </div>
-    </a>
-    <a class="archive-card" href="charts/proposal_success.html" target="_blank" rel="noopener">
-      <img src="charts/proposal_success.png" alt="Government vs private approval rates">
-      <div class="meta">
-        <div class="tag">Comparison</div>
-        <div class="ttl">Gov. vs Private Success</div>
-      </div>
-    </a>
-    <a class="archive-card" href="charts/decision_per_cluster.html" target="_blank" rel="noopener">
-      <img src="charts/decision_per_cluster.png" alt="Decision distribution per technology cluster">
-      <div class="meta">
-        <div class="tag">Stacked share</div>
-        <div class="ttl">Decision by Cluster</div>
-      </div>
-    </a>
-    <a class="archive-card" href="charts/budget_treemap.html" target="_blank" rel="noopener">
-      <img src="charts/budget_treemap.png" alt="Budget treemap">
-      <div class="meta">
-        <div class="tag">Treemap</div>
-        <div class="ttl">Budget by Decade &amp; Branch</div>
-      </div>
-    </a>
-    <a class="archive-card" href="charts/budget_share.html" target="_blank" rel="noopener">
-      <img src="charts/budget_share.png" alt="Budget share chart">
-      <div class="meta">
-        <div class="tag">Proportional</div>
-        <div class="ttl">Army vs Navy Share</div>
-      </div>
-    </a>
-    <a class="archive-card" href="charts/investment.html" target="_blank" rel="noopener">
-      <img src="charts/investment.png" alt="Investment vs activity chart">
-      <div class="meta">
-        <div class="tag">Combined</div>
-        <div class="ttl">Tech Investment vs Activity</div>
-      </div>
-    </a>
-    <a class="archive-card" href="charts/proposal_1901.html" target="_blank" rel="noopener">
-      <img src="charts/proposal_1901.png" alt="1901 approval rate by cluster">
-      <div class="meta">
-        <div class="tag">Snapshot · 1901</div>
-        <div class="ttl">1901 Approval by Cluster</div>
-      </div>
-    </a>
-  </div>
 </main>
 
 <footer>
-  <span>Thomas Ou · with Paul B + Tanisha · Fortify the Ordnance</span>
+  <span>Fortify the Ordnance · Thomas Ou · with Yunha + Paul B + Tanisha</span>
   <a href="https://github.com/Smokeybear10/104-RSCH.BOFARCHIVES" target="_blank" rel="noopener">SOURCE →</a>
 </footer>
 
