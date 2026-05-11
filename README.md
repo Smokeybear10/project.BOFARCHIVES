@@ -1,107 +1,53 @@
-# Fortify the Ordnance | A working archive, 1897–1908
+# Fortify the Ordnance | BOF Archive Dashboard
 
-<picture>
-  <img alt="Star Fort mark" align="right" width="80" src="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'&gt;&lt;path fill-rule='evenodd' clip-rule='evenodd' d='M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z' fill='%23C9A24C'/&gt;&lt;circle cx='32' cy='32' r='2.2' fill='%23C9A24C'/&gt;&lt;/svg&gt;">
-</picture>
+An interactive archive of every weapon proposal and research dollar that passed through the U.S. Board of Ordnance & Fortification — the federal body that decided which 19th-century inventions the Army should adopt. 1,691 proposals, 1,382 grants, 202 technologies, 33 years (1888–1920).
 
-Historical analysis pipeline and live filterable dashboard for the U.S. Board of Ordnance & Fortification — 1,901 weapon proposals (1897–1908) crossed with military budget appropriations (1865–1920).
-
-**Local dashboard runs at http://localhost:2104** — port is fixed, do not change. Brand kit at `/brand.html`.
+The source material — Excel spreadsheets, scanned PDFs, hand-transcribed reports — is unreadable as raw files. This is the readable version.
 
 ## Quick Start
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 
-# one-time: clone the private research-data repo + symlink it as Data/
-# requires gh auth login with read access to Smokeybear10/801-DATA.FORTIFY
-./bootstrap-data.sh
+./bootstrap-data.sh    # clone the private data repo, symlink as Data/ (needs gh auth)
+./serve.sh             # boot dashboard at localhost:2104
+```
 
-# regenerate chart data + visualizations (only needed if Data/ contents changed)
+Open http://localhost:2104.
+
+To regenerate charts after data changes:
+
+```bash
 python run_bof_analysis.py
 python run_budget_analysis.py
 python run_combined_analysis.py
-python run_master_ledger.py        # 1888-1919 master ledger + waterfall + pareto
-python run_historical_timeline.py  # 885-event BOF events timeline (1888-1930)
-python run_yunha_charts.py         # Yunha's financial × tech: treemap / trajectory / ROI
-python run_tanisha_charts.py       # Tanisha's tech-prevalence stacked / heatmap / ranking
-
-# rebuild paper-themed dashboard charts
+python run_master_ledger.py
+python run_historical_timeline.py
+python run_yunha_charts.py
+python run_tanisha_charts.py
 python regenerate_paper.py
-
-# launch the dashboard
-./serve.sh
 ```
-
-Open **http://localhost:2104** in a browser.
-
-## The Dashboard
-
-`./serve.sh` boots a static server on port **2104** and serves the root `index.html`. The dashboard has four views — switch between them with the tabs below the topbar.
-
-**Proposals view** (1897–1908, ~1,901 records):
-- Live filters — year range, cluster, status, proposer type, full-text search
-- Cross-filter charts — click any chart slice to filter the rest of the dashboard
-- Quick presets — Approved / 1901 surge / Private inventors / Communications (0 approved) / Artillery
-- Paginated records table with sort + click-row-for-detail modal showing full board action and reasoning text
-- CSV export of the current filtered slice
-
-**Budget view** (1865–1920, ~110 appropriations):
-- Year range, branch (Army/Navy), inflation toggle (nominal vs 2025-adjusted)
-- Era presets — Reconstruction / Gilded Age / Spanish-American / Pre-WWI / WWI mobilization
-- KPIs — total spend, peak year, average per year, Army share, years covered
-- Charts — appropriations stacked over time, branch mix donut, decade totals, year-over-year change
-- Paginated table sorted by year/branch/amount/decade, separate CSV export
-
-**Timeline view** (curated · 251 technologies, 1897–1908):
-- Hand-classified technology entries grouped into 9 fine-grained categories (rangefinding, artillery, firearms, aerial, torpedo, armor, communication, transport, equipment)
-- Sticky-column matrix — first column is the technology, then 9 columns for the BOF report periods. Each cell is a colored bar showing outcome at that period
-- Hover any bar for the original action text · multi-period entries get a count badge
-- Filter by category, outcome, or text search
-
-**Spending view** (BOF-specific · 1888–1920):
-- Annual congressional appropriations to the Board (33 acts) overlaid on individual research allotments (~507 line items)
-- Filter by year range, status (active vs revoked), or search project descriptions
-- Charts: appropriations vs allotments timeline, active/revoked split donut, top 15 allotments by amount
-- Records table — every individual line item with date, amount, status; click row title for full description and notes
-- Separate CSV export
-
-**Shared:**
-- Theme switcher — Paper (default) / Slate, persisted to localStorage
-- URL hash sync — view + filters serialized for shareable links
-- Keyboard shortcuts — `/` focus search · `esc` close modal · `r` reset filters
-
-The static archive grid below the live charts links to 9 paper-themed Plotly HTMLs in `charts/`.
 
 ## What It Does
 
-**Proposal Analysis (1897-1908)**
-- Parses 1,901 weapon proposals submitted to the BOF from Excel source files
-- Classifies by technology cluster, board decision, and proposer type
-- Generates Sankey diagram, approval rate trends, and per-year breakdowns
+**Proposals** — every weapon idea submitted 1897–1908 with the Board's verdict. Live filters by year, cluster, status, proposer type. Click any chart slice to cross-filter the rest of the dashboard.
+
+**Budget** — the entire U.S. military budget 1865–1920 (Army + Navy), with a nominal/2025-adjusted toggle and era presets (Reconstruction, Gilded Age, pre-WWI, WWI mobilization).
+
+**Timeline** — sticky-column matrix of 251 hand-classified technologies across nine BOF reporting periods. Color-coded by outcome; hover any cell for the original action text.
+
+**Spending** — the money trail. Annual congressional appropriations to the Board overlaid on every individual research allotment, including revocations.
 
 | | |
 |---|---|
 | ![Sankey](Graphs/proposal-sankey.png) | ![Success Rates](Graphs/proposal-success.png) |
 | Proposal flow from cluster to decision | Government vs. private approval rates |
-
-**Budget Analysis (1865-1920)**
-- Cleans and structures Army + Navy appropriation data across 55 fiscal years
-- Supports nominal and 2025 inflation-adjusted values
-- Generates stacked area charts, treemaps, and proportional share charts
-
-| | |
-|---|---|
 | ![Area Chart](Graphs/budget-area.png) | ![Treemap](Graphs/budget-treemap.png) |
 | Army + Navy appropriations over time | Spending by decade and branch |
 
-**Combined Analysis (1897-1908)**
-- Crosses proposal data with budget data for the BOF period
-- Technology investment chart: proposal volume by cluster overlaid on military budget
-- Technology timeline: bubble chart showing when each cluster was active
-- Technology prevalence: 100% stacked area of shifting priorities over time
+Shared: theme switcher, URL-hash filter sync, keyboard shortcuts (`/` search · `esc` close · `r` reset), CSV export on every view.
 
 ## Tech Stack
 
@@ -109,83 +55,42 @@ The static archive grid below the live charts links to 9 paper-themed Plotly HTM
 |-------|-------|
 | Pipeline | Python, pandas |
 | Visualization | Plotly |
+| Dashboard | Vanilla HTML/JS, static CSV reads |
 | Hosting | GitHub Pages |
 
 ## Project Structure
 
 ```
 fortify-the-ordnance/
-├── index.html                        # dashboard (root) — served at localhost:2104
-├── brand.html                        # brand kit page
-├── style.css                         # dashboard styles, 4 themes
-├── app.js                            # dashboard logic — filters, charts, table, modal
-├── charts/                           # paper-themed Plotly HTMLs + PNGs
-├── serve.sh                          # ./serve.sh → http://localhost:2104
-├── regenerate_paper.py               # rebuild paper-themed charts
-├── index-gallery.html                # earlier card-grid landing (preserved)
-├── run_bof_analysis.py               # proposal pipeline entry point
-├── run_budget_analysis.py            # budget pipeline entry point
-├── run_combined_analysis.py          # combined subjects + budget charts
-├── requirements.txt
-├── Data → ~/Github/DATA/FortifyData  # symlink; raw data lives outside the repo (gitignored)
-│   ├── Subjects Considered Data Visualization Assignment/    # subjects-considered xlsx
-│   ├── Defense Budget Visualization Assignment/              # Military Budgets xlsx
-│   ├── Appropriations/                                       # year-on-year financials
-│   ├── Technologies/                                         # tech memos + subjects copies
-│   ├── BOF Timeline Assignment/                              # timeline xlsx
-│   ├── Crozier and Lewis/                                    # research PDFs
-│   └── Misc/
-├── Graphs/                           # static screenshots for README/site
-├── bof_pipeline/
-│   ├── config.py                     # classification rules, column aliases
-│   ├── transform.py                  # data cleaning and structuring
-│   ├── visualize.py                  # proposal chart generation
-│   ├── budget.py / budget_visualize.py
-│   └── combined_visualize.py
-└── output/                           # generated HTML charts + CSVs (committed; served by dashboard)
+├── index.html              # dashboard — served at localhost:2104
+├── explainer.html          # plain-English walkthrough + presentation script
+├── app.js                  # filters, charts, table, modal
+├── style.css               # dashboard styles
+├── serve.sh                # boots http.server on port 2104
+├── bootstrap-data.sh       # clones the private data repo + symlinks Data/
+├── run_*.py                # per-pipeline entry points
+├── regenerate_paper.py     # rebuild paper-themed charts
+├── bof_pipeline/           # cleaning, classification, chart generation
+├── Data → ~/Github/DATA/   # symlink to private data repo (gitignored)
+├── output/                 # generated CSVs + HTML charts (served by dashboard)
+├── charts/                 # paper-themed Plotly HTMLs + PNGs
+├── Graphs/                 # static screenshots
+└── team/                   # researcher-specific source (Tanisha's R script, etc.)
 ```
-
-## Dev Server
-
-The local server is **always port 2104**. Start it with:
-
-```bash
-./serve.sh
-```
-
-`serve.sh` kills any process holding 2104 first, then boots `python3 -m http.server 2104` from the repo root. Always use `./serve.sh` — the port is fixed at 2104 across this project.
-
-## Customization
-
-Classification rules (status keywords, technology clusters, proposer patterns) live in `bof_pipeline/config.py`. Drop additional BOF Excel files into `Data/Subjects Considered Data Visualization Assignment/` and rerun — the pipeline batches all files automatically.
 
 ## Data
 
-Raw research data is **not** in this repo. It lives in a separate **private** GitHub repo: [`Smokeybear10/801-DATA.FORTIFY`](https://github.com/Smokeybear10/801-DATA.FORTIFY). This dashboard repo accesses it through the `Data/` symlink (which is gitignored). Only cleaned outputs in `output/*.csv` ship with the public dashboard.
+Raw research data lives in a separate private repo: [`Smokeybear10/801-DATA.FORTIFY`](https://github.com/Smokeybear10/801-DATA.FORTIFY). `bootstrap-data.sh` clones it to `~/Github/DATA/FORTIFY/` and symlinks `./Data` to it. The symlink is gitignored — only cleaned `output/*.csv` ship with the dashboard. Idempotent; rerun to refresh.
 
-To set it up on a fresh clone:
+Classification rules (status keywords, technology clusters, proposer patterns) live in `bof_pipeline/config.py`.
 
-```bash
-./bootstrap-data.sh
-```
-
-That script:
-1. Verifies you have `gh` authenticated with read access to the private data repo
-2. Clones (or updates) `801-DATA.FORTIFY` into `~/Github/DATA/FORTIFY/`
-3. Symlinks `./Data → ~/Github/DATA/FORTIFY/`
-4. Verifies the three folders the pipelines expect (Subjects, Defense Budget, Appropriations)
-
-It's idempotent — run it any time you want to refresh the data from the private repo.
-
-The pipelines all read from `Data/`. If your raw data lives somewhere else, edit `bootstrap-data.sh` to point at it, or symlink `Data/` manually.
-
-## Team contributions
+## Team
 
 - **Thomas Ou** — pipeline architecture, dashboard, brand identity, master ledger 1888–1919, historical events timeline
-- **Yunha** — Financial × technology investment analysis: treemap of dollars by cluster, year-over-year investment trajectory, and approval-rate ROI bubble chart. Built directly off the master 1888–1918 allotment ledger using the project's shared cluster taxonomy. Pipeline at [`bof_pipeline/yunha_charts.py`](bof_pipeline/yunha_charts.py). Companion combined-pipeline chart [`output/investment_by_technology.html`](output/investment_by_technology.html) also covers her domain.
-- **Paul B** — Technology review timeline covering 1888–1916, hand-classified into 9 fine-grained technology categories. See `timeline-data.js` and the live Timeline view; standalone 1897–1908 interactive at [`output/technology_review_timeline.html`](output/technology_review_timeline.html); canonical source at [paull0318.github.io/BOF-Visuals-20260511](https://paull0318.github.io/BOF-Visuals-20260511/).
-- **Tanisha** — Technology Type Prevalence analysis: stacked bars, heatmap, and category ranking covering 13 categories × 9 reporting periods (1897–1908). Original R/ggplot2 source preserved at [`team/tanisha/technology_prevalence.R`](team/tanisha/technology_prevalence.R); Plotly port at [`bof_pipeline/tanisha_charts.py`](bof_pipeline/tanisha_charts.py).
+- **Yunha** — financial × technology investment analysis (treemap, trajectory, ROI bubble) built off the master 1888–1918 allotment ledger
+- **Paul B** — technology review timeline 1888–1916, hand-classified into nine fine-grained categories. Canonical source at [paull0318.github.io/BOF-Visuals-20260511](https://paull0318.github.io/BOF-Visuals-20260511/)
+- **Tanisha** — technology type prevalence (stacked bars, heatmap, ranking) across 13 categories × 9 reporting periods. Original R/ggplot2 at [`team/tanisha/technology_prevalence.R`](team/tanisha/technology_prevalence.R), Plotly port at [`bof_pipeline/tanisha_charts.py`](bof_pipeline/tanisha_charts.py)
 
 ---
 
-Built by Thomas Ou with the BOF research team
+Built by Thomas Ou

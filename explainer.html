@@ -344,6 +344,55 @@
   }
   .tldr-v { color: var(--text); font-size: 14px; line-height: 1.55; }
 
+  /* ── Script ──────────────────────────────────────────────────────── */
+  .script {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 0;
+    margin-top: 16px;
+  }
+  .script-row {
+    display: grid;
+    grid-template-columns: 78px 1fr;
+    gap: 18px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .script-row:last-child { border-bottom: 0; }
+  .script-cue {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--brass);
+    padding-top: 3px;
+    line-height: 1.4;
+  }
+  .script-cue .time {
+    display: block;
+    color: var(--text-soft);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .script-line {
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .script-line em {
+    color: var(--text-mid);
+    font-style: normal;
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    margin: 0 2px;
+  }
+
   /* ── Footer ──────────────────────────────────────────────────────── */
   footer {
     margin-top: 64px;
@@ -783,9 +832,115 @@
   </div>
 </section>
 
+<!-- ── Presentation script ───────────────────────────────────────── -->
+<section>
+  <h2><span class="num">09</span> What to say — a walkthrough script</h2>
+  <p class="muted">
+    Roughly 4–5 minutes if read at a normal pace. Cue column tells you what to point at on screen.
+    Bracketed bits are stage directions, not lines to read.
+  </p>
+
+  <div class="script">
+
+    <div class="script-row">
+      <div class="script-cue">Open<span class="time">0:00</span></div>
+      <div class="script-line">
+        This is <strong>Fortify the Ordnance</strong> — an interactive archive of every weapon proposal and research dollar
+        that passed through the U.S. Board of Ordnance and Fortification between 1888 and 1920.
+        Think of the Board as a 19th-century DARPA: a small federal committee that decided which inventions
+        the Army should fund.
+      </div>
+    </div>
+
+    <div class="script-row">
+      <div class="script-cue">Header<span class="time">0:25</span></div>
+      <div class="script-line">
+        At the top you can see the scale we're working with — <strong>1,691 proposals</strong>,
+        <strong>1,382 funded grants</strong>, across <strong>202 distinct technologies</strong>, over
+        <strong>33 years</strong>. That's everything from black-powder rifles up to the eve of WWI aircraft.
+      </div>
+    </div>
+
+    <div class="script-row">
+      <div class="script-cue">Proposals tab<span class="time">0:50</span></div>
+      <div class="script-line">
+        The first tab — <em>Proposals</em> — is the idea pipeline. Every row is one inventor pitching one weapon.
+        You can filter by year, by status, by who submitted it. [<em>click a bar in the chart</em>] When I click
+        a year, the whole dashboard filters down — chart, donut, table, all of it. The submissions spike around
+        the Spanish-American War in 1898 — you can see that vertical dotted line right there.
+      </div>
+    </div>
+
+    <div class="script-row">
+      <div class="script-cue">Budget tab<span class="time">1:25</span></div>
+      <div class="script-line">
+        Second tab — <em>Budget</em> — is the macro view. This is the entire U.S. military budget,
+        Army and Navy combined, from Reconstruction up through WWI. It's the context the Board operated inside of.
+        I can flip between nominal dollars and 2025-adjusted dollars to see the real growth.
+      </div>
+    </div>
+
+    <div class="script-row">
+      <div class="script-cue">Timeline tab<span class="time">1:55</span></div>
+      <div class="script-line">
+        Third tab — <em>Timeline</em> — this is Paul's work. Every row is one specific technology, every column is
+        a Board reporting period. The colors are the Board's verdict: green is accepted, red rejected,
+        orange under test. [<em>hover a cell</em>] When you hover, you get the original action text straight
+        from the source records. So you can trace the entire life of, say, a specific gun design across a decade.
+      </div>
+    </div>
+
+    <div class="script-row">
+      <div class="script-cue">Spending tab<span class="time">2:30</span></div>
+      <div class="script-line">
+        Fourth tab — <em>Spending</em> — this is the money trail. Two layers stacked: the line is what Congress
+        gave the Board each year, and the bars are every individual research grant the Board then handed out.
+        You can see which projects ate the budget, which got revoked later, and exactly what a thousand dollars
+        in 1891 was being spent on.
+      </div>
+    </div>
+
+    <div class="script-row">
+      <div class="script-cue">Researchers<span class="time">3:05</span></div>
+      <div class="script-line">
+        Below the interactive tabs is the deliverables section — four researchers, four different threads.
+        <strong>I built the master ledger</strong> reconciling every appropriated dollar against every grant.
+        <strong>Yunha</strong> mapped the money onto technology clusters — artillery, explosives, comms — and
+        looked at ROI. <strong>Paul</strong> hand-classified 202 inventions across nine review periods.
+        <strong>Tanisha</strong> grouped proposals into 13 categories and ported it from R into Plotly.
+      </div>
+    </div>
+
+    <div class="script-row">
+      <div class="script-cue">Why<span class="time">3:50</span></div>
+      <div class="script-line">
+        The reason this exists: the source material is unreadable as raw files. Scanned PDFs,
+        hand-transcribed Excel sheets, century-old congressional reports. The dashboard is the readable version.
+        It turns 30+ years of forgotten federal paperwork into something you can actually click through.
+      </div>
+    </div>
+
+    <div class="script-row">
+      <div class="script-cue">Close<span class="time">4:15</span></div>
+      <div class="script-line">
+        Every view has a CSV export, so anything you filter down to, you can pull out and analyze yourself.
+        The full pipeline and source code are on GitHub. Happy to dig into any specific tab or question.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout" style="margin-top: 20px;">
+    <span class="callout-label">Delivery notes</span>
+    Keep it conversational — pause after each tab so the audience can look. If someone interrupts with a question,
+    answer it and skip ahead; the section order is independent. If you're short on time, drop the Budget tab
+    (1:25) and the Why section (3:50) — they're the most cuttable.
+  </div>
+</section>
+
 <!-- ── Quick start ───────────────────────────────────────────────── -->
 <section>
-  <h2><span class="num">09</span> Running it locally</h2>
+  <h2><span class="num">10</span> Running it locally</h2>
   <p>If you cloned the repo and want to see it on your machine:</p>
   <ol>
     <li>Set up Python deps: <code>pip install -r requirements.txt</code></li>
