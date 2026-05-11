@@ -25,6 +25,7 @@ python run_budget_analysis.py
 python run_combined_analysis.py
 python run_master_ledger.py        # 1888-1919 master ledger + waterfall + pareto
 python run_historical_timeline.py  # 885-event BOF events timeline (1888-1930)
+python run_yunha_charts.py         # Yunha's financial × tech: treemap / trajectory / ROI
 python run_tanisha_charts.py       # Tanisha's tech-prevalence stacked / heatmap / ranking
 
 # rebuild paper-themed dashboard charts
@@ -181,8 +182,9 @@ The pipelines all read from `Data/`. If your raw data lives somewhere else, edit
 ## Team contributions
 
 - **Thomas Ou** — pipeline architecture, dashboard, brand identity, master ledger 1888–1919, historical events timeline
+- **Yunha** — Financial × technology investment analysis: treemap of dollars by cluster, year-over-year investment trajectory, and approval-rate ROI bubble chart. Built directly off the master 1888–1918 allotment ledger using the project's shared cluster taxonomy. Pipeline at [`bof_pipeline/yunha_charts.py`](bof_pipeline/yunha_charts.py). Companion combined-pipeline chart [`output/investment_by_technology.html`](output/investment_by_technology.html) also covers her domain.
+- **Paul B** — Technology review timeline covering 1888–1916, hand-classified into 9 fine-grained technology categories. See `timeline-data.js` and the live Timeline view; standalone 1897–1908 interactive at [`output/technology_review_timeline.html`](output/technology_review_timeline.html); original site at [hohhamnap.github.io](https://hohhamnap.github.io/).
 - **Tanisha** — Technology Type Prevalence analysis: stacked bars, heatmap, and category ranking covering 13 categories × 9 reporting periods (1897–1908). Original R/ggplot2 source preserved at [`team/tanisha/technology_prevalence.R`](team/tanisha/technology_prevalence.R); Plotly port at [`bof_pipeline/tanisha_charts.py`](bof_pipeline/tanisha_charts.py).
-- **Paul B** — Technology review timeline covering 1888–1916, hand-classified into 9 fine-grained technology categories. See `timeline-data.js` and the live Timeline view; original site at [hohhamnap.github.io](https://hohhamnap.github.io/).
 
 ---
 
