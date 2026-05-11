@@ -1003,9 +1003,7 @@ function stateFromHash() {
   syncBudgetControls();
   syncTimelineControls();
   syncSpendingControls();
-  if (VIEW === 'budget') setView('budget');
-  else if (VIEW === 'timeline') setView('timeline');
-  else if (VIEW === 'spending') setView('spending');
+  if (VIEW !== 'proposals') setView(VIEW);
 }
 
 function syncTimelineControls() {
@@ -2097,9 +2095,11 @@ function resizeSpendingCharts() {
   });
 }
 
-// ── View tabs ─────────────────────────────────────────────────────────
+// ── Sidebar navigation ────────────────────────────────────────────────
+const VIEW_NAMES = ['proposals', 'budget', 'timeline', 'spending', 'master', 'yunha', 'paul', 'tanisha'];
+
 function wireViewTabs() {
-  document.querySelectorAll('.view-tab').forEach(btn => {
+  document.querySelectorAll('.sb-link[data-view]').forEach(btn => {
     btn.addEventListener('click', () => setView(btn.dataset.view));
   });
 }
@@ -2107,13 +2107,13 @@ function wireViewTabs() {
 let TIMELINE_RENDERED = false;
 
 function setView(name) {
-  if (!['proposals', 'budget', 'timeline', 'spending'].includes(name)) name = 'proposals';
+  if (!VIEW_NAMES.includes(name)) name = 'proposals';
   VIEW = name;
-  document.getElementById('view-proposals').hidden = (name !== 'proposals');
-  document.getElementById('view-budget').hidden    = (name !== 'budget');
-  document.getElementById('view-timeline').hidden  = (name !== 'timeline');
-  document.getElementById('view-spending').hidden  = (name !== 'spending');
-  document.querySelectorAll('.view-tab').forEach(b => {
+  VIEW_NAMES.forEach(v => {
+    const el = document.getElementById(`view-${v}`);
+    if (el) el.hidden = (name !== v);
+  });
+  document.querySelectorAll('.sb-link[data-view]').forEach(b => {
     const active = b.dataset.view === name;
     b.classList.toggle('active', active);
     b.setAttribute('aria-selected', active ? 'true' : 'false');

@@ -24,59 +24,87 @@
 </head>
 <body>
 
-<!-- Unified app bar -->
-<header class="appbar">
-  <div class="ab-brand">
-    <svg class="ab-mark" viewBox="0 0 64 64" aria-hidden="true">
+<!-- Sidebar nav -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
       <path fill-rule="evenodd" clip-rule="evenodd"
             d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z"
             fill="currentColor"/>
       <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
     </svg>
-    <div class="ab-id">
-      <div class="ab-name">FORTIFY THE ORDNANCE</div>
-      <div class="ab-sub">U.S. Board of Ordnance &amp; Fortification · 1888–1920</div>
+    <div>
+      <div class="sb-name">FORTIFY THE ORDNANCE</div>
+      <div class="sb-sub">U.S. BOF · 1888–1920</div>
     </div>
   </div>
-  <div class="ab-stats">
-    <div class="ab-stat"><span class="abs-n">1,691</span><span class="abs-l">proposals</span></div>
-    <div class="ab-stat"><span class="abs-n">1,382</span><span class="abs-l">allotments</span></div>
-    <div class="ab-stat"><span class="abs-n">202</span><span class="abs-l">technologies</span></div>
-    <div class="ab-stat"><span class="abs-n">33</span><span class="abs-l">years</span></div>
+
+  <div class="sb-stats">
+    <div class="sb-stat"><div class="sbs-n">1,691</div><div class="sbs-l">Proposals</div></div>
+    <div class="sb-stat"><div class="sbs-n">1,382</div><div class="sbs-l">Allotments</div></div>
+    <div class="sb-stat"><div class="sbs-n">202</div><div class="sbs-l">Technologies</div></div>
+    <div class="sb-stat"><div class="sbs-n">33</div><div class="sbs-l">Years</div></div>
   </div>
-  <div class="ab-right">
-    <div class="ab-team">
-      <span class="ab-team-l">Team</span>
-      <span>Thomas Ou</span>
-      <span>Yunha</span>
-      <span>Paul B</span>
-      <span>Tanisha</span>
-    </div>
-    <a class="ab-link" href="https://github.com/Smokeybear10/104-RSCH.BOFARCHIVES" target="_blank" rel="noopener">GitHub ↗</a>
+
+  <nav class="sb-section" role="tablist" aria-label="Data view">
+    <div class="sb-section-label">Data views</div>
+    <button class="sb-link active" data-view="proposals" role="tab" aria-selected="true">
+      <span class="sb-dot"></span>Proposals
+      <span class="sb-meta" id="vt-prop-count">—</span>
+    </button>
+    <button class="sb-link" data-view="budget" role="tab" aria-selected="false">
+      <span class="sb-dot"></span>Budget
+      <span class="sb-meta" id="vt-budget-count">—</span>
+    </button>
+    <button class="sb-link" data-view="timeline" role="tab" aria-selected="false">
+      <span class="sb-dot"></span>Timeline
+      <span class="sb-meta" id="vt-timeline-count">—</span>
+    </button>
+    <button class="sb-link" data-view="spending" role="tab" aria-selected="false">
+      <span class="sb-dot"></span>Spending
+      <span class="sb-meta" id="vt-spending-count">—</span>
+    </button>
+  </nav>
+
+  <nav class="sb-section" role="tablist" aria-label="Researcher work">
+    <div class="sb-section-label">Researcher work</div>
+    <button class="sb-link" data-view="master" role="tab" aria-selected="false">
+      <span class="sb-dot" style="background:#1D3461"></span>01 · Master Ledger
+    </button>
+    <button class="sb-link" data-view="yunha" role="tab" aria-selected="false">
+      <span class="sb-dot" style="background:#6B2D8B"></span>02 · Financial × Tech
+    </button>
+    <button class="sb-link" data-view="paul" role="tab" aria-selected="false">
+      <span class="sb-dot" style="background:#2D6A4F"></span>03 · Technology Log
+    </button>
+    <button class="sb-link" data-view="tanisha" role="tab" aria-selected="false">
+      <span class="sb-dot" style="background:#7C4318"></span>04 · Type Prevalence
+    </button>
+  </nav>
+
+  <div class="sb-section">
+    <div class="sb-section-label">Reference</div>
+    <a class="sb-link" href="explainer.html" target="_blank">
+      <span class="sb-dot"></span>Explainer
+      <span class="sb-meta">↗</span>
+    </a>
+    <a class="sb-link" href="https://github.com/Smokeybear10/104-RSCH.BOFARCHIVES" target="_blank" rel="noopener">
+      <span class="sb-dot"></span>GitHub
+      <span class="sb-meta">↗</span>
+    </a>
   </div>
+
+  <div class="sb-team">
+    <div class="sb-team-label">Team</div>
+    <div class="sb-team-row">Thomas Ou · Yunha</div>
+    <div class="sb-team-row">Paul B · Tanisha</div>
+  </div>
+
   <span id="clock" hidden></span>
   <span id="rec-count" hidden>—</span>
-</header>
+</aside>
 
-<!-- View tabs -->
-<div class="view-tabs" role="tablist" aria-label="Data view">
-  <button class="view-tab active" data-view="proposals" role="tab" aria-selected="true">
-    <span class="vt-name">Proposals</span>
-    <span class="vt-meta">1897–1908 · <span id="vt-prop-count">—</span> records</span>
-  </button>
-  <button class="view-tab" data-view="budget" role="tab" aria-selected="false">
-    <span class="vt-name">Budget</span>
-    <span class="vt-meta">1865–1920 · <span id="vt-budget-count">—</span> appropriations</span>
-  </button>
-  <button class="view-tab" data-view="timeline" role="tab" aria-selected="false">
-    <span class="vt-name">Timeline</span>
-    <span class="vt-meta">1888–1916 · <span id="vt-timeline-count">—</span> tech · Paul B</span>
-  </button>
-  <button class="view-tab" data-view="spending" role="tab" aria-selected="false">
-    <span class="vt-name">Spending</span>
-    <span class="vt-meta">1888–1920 · <span id="vt-spending-count">—</span> allotments</span>
-  </button>
-</div>
+<div class="main-wrap">
 
 <!-- ============ PROPOSALS VIEW ============ -->
 <div id="view-proposals">
@@ -412,23 +440,21 @@
 </div>
 <!-- ============ END SPENDING VIEW ============ -->
 
-<!-- Deliverables (always shown) -->
-<main id="archive-main">
-
-  <div class="dlv-header">
-    <span class="dlv-label">Deliverables</span>
-    <span class="dlv-sep"></span>
-    <span class="dlv-count">4 sections · 12 outputs</span>
-  </div>
-
-  <!-- ── 01 · Master Ledger · 1888–1919 ─────────────────────────────── -->
-  <div class="d-bar">
-    <span class="db-num">01</span>
-    <span class="db-name">Master Ledger</span>
-    <span class="db-range">1888 — 1919</span>
-    <span class="db-stat">1,382 allotments · appropriations · waterfall · pareto</span>
-    <span class="db-spacer"></span>
-    <span class="db-by"><span class="db-dot" style="background:#1D3461"></span>Thomas Ou</span>
+<!-- ============ MASTER LEDGER VIEW (Thomas Ou) ============ -->
+<div id="view-master" hidden>
+  <div class="view-header">
+    <div class="vh-crumb">RESEARCHER WORK · <b>01</b></div>
+    <h1 class="vh-title">Master Ledger</h1>
+    <div class="vh-meta">
+      <span class="vhm-dot" style="background:#1D3461"></span>
+      <span class="vhm-by">Thomas Ou</span>
+      <span class="vhm-sep">·</span>
+      <span>1888 — 1919</span>
+      <span class="vhm-sep">·</span>
+      <span>1,382 allotments</span>
+      <span class="vhm-sep">·</span>
+      <span>Appropriations · waterfall · pareto · historical events</span>
+    </div>
   </div>
 
   <div class="archive-grid">
@@ -581,14 +607,25 @@
     </a>
   </div>
 
-  <!-- ── 02 · Yunha · Financial × Technology Investment · 1888–1918 ──── -->
-  <div class="d-bar">
-    <span class="db-num">02</span>
-    <span class="db-name">Financial × Technology</span>
-    <span class="db-range">1888 — 1918</span>
-    <span class="db-stat">treemap · annual trajectory · approval ROI bubble</span>
-    <span class="db-spacer"></span>
-    <span class="db-by"><span class="db-dot" style="background:#6B2D8B"></span>Yunha</span>
+  </div>
+</div>
+<!-- ============ END MASTER LEDGER VIEW ============ -->
+
+<!-- ============ FINANCIAL × TECHNOLOGY VIEW (Yunha) ============ -->
+<div id="view-yunha" hidden>
+  <div class="view-header">
+    <div class="vh-crumb">RESEARCHER WORK · <b>02</b></div>
+    <h1 class="vh-title">Financial × Technology</h1>
+    <div class="vh-meta">
+      <span class="vhm-dot" style="background:#6B2D8B"></span>
+      <span class="vhm-by">Yunha</span>
+      <span class="vhm-sep">·</span>
+      <span>1888 — 1918</span>
+      <span class="vhm-sep">·</span>
+      <span>3 charts</span>
+      <span class="vhm-sep">·</span>
+      <span>Treemap · trajectory · approval ROI bubble</span>
+    </div>
   </div>
 
   <div class="archive-grid">
@@ -687,14 +724,25 @@
     </a>
   </div>
 
-  <!-- ── 03 · Paul B · Technology Review Timeline · 1897–1908 ───────── -->
-  <div class="d-bar">
-    <span class="db-num">03</span>
-    <span class="db-name">Technology Review Log</span>
-    <span class="db-range">1897 — 1908</span>
-    <span class="db-stat">202 technologies · 9 categories · 9 review periods</span>
-    <span class="db-spacer"></span>
-    <span class="db-by"><span class="db-dot" style="background:#2D6A4F"></span>Paul B</span>
+  </div>
+</div>
+<!-- ============ END FINANCIAL × TECHNOLOGY VIEW ============ -->
+
+<!-- ============ TECHNOLOGY REVIEW LOG VIEW (Paul B) ============ -->
+<div id="view-paul" hidden>
+  <div class="view-header">
+    <div class="vh-crumb">RESEARCHER WORK · <b>03</b></div>
+    <h1 class="vh-title">Technology Review Log</h1>
+    <div class="vh-meta">
+      <span class="vhm-dot" style="background:#2D6A4F"></span>
+      <span class="vhm-by">Paul B</span>
+      <span class="vhm-sep">·</span>
+      <span>1897 — 1908</span>
+      <span class="vhm-sep">·</span>
+      <span>202 technologies</span>
+      <span class="vhm-sep">·</span>
+      <span>9 categories × 9 review periods</span>
+    </div>
   </div>
 
   <div class="archive-grid">
@@ -777,14 +825,25 @@
     </a>
   </div>
 
-  <!-- ── 04 · Tanisha · Technology Type Prevalence · 1897–1908 ──────── -->
-  <div class="d-bar">
-    <span class="db-num">04</span>
-    <span class="db-name">Type Prevalence</span>
-    <span class="db-range">1897 — 1908</span>
-    <span class="db-stat">13 categories · stacked bars · heatmap · ranking</span>
-    <span class="db-spacer"></span>
-    <span class="db-by"><span class="db-dot" style="background:#7C4318"></span>Tanisha</span>
+  </div>
+</div>
+<!-- ============ END TECHNOLOGY REVIEW LOG VIEW ============ -->
+
+<!-- ============ TYPE PREVALENCE VIEW (Tanisha) ============ -->
+<div id="view-tanisha" hidden>
+  <div class="view-header">
+    <div class="vh-crumb">RESEARCHER WORK · <b>04</b></div>
+    <h1 class="vh-title">Type Prevalence</h1>
+    <div class="vh-meta">
+      <span class="vhm-dot" style="background:#7C4318"></span>
+      <span class="vhm-by">Tanisha</span>
+      <span class="vhm-sep">·</span>
+      <span>1897 — 1908</span>
+      <span class="vhm-sep">·</span>
+      <span>13 categories × 9 periods</span>
+      <span class="vhm-sep">·</span>
+      <span>Stacked bars · heatmap · ranking</span>
+    </div>
   </div>
 
   <div class="archive-grid">
@@ -917,24 +976,11 @@
       </div>
     </a>
   </div>
+</div>
+<!-- ============ END TYPE PREVALENCE VIEW ============ -->
 
-</main>
-
-<footer class="site-footer">
-  <div class="sf-l">
-    <svg class="sf-mark" viewBox="0 0 64 64" aria-hidden="true">
-      <path fill-rule="evenodd" clip-rule="evenodd"
-            d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z"
-            fill="currentColor"/>
-      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
-    </svg>
-    <span class="sf-name">FORTIFY THE ORDNANCE</span>
-    <span class="sf-meta">Thomas Ou · Yunha · Paul B · Tanisha</span>
-  </div>
-  <div class="sf-r">
-    <a href="https://github.com/Smokeybear10/104-RSCH.BOFARCHIVES" target="_blank" rel="noopener">github ↗</a>
-  </div>
-</footer>
+</div>
+<!-- ============ END MAIN WRAP ============ -->
 
 <!-- Detail modal -->
 <div class="modal-backdrop" id="modal-backdrop">
