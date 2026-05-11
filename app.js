@@ -99,11 +99,12 @@ function makeBaseLayout() {
     paper_bgcolor: 'rgba(0,0,0,0)',
     plot_bgcolor:  'rgba(0,0,0,0)',
     font:          PLOT_FONT,
-    margin: { l: 50, r: 16, t: 12, b: 40 },
+    margin: { l: 64, r: 20, t: 16, b: 52 },
     hoverlabel: {
-      bgcolor: COLORS.bg,
+      bgcolor: COLORS.panel,
       bordercolor: COLORS.border,
-      font: { family: PLOT_FONT.family, size: 11, color: COLORS.text },
+      font: { family: PLOT_FONT.family, size: 11.5, color: COLORS.text },
+      align: 'left',
     },
   };
 }
@@ -115,7 +116,45 @@ function makeAxis() {
     zerolinecolor: COLORS.border,
     tickcolor: COLORS.border,
     tickfont: { color: COLORS.textMid, size: 10 },
+    titlefont: {
+      color: COLORS.textSoft, size: 10,
+      family: PLOT_FONT.family,
+    },
+    automargin: false,
   };
+}
+
+const AXIS_TITLE = (text) => ({
+  text,
+  font: { color: COLORS.textSoft, size: 10, family: PLOT_FONT.family },
+  standoff: 12,
+});
+
+// Era markers for time-series — Spanish-American War, WWI entry
+function eraShapes(yMinYear, yMaxYear) {
+  const eras = [
+    { x: 1898, label: 'Spanish-Am. War' },
+    { x: 1917, label: 'U.S. enters WWI' },
+  ].filter(e => e.x >= yMinYear && e.x <= yMaxYear);
+
+  const shapes = eras.map(e => ({
+    type: 'line',
+    x0: e.x, x1: e.x,
+    yref: 'paper', y0: 0, y1: 1,
+    line: { color: COLORS.textSoft, width: 1, dash: 'dot' },
+    opacity: 0.5,
+  }));
+  const annotations = eras.map(e => ({
+    x: e.x, xref: 'x',
+    y: 1, yref: 'paper',
+    yanchor: 'bottom',
+    text: e.label,
+    showarrow: false,
+    font: { color: COLORS.textSoft, size: 9, family: PLOT_FONT.family },
+    bgcolor: 'rgba(255,255,255,0.85)',
+    borderpad: 2,
+  }));
+  return { shapes, annotations };
 }
 
 const PLOT_CONFIG = { displayModeBar: false, responsive: true };
@@ -575,14 +614,22 @@ function renderTimeline() {
     hovertemplate: `<b>${s}</b><br>%{x}: %{y} <span style="opacity:.6">(click to drill)</span><extra></extra>`,
   }));
 
+  const eras = eraShapes(years[0], years[years.length - 1]);
   Plotly.react('chart-timeline', traces, {
     ...PLOT_BASE_LAYOUT,
     barmode: 'stack',
     showlegend: true,
-    legend: { orientation: 'h', x: 0, y: 1.16, font: { color: COLORS.textMid, size: 10 } },
-    xaxis: { ...PLOT_AXIS, dtick: 1, title: '' },
-    yaxis: { ...PLOT_AXIS, title: '' },
-    margin: { l: 50, r: 16, t: 36, b: 36 },
+    legend: {
+      orientation: 'h', x: 0, y: 1.12,
+      font: { color: COLORS.textMid, size: 10 },
+      bgcolor: 'rgba(0,0,0,0)',
+    },
+    xaxis: { ...PLOT_AXIS, dtick: 1, title: AXIS_TITLE('Year of report') },
+    yaxis: { ...PLOT_AXIS, title: AXIS_TITLE('Proposals reviewed') },
+    shapes: eras.shapes,
+    annotations: eras.annotations,
+    margin: { l: 60, r: 20, t: 44, b: 52 },
+    bargap: 0.18,
   }, PLOT_CONFIG).then(() => attachClick('chart-timeline', e => {
     const yr = e.points[0].x;
     FILTERS.yearMin = yr; FILTERS.yearMax = yr;
@@ -601,20 +648,30 @@ function renderClusterMix() {
 
   Plotly.react('chart-cluster', [{
     type: 'pie',
-    hole: 0.62,
+    hole: 0.66,
+    sort: false,
+    direction: 'clockwise',
     labels,
     values,
-    marker: { colors, line: { color: COLORS.bg, width: 1 } },
+    marker: {
+      colors,
+      line: { color: COLORS.panel, width: 2 },
+    },
     textinfo: 'none',
-    hovertemplate: '<b>%{label}</b><br>%{value} (%{percent}) <span style="opacity:.6">click to filter</span><extra></extra>',
+    hovertemplate: '<b>%{label}</b><br>%{value} proposals · %{percent} <span style="opacity:.6">click to filter</span><extra></extra>',
   }], {
     ...PLOT_BASE_LAYOUT,
     showlegend: true,
-    legend: { orientation: 'v', x: 1.05, y: 0.5, font: { color: COLORS.textMid, size: 9 } },
-    margin: { l: 6, r: 0, t: 6, b: 6 },
+    legend: {
+      orientation: 'v', x: 1.02, y: 0.5,
+      font: { color: COLORS.textMid, size: 9.5 },
+      bgcolor: 'rgba(0,0,0,0)',
+      itemsizing: 'constant',
+    },
+    margin: { l: 8, r: 4, t: 8, b: 8 },
     annotations: [{
-      text: `<b>${FILTERED.length.toLocaleString()}</b><br><span style="color:${COLORS.textMid};font-size:9px;letter-spacing:1.4px;">RECORDS</span>`,
-      showarrow: false, font: { color: COLORS.text, size: 18, family: PLOT_FONT.family },
+      text: `<b style="font-size:22px">${FILTERED.length.toLocaleString()}</b><br><span style="color:${COLORS.textSoft};font-size:9px;letter-spacing:1.6px;">PROPOSALS</span>`,
+      showarrow: false, font: { color: COLORS.text, family: PLOT_FONT.family },
       x: 0.5, y: 0.5,
     }],
   }, PLOT_CONFIG).then(() => attachClick('chart-cluster', e => {
@@ -1220,13 +1277,21 @@ function renderBudgetTimeline() {
     };
   });
 
+  const eras = eraShapes(yearsAll[0], yearsAll[yearsAll.length - 1]);
+  const unitLabel = BUDGET_FILTERS.units === '2025' ? 'Appropriation (USD, 2025-adjusted)' : 'Appropriation (USD, nominal)';
   Plotly.react('b-chart-timeline', traces, {
     ...PLOT_BASE_LAYOUT,
     showlegend: true,
-    legend: { orientation: 'h', x: 0, y: 1.16, font: { color: COLORS.textMid, size: 10 } },
-    xaxis: { ...PLOT_AXIS, dtick: 5, title: '' },
-    yaxis: { ...PLOT_AXIS, title: '', tickformat: '$.2s' },
-    margin: { l: 64, r: 16, t: 36, b: 36 },
+    legend: {
+      orientation: 'h', x: 0, y: 1.12,
+      font: { color: COLORS.textMid, size: 10 },
+      bgcolor: 'rgba(0,0,0,0)',
+    },
+    xaxis: { ...PLOT_AXIS, dtick: 5, title: AXIS_TITLE('Fiscal year') },
+    yaxis: { ...PLOT_AXIS, title: AXIS_TITLE(unitLabel), tickformat: '$.2s' },
+    shapes: eras.shapes,
+    annotations: eras.annotations,
+    margin: { l: 76, r: 20, t: 44, b: 52 },
   }, PLOT_CONFIG);
 }
 
@@ -1242,20 +1307,26 @@ function renderBudgetBranch() {
 
   Plotly.react('b-chart-branch', [{
     type: 'pie',
-    hole: 0.62,
+    hole: 0.66,
+    sort: false,
     labels,
     values,
-    marker: { colors, line: { color: COLORS.bg, width: 1 } },
+    marker: { colors, line: { color: COLORS.panel, width: 2 } },
     textinfo: 'none',
-    hovertemplate: '<b>%{label}</b><br>%{value:$,.0f} (%{percent})<extra></extra>',
+    hovertemplate: '<b>%{label}</b><br>%{value:$,.0f} · %{percent}<extra></extra>',
   }], {
     ...PLOT_BASE_LAYOUT,
     showlegend: true,
-    legend: { orientation: 'v', x: 1.05, y: 0.5, font: { color: COLORS.textMid, size: 10 } },
-    margin: { l: 6, r: 0, t: 6, b: 6 },
+    legend: {
+      orientation: 'v', x: 1.02, y: 0.5,
+      font: { color: COLORS.textMid, size: 10 },
+      bgcolor: 'rgba(0,0,0,0)',
+      itemsizing: 'constant',
+    },
+    margin: { l: 8, r: 4, t: 8, b: 8 },
     annotations: [{
-      text: `<b>${fmtUSD(total)}</b><br><span style="color:${COLORS.textMid};font-size:9px;letter-spacing:1.4px;">TOTAL</span>`,
-      showarrow: false, font: { color: COLORS.text, size: 16, family: PLOT_FONT.family },
+      text: `<b style="font-size:20px">${fmtUSD(total)}</b><br><span style="color:${COLORS.textSoft};font-size:9px;letter-spacing:1.6px;">TOTAL</span>`,
+      showarrow: false, font: { color: COLORS.text, family: PLOT_FONT.family },
       x: 0.5, y: 0.5,
     }],
   }, PLOT_CONFIG);
@@ -1479,7 +1550,7 @@ function resizeBudgetCharts() {
 }
 
 // ── Timeline view ─────────────────────────────────────────────────────
-// Schema (from Paul B's hohhamnap.github.io):
+// Schema (from Paul B's paull0318.github.io/BOF-Visuals-20260511):
 //   PERIODS: ["1888-89", ..., "1915-16"] (28 entries)
 //   GROUPS:  [{name, cat, periods: {periodName: [{action, source}]}}]
 let TIMELINE_FILTERS = { category: '', outcome: '', source: '', search: '' };
@@ -1830,32 +1901,40 @@ function renderSpendingTimeline() {
     return a ? a.amount : 0;
   });
 
+  const eras = eraShapes(yearsAll[0], yearsAll[yearsAll.length - 1]);
   Plotly.react('s-chart-timeline', [
     {
       type: 'bar',
-      name: 'Allotted',
+      name: 'BOF allotments (line items)',
       x: yearsAll,
       y: allotByYear,
       marker: { color: COLORS.accent, line: { width: 0 } },
-      hovertemplate: '<b>%{x}</b><br>Allotted: %{y:$,.0f}<extra></extra>',
+      hovertemplate: '<b>%{x}</b><br>Allotted: <b>%{y:$,.0f}</b><extra></extra>',
     },
     {
       type: 'scatter',
       mode: 'lines+markers',
-      name: 'Appropriated by Congress',
+      name: 'Congressional appropriation',
       x: yearsAll,
       y: approByYear,
-      line: { color: COLORS.cyan, width: 2 },
-      marker: { color: COLORS.cyan, size: 6 },
-      hovertemplate: '<b>%{x}</b><br>Appropriated: %{y:$,.0f}<extra></extra>',
+      line: { color: COLORS.cyan, width: 2.2 },
+      marker: { color: COLORS.cyan, size: 6, line: { color: COLORS.panel, width: 1.5 } },
+      hovertemplate: '<b>%{x}</b><br>Appropriated: <b>%{y:$,.0f}</b><extra></extra>',
     },
   ], {
     ...PLOT_BASE_LAYOUT,
     showlegend: true,
-    legend: { orientation: 'h', x: 0, y: 1.16, font: { color: COLORS.textMid, size: 10 } },
-    xaxis: { ...PLOT_AXIS, dtick: 2, title: '' },
-    yaxis: { ...PLOT_AXIS, title: '', tickformat: '$.2s' },
-    margin: { l: 64, r: 16, t: 36, b: 36 },
+    legend: {
+      orientation: 'h', x: 0, y: 1.12,
+      font: { color: COLORS.textMid, size: 10 },
+      bgcolor: 'rgba(0,0,0,0)',
+    },
+    xaxis: { ...PLOT_AXIS, dtick: 2, title: AXIS_TITLE('Fiscal year') },
+    yaxis: { ...PLOT_AXIS, title: AXIS_TITLE('USD (nominal)'), tickformat: '$.2s' },
+    shapes: eras.shapes,
+    annotations: eras.annotations,
+    margin: { l: 76, r: 20, t: 44, b: 52 },
+    bargap: 0.18,
   }, PLOT_CONFIG);
 }
 
@@ -1866,20 +1945,26 @@ function renderSpendingRevoked() {
 
   Plotly.react('s-chart-revoked', [{
     type: 'pie',
-    hole: 0.62,
+    hole: 0.66,
+    sort: false,
     labels: ['Active', 'Revoked'],
     values: [active, revoked],
-    marker: { colors: [COLORS.accent, COLORS.red], line: { color: COLORS.bg, width: 1 } },
+    marker: { colors: [COLORS.accent, COLORS.red], line: { color: COLORS.panel, width: 2 } },
     textinfo: 'none',
-    hovertemplate: '<b>%{label}</b><br>%{value:$,.0f} (%{percent})<extra></extra>',
+    hovertemplate: '<b>%{label}</b><br>%{value:$,.0f} · %{percent}<extra></extra>',
   }], {
     ...PLOT_BASE_LAYOUT,
     showlegend: true,
-    legend: { orientation: 'v', x: 1.05, y: 0.5, font: { color: COLORS.textMid, size: 10 } },
-    margin: { l: 6, r: 0, t: 6, b: 6 },
+    legend: {
+      orientation: 'v', x: 1.02, y: 0.5,
+      font: { color: COLORS.textMid, size: 10 },
+      bgcolor: 'rgba(0,0,0,0)',
+      itemsizing: 'constant',
+    },
+    margin: { l: 8, r: 4, t: 8, b: 8 },
     annotations: [{
-      text: `<b>${fmtUSD(total)}</b><br><span style="color:${COLORS.textMid};font-size:9px;letter-spacing:1.4px;">TOTAL</span>`,
-      showarrow: false, font: { color: COLORS.text, size: 16, family: PLOT_FONT.family },
+      text: `<b style="font-size:20px">${fmtUSD(total)}</b><br><span style="color:${COLORS.textSoft};font-size:9px;letter-spacing:1.6px;">ALLOTTED</span>`,
+      showarrow: false, font: { color: COLORS.text, family: PLOT_FONT.family },
       x: 0.5, y: 0.5,
     }],
   }, PLOT_CONFIG);
