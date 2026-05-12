@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOF Source Texts · Fortify the Ordnance</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path fill-rule='evenodd' clip-rule='evenodd' d='M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z' fill='%23C9A24C'/><circle cx='32' cy='32' r='2.2' fill='%23C9A24C'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F6F7;
+    --panel: #FFFFFF;
+    --panel-2: #FAFAFB;
+    --border: #E1E3E6;
+    --border-2: #C7CAD0;
+    --text: #1A1F36;
+    --text-mid: #5A6075;
+    --text-soft: #8C92A4;
+    --brass: #C9A24C;
+    --accent: #635BFF;
+    --green: #2D6A4F;
+    --amber: #B8860B;
+    --red: #B0413E;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Topbar */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 28px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 1.2px; color: var(--text-mid);
+  }
+  .tb-l {
+    display: flex; align-items: center; gap: 10px;
+    color: inherit; text-decoration: none;
+  }
+  .tb-l svg {
+    width: 18px; height: 18px; color: var(--brass);
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .tb-l:hover svg { transform: rotate(45deg); }
+  .tb-l strong { color: var(--text); font-weight: 700; letter-spacing: 1.4px; }
+  .tb-r { display: flex; gap: 18px; }
+  .tb-r a { color: var(--text-mid); text-decoration: none; letter-spacing: 1.2px; }
+  .tb-r a:hover { color: var(--brass); }
+
+  /* Wrap */
+  .wrap { max-width: 1480px; margin: 0 auto; padding: 32px 36px 80px; }
+
+  /* Page head */
+  .page-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 32px; margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-head h1 {
+    font-family: var(--serif);
+    font-size: 32px; font-weight: 700; letter-spacing: -0.6px;
+    line-height: 1.1;
+  }
+  .page-head .sub {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 1.2px;
+    color: var(--text-soft); text-transform: uppercase;
+    font-weight: 600; margin-top: 4px;
+  }
+  .head-right {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.8px;
+    color: var(--text-soft); text-align: right;
+  }
+  .head-right b { color: var(--text-mid); font-weight: 700; }
+
+  /* Stat row */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-bottom: 24px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .stat { padding: 14px 18px; border-right: 1px solid var(--border); }
+  .stat:last-child { border-right: 0; }
+  .stat .n {
+    font-family: var(--serif);
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -0.4px; line-height: 1;
+  }
+  .stat .l {
+    font-family: var(--mono);
+    font-size: 9.5px; letter-spacing: 1.3px;
+    text-transform: uppercase; color: var(--text-soft);
+    margin-top: 6px; font-weight: 600;
+  }
+  .stat.green .n { color: var(--green); }
+  .stat.amber .n { color: var(--amber); }
+  .stat.brass .n { color: var(--brass); }
+
+  /* Filter bar */
+  .filters {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .filters label {
+    font-family: var(--mono);
+    font-size: 9.5px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--text-mid);
+  }
+  .filters select, .filters input[type=text] {
+    font-family: var(--sans);
+    font-size: 12.5px;
+    padding: 6px 10px;
+    border: 1px solid var(--border-2);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 4px;
+    height: 30px;
+    min-width: 130px;
+  }
+  .filters input[type=text] { min-width: 240px; flex: 1; }
+  .filters select:focus, .filters input:focus {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+    border-color: var(--accent);
+  }
+  .filters .clear {
+    font-family: var(--mono);
+    font-size: 10px; letter-spacing: 1px;
+    background: transparent; border: 0;
+    color: var(--text-soft); cursor: pointer;
+    padding: 6px 8px;
+  }
+  .filters .clear:hover { color: var(--brass); }
+  .result-count {
+    font-family: var(--mono);
+    font-size: 10px; letter-spacing: 1px;
+    color: var(--text-soft);
+    margin-left: auto; font-weight: 600;
+  }
+
+  /* Inventory table */
+  .inv {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+  }
+  .inv thead th {
+    background: var(--panel-2);
+    font-family: var(--mono);
+    font-size: 9.5px; font-weight: 700;
+    letter-spacing: 1.3px; text-transform: uppercase;
+    color: var(--text-soft);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .inv tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .1s;
+  }
+  .inv tbody tr:last-child { border-bottom: 0; }
+  .inv tbody tr:hover { background: var(--panel-2); }
+  .inv tbody tr.clickable { cursor: pointer; }
+  .inv td {
+    padding: 12px 14px;
+    vertical-align: top;
+    font-size: 13px;
+  }
+  .inv td.tight { white-space: nowrap; width: 1%; }
+  .inv td.summary { color: var(--text); line-height: 1.45; font-weight: 500; }
+  .inv td.detail { color: var(--text-mid); font-size: 12.5px; line-height: 1.5; }
+  .inv td.detail.serif { font-family: var(--serif); font-size: 14.5px; line-height: 1.6; color: var(--text); }
+  .inv td.mono { font-family: var(--mono); font-size: 11.5px; color: var(--text-mid); }
+
+  /* Chips */
+  .chip {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9.5px; font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 7px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .chip.crozier  { background: rgba(29,52,97,.12);  color: #1D3461; }
+  .chip.lewis    { background: rgba(93,64,55,.14);  color: #5D4037; }
+  .chip.brass    { background: rgba(201,162,76,.16); color: #8c6610; }
+  .chip.green    { background: rgba(45,106,79,.12); color: var(--green); }
+  .chip.amber    { background: rgba(184,134,11,.14); color: var(--amber); }
+  .chip.red      { background: rgba(176,65,62,.12); color: var(--red); }
+  .chip.steel    { background: var(--panel-2); color: var(--text-soft); border: 1px solid var(--border); }
+
+  /* Page-foot */
+  .pg-foot {
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px; color: var(--text-soft);
+    letter-spacing: 0.8px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  .pg-foot a { color: var(--text-mid); text-decoration: none; }
+  .pg-foot a:hover { color: var(--brass); }
+
+  /* Modal */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(15,23,42,.55);
+    display: none;
+    align-items: flex-start; justify-content: center;
+    padding: 56px 24px;
+    z-index: 1000;
+    overflow-y: auto;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--panel);
+    border-radius: 10px;
+    max-width: 920px; width: 100%;
+    padding: 36px 44px 44px;
+    box-shadow: 0 16px 60px rgba(0,0,0,.22);
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 14px; right: 16px;
+    background: transparent; border: 0; cursor: pointer;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+    color: var(--text-mid); padding: 6px 10px; border-radius: 4px;
+  }
+  .modal-close:hover { color: var(--brass); background: var(--panel-2); }
+  .modal h2 {
+    font-family: var(--serif);
+    font-size: 28px; font-weight: 700; letter-spacing: -0.5px;
+    line-height: 1.1; margin-bottom: 6px;
+  }
+  .modal .modal-meta {
+    font-family: var(--mono);
+    font-size: 10.5px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-soft);
+    margin-bottom: 22px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal h3 {
+    font-family: var(--serif);
+    font-size: 16px; font-weight: 700;
+    margin: 22px 0 8px;
+  }
+  .modal p {
+    font-family: var(--serif);
+    font-size: 15px; line-height: 1.65;
+    margin-bottom: 10px;
+  }
+  .modal-source {
+    margin-top: 24px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px; color: var(--text-soft);
+  }
+
+  @media (max-width: 720px) {
+    .wrap { padding: 20px 14px 56px; }
+    .page-head { flex-direction: column; align-items: flex-start; }
+    .head-right { text-align: left; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat { border-bottom: 1px solid var(--border); }
+    .stat:nth-child(2n) { border-right: 0; }
+    .inv td.detail, .inv td.mono { display: none; }
+  }
+
+  .hidden { display: none !important; }
+  
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="tb-l" href="/" title="Back to dashboard">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+    </svg>
+    <strong>FORTIFY THE ORDNANCE</strong>
+  </a>
+  <div class="tb-r">
+    <a href="/reading-room.html">reading room</a>
+    <a href="/">← dashboard</a>
+  </div>
+</div>
+<div class="wrap">
+
+  <div class="page-head">
+    <div>
+      <div class="sub">Reading Room · Source texts</div>
+      <h1>Board excerpts — primary source prose</h1>
+    </div>
+    <div class="head-right">
+      Parsed from <b>Data/Misc/BOF Non-Gun Assignment_complete.docx</b><br>
+      The Board's own words, by topic, with page citations
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="n">18</div><div class="l">Topics</div></div>
+    <div class="stat"><div class="n">7</div><div class="l">Annual reports</div></div>
+    <div class="stat"><div class="n">6,745</div><div class="l">Words quoted</div></div>
+    <div class="stat amber"><div class="n">23</div><div class="l">Reports remaining</div></div>
+  </div>
+  <div class="filters">
+    <label>Report</label>
+    <select id="f-ar">
+      <option value="">All</option>
+    </select>
+    <input type="text" id="f-q" placeholder="Search topics, mines, fuses, range finders…">
+    <button class="clear" id="f-clear">Clear</button>
+    <span class="result-count" id="f-count">— topics</span>
+  </div>
+  <table class="inv">
+    <thead>
+      <tr>
+        <th style="width:90px">AR #</th>
+        <th style="width:110px">Years</th>
+        <th>Topic</th>
+        <th>Excerpt</th>
+        <th style="width:80px">Page</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="pg-foot">
+    <span>23 of 30 BOF Annual Reports still untranscribed — see data-quality.</span>
+    <a href="/data-quality.html">data quality →</a>
+  </div>
+
+</div>
+
+<div class="modal-bg" id="mbg" role="dialog" aria-modal="true">
+  <div class="modal" id="mbody"></div>
+</div>
+
+<script>
+
+const T = [{"num": 1, "start": 1888, "end": 1891, "name": "Submarine Mines and Torpedoes", "page": "23", "body": ["Among the earliest objects of appropriation under the new policy of harbor defense, were submarine mines and torpedoes.", "Following large appropriations previously made, the act of September 22, 1888, appropriated $250,000 for these and allied objects, and the further sum of $200,000 for the same objects was granted in the act of March 2, 1889. The expenditures under the acts above named were under the supervision of this Board.", "Recognizing the importance of these preparations, allotments were promptly made for the procurement of fixed torpedoes or submarine mines, and the Board approved the prosecution of continued and thorough experiments and tests to ascertain the most practicable and effective movable torpedo, controllable from the shore. These latter experiments as heretofore have been conducted at the Engineer Station at Willets Point, Long Island, under the direction and immediate supervision of the Engineer Department. Considerable progress has been made in these tests and the experiments are still continued.", "Investigations looking to the development of a system for harbor defense by submarine mines were actually begun in 1869. In consequence of this, and of the much less time required for the construction of the material than of high-power guns and mortars and their mountings, the condition of the submarine mine defenses of our harbors is in a better state of forwardness than that of any of the other elements.", "Of course it is not necessary that the mines shall be planted until the exigency shall arise; but a considerable supply of electrical operating apparatus, cases, anchors and small parts have been gradually accumulated; several shore stations have been constructed or are in process of construction, and all the more permanent parts of the system are kept in a state of readiness for use.", "The manufacture of electrical cables and appliances has been immensely developed of late in this country, and it is believed that the necessity of placing large quantities of these perishable articles in store no longer exists. A supply sufficient to meet the first demand will suffice.", "The principal harbors have been carefully studied, the position for each mine is indicated upon charts filed in the War Department, and a force of engineer officers and soldiers has been thoroughly trained in the loading, planting and connecting of these mines with the shore stations and in the operating of the system in war.", "It is hardly necessary to say that submarine mines are not designed to constitute an independent system of defense. They form but one part of a combined system, the more important element of which consists in powerful shore batteries of high-power guns and mortars.", "The mine fields are designed to delay hostile ships under fire until these heavy batteries can make their fire effective. Cable galleries connect the mines with the protracted shore stations and the electrical appliances designed for firing the mines, while the rapid-fire guns protect the mines from interference by the enemy, and also repel attacks upon the shore batteries or stations. Without the heavy batteries of high-power guns and mortars these appliances would be of no great value, as they could be removed or countermined by the enemy.", "The Board calls attention to this feature of the case in order to emphasize the fact that the earliest production of an adequate number of modern high-power guns and mortars is the central and an all important element in the defense of our great seaports. Until this is accomplished all other preparations are insufficient and ineffective.", "The movable torpedo under control from shore stations is an offensive weapon the powers of which are not yet fully developed. It is of limited range, of uncertain accuracy, and of so complex mechanism as to be liable to frequent failures. Its true function is the defense of mine fields, and for this purpose it appears worthy of development, bearing in mind, however, that it can never constitute more than an auxiliary defense."], "preview": "Among the earliest objects of appropriation under the new policy of harbor defense, were submarine mines and torpedoes. Following large appropriations previously made, the act of September 22, 1888, appropriated $250,000 for these and allie\u2026", "range": "1888\u20131891"}, {"num": 1, "start": 1888, "end": 1891, "name": "Ericsson Aerial Subaquatic Projectile", "page": "24", "body": ["Among other subjects which have engaged the attention of the Board is the Ericsson aerial subaquatic projectile. This is an invention owned by the Ericsson Coast Defense Company and is attributed to the distinguished inventor John Ericsson, the designer of the original Monitor. The claim made for this device is that it can be fired from either a pneumatic gun or from a powder gun modified from one of our smoothbore 15-inch guns, and after a considerable aerial flight will on striking the water descend to a depth below the surface for which it may have been previously adjusted. Reaching such depth, it will without change of direction proceed on its course, the path pursued remaining straight and practically parallel to the surface of the water. Whether the company will be able to make the projectile accomplish what is claimed can of course be only determined by actual trial, and in view of the great advantages offered by this invention, if it should prove successful, the Board has recommended an allotment of $11,333.33 for the purchase of four of these projectiles. They have been delivered and are awaiting the receipt of one of the pneumatic guns now under contract, with which they will be tested."], "preview": "Among other subjects which have engaged the attention of the Board is the Ericsson aerial subaquatic projectile. This is an invention owned by the Ericsson Coast Defense Company and is attributed to the distinguished inventor John Ericsson,\u2026", "range": "1888\u20131891"}, {"num": 1, "start": 1888, "end": 1891, "name": "Range and Position Finders", "page": "27", "body": ["The increased range of modern guns and the increased cost of artillery ammunition, which naturally restricts peace practice, have directed attention of late to various optical and mechanical devices for determining the location of a distant object. These instruments all proceed upon the well-known principles of determining the elements of a triangle, at the vertex of which is the object, while the base of known length and the two base angles are within the reach of the operator. These three elements of the triangle being ascertained, the distance and direction of the object from the gun can be determined. In some instruments the base line is horizontal; in others it is vertical, and is the elevation of the instrument above the surface of the water. The distance may be made known by electrical indicators, or by converging radial arms moving over a map of the harbor approaches. The various military powers of Europe have systems of range finding for use in their harbors, the details of which are preserved with the greatest secrecy. In this country invention in the same direction has been stimulated by reports of what has been done abroad, and, as the consequence, this Board has had before it so many inventions of this kind that it has been compelled to ask for the appointment of a distinct range finder board to act under it in the test of such completed instruments as may be ordered by this Board.", "The subject is as yet far from being exhausted, and the Board is not prepared to make any recommendation looking to the definite adoption of any system. But completed instruments of the Fiske, Ruckman-Crosby, Berdan, and Lewis types have been purchased, and, with the exception of the last named, have been tested by the range finder board. The reports of that board, showing what defects have been found in the instruments, have been referred to the inventors in the hope that they may be able to obviate them. The Lewis instrument is now being prepared for test at Fort Wadsworth, New York Harbor.", "The Board has also made an allotment for the purchase of a portion of a novel position finding instrument invented by Henry Hess, which will test the fundamental principle of its construction. This portion, it is thought, will determine the availability of his system.", "The Board is still in correspondence with several other inventors who are hopeful of arriving at the successful solution of this important problem."], "preview": "The increased range of modern guns and the increased cost of artillery ammunition, which naturally restricts peace practice, have directed attention of late to various optical and mechanical devices for determining the location of a distant\u2026", "range": "1888\u20131891"}, {"num": 1, "start": 1888, "end": 1891, "name": "Fuses", "page": "28", "body": ["The number of fuses which have been submitted to the Board is very small in proportion to the number of other inventions. So far only three have been presented whose promise of successful results was sufficient to justify the Board in making allotments to procure samples. Of these two are American, namely, the Merriam base percussion fuse, for which allotment was first made on November 4, 1890; and the Berdan mechanical distance fuse, which the Board decided on December 12, 1890, to test, and for which it has since made several allotments of small amounts to continue the experiments. The foreign fuse is French, being made by the Ar. Walter Company of France. Allotment of $150 was made on June 6, 1891, to procure fifty of these fuses. None of the tests of these fuses has yet proceeded sufficiently far to justify a definite opinion upon their merits.", "Annual Report 2"], "preview": "The number of fuses which have been submitted to the Board is very small in proportion to the number of other inventions. So far only three have been presented whose promise of successful results was sufficient to justify the Board in makin\u2026", "range": "1888\u20131891"}, {"num": 2, "start": 1891, "end": 1892, "name": "Torpedos and Mines", "page": "20", "body": ["During the past year there has been no special development in the matter of submarine mines.", "The work of providing and completing shore stations and the permanent parts of the system has been continued as permitted by the condition of appropriations.", "The four Ericsson a\u00ebrial subaquatic projectiles (or torpedoes), for which the Board made an allotment of $11,333.33, have been completed and offered for test. The Board made an allotment of $1,000 for fitting up a 10-inch gun to be used for the test, and $500 for moving and putting it in place and for other incidental expenses.", "This projectile or torpedo is designed to be fired from either pneumatic or powder guns. The torpedo itself is about 27 feet long and 15 inches in diameter, and weighs about 1,200 pounds. It is designed to carry a large charge of high explosive, which is to be exploded upon impact.", "It is intended to be discharged through the air, descend into the water, and passing below the surface a certain depth to be determined by the adjustment of the steering apparatus, to strike the target below the water-line.", "The projectile is of a slender cigar-shape, the forward compartment being occupied by the explosive, the after part by the steering apparatus, and the middle section by the mechanism which actuates the latter.", "The preparations having been made for the test of this projectile at Fort Wadsworth, New York Harbor, the trial took place March 25, 1892. The result is narrated in the official record of the Board as follows:", "Summary: The Ericsson aerial subaquatic projectile tests showed serious reliability and structural problems, making it not worth further investment despite its potential.", "The Sims-Edison torpedo performed better\u2014it met speed requirements and could be controlled from shore\u2014but failed key tests (especially diving under obstacles), so additional testing was recommended.", "Overall, the Board concluded that while these torpedoes were promising experimental weapons, they were not yet reliable enough for full adoption, though they could become useful in defending minefields in the future.", "Annual Report 3"], "preview": "During the past year there has been no special development in the matter of submarine mines. The work of providing and completing shore stations and the permanent parts of the system has been continued as permitted by the condition of appro\u2026", "range": "1891\u20131892"}, {"num": 3, "start": 1892, "end": 1893, "name": "Mines and Torpedos", "page": "22", "body": ["No progress has been made during the past year in the test of the Ericsson aerial torpedo. The board had notified the Ericsson Coast Defense Company that it is ready to proceed with the trial of the two remaining torpedoes at any time, but thus far the company has not signified its readiness. The remaining torpedoes are stored at Fort Wadsworth, New York Harbor. It is expected that these torpedoes will be tested in the near future.", "The Sims-Edison fish torpedo, which was described in the report of 1892 and which has been under test, has completed its experimental runs in such a manner as to comply with the terms of the contract, and has been accepted and paid for", "The reports of Lieut. Col. W. R. King, Corps of Engineers, upon the trial runs made with this torpedo in its test for acceptance under contract are hereto appended. (Appendix C.)", "To enable the Board to intelligently consider the question of recommending further allotments from the balance of $24,775 still remaining of the appropriation approved March 2, 1889, which is available only for the purpose of movable submarine torpedoes, it was recommended that there be instituted by the Chief of Engineers a set of twenty or more actual runs, or such dock trials as will be decisive for determining the relative percentage of the success and failure to be expected with this torpedo, and this recommendation was approved by the Secretary of War.", "Reports of these trials have not yet been received. The Board does not recommend further expenditures upon such torpedoes at this time.", "Appendix C (pg. 62):", "Total cost of trials: $25, 225"], "preview": "No progress has been made during the past year in the test of the Ericsson aerial torpedo. The board had notified the Ericsson Coast Defense Company that it is ready to proceed with the trial of the two remaining torpedoes at any time, but \u2026", "range": "1892\u20131893"}, {"num": 3, "start": 1892, "end": 1893, "name": "Range Finders", "page": "23", "body": ["With a view of testing all available forms of range finders which give promise of merit many have been allotted for by the Board and some of them have been received and their test is in progress.", "Two instruments for seacoast defense have been purchased, viz: The Fiske range and position finder, which is an instrument using a horizontal base, in which the horizontal triangle, with a base of about 277 yards, is solved electrically by the principle of the Wheatstone bridge; and the Lewis range and position finder, in which the vertical triangle, the base of which is the height above the sea level, is solved mechanically.", "Both instruments are of delicate construction and are not readily moved from one position to another.", "A third form of seacoast range and position finder, the Zalinski, is to be tested, and, if it proves satisfactory, will be purchased.", "The following field instruments have also been ordered and will be tested: The Watkins depression range finder for field artillery; the Aide-Tireur, Nolan, Unge, Labbez, Gordon, Pratt, Broad Arrow, Watkins infantry telemeter, and the English infantry Melrometer for use of infantry and field artillery. It is believed that from these many forms one suitable for the service may be selected."], "preview": "With a view of testing all available forms of range finders which give promise of merit many have been allotted for by the Board and some of them have been received and their test is in progress. Two instruments for seacoast defense have be\u2026", "range": "1892\u20131893"}, {"num": 3, "start": 1892, "end": 1893, "name": "Smokeless Powders", "page": "24", "body": ["The Board in May and December, 1892, and in May and October of this year has allotted sums aggregating $4,625 for procuring smokeless powders for experimental test. Very satisfactory progress has been made in this direction. Indications give ground for the belief that an American powder will be developed superior to that in use abroad. Considering the pecuniary reward to be gained, it is a field in which powder makers might well vie with each other.", "Annual Report 4"], "preview": "The Board in May and December, 1892, and in May and October of this year has allotted sums aggregating $4,625 for procuring smokeless powders for experimental test. Very satisfactory progress has been made in this direction. Indications giv\u2026", "range": "1892\u20131893"}, {"num": 4, "start": 1893, "end": 1894, "name": "Mines and Torpedos", "page": "20", "body": ["Ericsson aerial subaquatic projectiles.\u2014The two remaining projectiles purchased from the Ericsson Coast Defense Company, referred to in the last report as being on hand at Fort Wadsworth, were fired before a committee of the Board July 20, 1894.", "Experiments summary: Two projectiles were fired and successfully traveled through air and water, but both suffered damage (burst casing, broken fins), showing the concept worked but was still unreliable and experimental."], "preview": "Ericsson aerial subaquatic projectiles.\u2014The two remaining projectiles purchased from the Ericsson Coast Defense Company, referred to in the last report as being on hand at Fort Wadsworth, were fired before a committee of the Board July 20, \u2026", "range": "1893\u20131894"}, {"num": 4, "start": 1893, "end": 1894, "name": "Batteries", "page": "20", "body": ["The sum of $1,221,000 appropriated by the act of August 18, 1890, to be expended \u201cunder the direct supervision of the Board of Ord\u00ac nance and Fortification \u201d for the construction of gun and mortar batteries, at Boston, New York, and San Francisco, has been wholly expended, as the Board is advised, and no further sums for the construction of batteries have been placed under the supervision of the Board. For information in regard to that subject reference is made to the report of the Chief of Engineers.\u201d"], "preview": "The sum of $1,221,000 appropriated by the act of August 18, 1890, to be expended \u201cunder the direct supervision of the Board of Ord\u00ac nance and Fortification \u201d for the construction of gun and mortar batteries, at Boston, New York, and San Fra\u2026", "range": "1893\u20131894"}, {"num": 4, "start": 1893, "end": 1894, "name": "Range and Position Finders", "page": "23", "body": ["Fair progress has been made during the year in the work of testing the many forms of this important adjunct to modern artillery practice, and there is good ground for expectation that the labors of the Board on Range and Position Finders will soon result in the selection of a satisfactory instrument. The progress reports of that Board are appended, marked Appendix G.", "Upon the recommendation of this Board Lieut. H. L. Harris, First Artillery, was appointed, May 5, 1894, executive officer of the Range Finder Board, and the detail has much expedited this work.", "The following is a brief summary of the results obtained:", "Field range finders.\u2014The investigations of the board have led to the rejection of the Broad Arrow, Pratt, and Labbez range finders, and of all other types involving the same optical principle as the sextant, and this Board has concurred in the recommendation.", "The reasons for not recommending such instruments are thus stated by the Range Finder Board:", "1. They are far more liable to injury than those formed by prisms.", "2.They may be out of adjustment without attracting attention.", "3.Where the ranged object, eye of the observer, and the object marking the direction of the base are approximately not in the same horizontal plane, the instrument may give very erroneous results without the observers readily detecting the errors. This results from the mirrors not being held vertically, though the direct and reflected images seem to be in the same vertical line.", "The Aide-Tiruer and Unge have been practically tested, so far with rather unsatisfactory results. The Nolan and Weldon range finders have not yet been tested.", "Seacoast position finders.\u2014The instruments of this class that have been tested are the Lewis and the Watkins depression, and the Fiske electrical range finders. They have given very fair results, as will appear from an inspection of the tables accompanying the report of the Range Finder Board, especially those of August 21, and October 20, 1894.", "It will also be noticed that the per cent of error as a rule falls far below the allowed error used in the English service of 1 per cent for each 1,000 yards of range.", "The inventor of the Fiske instrument proposes an improvement which, it is claimed, will make the device more accurate, susceptible to closer reading, and less liable to get out of order than the previous form. The Watkins depression range finder has also been tested to some extent, and has given fair results.", "The Zalinski range finder has not up to date been presented for trial.", "In connection with the subject of range and position finding, the Board has allotted $202,55 for the purchase of a relocator invented by Lieut. W. O. Rafferty, First Artillery. The position of a battery or gun is often remote from the range finder, and azimuths or ranges taken at the range finder station are generally appreciably incorrect for the gun. It therefore becomes necessary to transform the range finder data into data applicable to the position of the gun. This problem Lieut. Rafferty has solved in a very ingenious way by an application of the principles of trigonometry. When completed the relocator will be thoroughly tested.", "Weaver's plotting device.\u2014During the year there was submitted to the Board a new and ingenious plotting device invented by Lieut. E. M. Weaver, Second Artillery, for directing the fire of batteries at moving targets. A series of practical experiments have been conducted with the device at Fort Monroe during the year, and the results have been such that this Board regards it as worthy of further test and develop\u00ac ment, and has recommended the reference of the subject matter to a special board to be appointed and known as the Board on the Regulation of Seacoast Artillery Fire.", "At its meeting on October 23, 1894, this Board took action looking to the practical application of range and position finders, as follows:", "Summary: The Board believes range-finding technology is nearly ready, but now needs a practical system for using it in combat. It recommends creating a new board of artillery officers to develop methods for coordinating range finders, communicating data, and directing gun fire, with New York Harbor as the testing site."], "preview": "Fair progress has been made during the year in the work of testing the many forms of this important adjunct to modern artillery practice, and there is good ground for expectation that the labors of the Board on Range and Position Finders wi\u2026", "range": "1893\u20131894"}, {"num": 4, "start": 1893, "end": 1894, "name": "Smokeless Powders", "page": "25", "body": ["Tests and experiments have been continued with smokeless powders during the year and the Board has made an allotment of $2,400 for that purpose. But the time would seem to have now come when experiments with this modern explosive should be entered upon more extensively with a view to determining and selecting the best for service in the various types and calibers of guns and mortars. The Board recommends a liberal appropriation for this purpose. This is one of the main experimental objects that should engage early attention. (See estimates.)", "The sudden outbreak of the war in the Orient, and the liability to like unforeseen hostilities in Europe, admonishes that we can not too early prosecute to solution the problem that would instantly confront us in case of war.", "High Explosives (pg. 25):", "The subject of high explosives was, as in previous years, under the charge of a committee of the Board, consisting of Gen. H. L. Abbot and Maj. Clifton Comly up to the time of the latter\u2019s death, since which date Maj. Frank H. Phipps has been connected with this work. In view of the importance of this subject, and of the interesting and instructive nature of the committee\u2019s report, it is here embodied in full, as follows:", "Summary (extensive description follows): The committee on high explosives reports that its work focused on determining the best explosive for artillery shells by testing safety, power, and reliability. Experiments examined whether explosives could withstand firing, rotation, and handling, and whether detonators functioned properly without premature explosions, using test firings and controlled detonations at Sandy Hook."], "preview": "Tests and experiments have been continued with smokeless powders during the year and the Board has made an allotment of $2,400 for that purpose. But the time would seem to have now come when experiments with this modern explosive should be \u2026", "range": "1893\u20131894"}, {"num": 4, "start": 1893, "end": 1894, "name": "Telegraphic Communications", "page": "31", "body": ["The telegraphic communication between Fort Wadsworth and Fort Hamilton,NewYorkHarbor,forexperimentalpurposes,forwhichallot\u00ac ment was made September 6, 1893, has been completed and is in use for the purpose designed; that is, the test of range and position finders. The map of New York Harbor, to be used for the same purpose, allotted for October 25, 1893, has been completed for the Board by the Engineer Department without the use of the allotment provided."], "preview": "The telegraphic communication between Fort Wadsworth and Fort Hamilton,NewYorkHarbor,forexperimentalpurposes,forwhichallot\u00ac ment was made September 6, 1893, has been completed and is in use for the purpose designed; that is, the test of ran\u2026", "range": "1893\u20131894"}, {"num": 4, "start": 1893, "end": 1894, "name": "Search Light", "page": "32", "body": ["The search-light apparatus for experimental purposes, to be tested at Sandy Hook, for which the Board allotted the sum of $5,900, has been received and installed. A balance of $700 was left from the amount so allotted, which, together with a further sum of $1,050, the Board allotted for the construction of a search-light tower, and for the installation of the plant; making total cost $6,950. The search light, which is of 150 cm. mirror diameter, has been tested in part, and the Board recommends that when the test shall have been completed it be removed to Fort Monroe, Va., to be used for instruction in the artillery school.", "Annual Report 5", "https://www.govinfo.gov/app/details/SERIALSET-03349_00_00-025-0056-0000"], "preview": "The search-light apparatus for experimental purposes, to be tested at Sandy Hook, for which the Board allotted the sum of $5,900, has been received and installed. A balance of $700 was left from the amount so allotted, which, together with \u2026", "range": "1893\u20131894"}, {"num": 5, "start": 1894, "end": 1895, "name": "Range and Position Finders", "page": "16", "body": ["The Board\u2019s reports on range and position finders are attached to the main report and labeled \u201cC.\u201d", "During the year, significant progress was made toward choosing the best instruments for both field and seacoast range finding.", "For field range finders:", "The Range-Finder Board judged the Weldon range finder to be good enough that it should face tougher, real-service-style tests.", "In response, the Board allotted money to buy one Weldon range finder for each field artillery battery, plus one for each school of instruction at Fort Leavenworth and Fort Riley, for further experiments.These Weldon instruments are to be tested under actual field conditions, and formal reports will be submitted afterward.", "For seacoast range finders:", "Two new seacoast range-finding instruments were installed at Fort Hamilton, New York Harbor, during the year: the Fiske range and position finder and the Lewis depression range finder.", "Fiske range and position finder:", "It uses a horizontal base line of about 1,000 yards and its operation is based on the zero principle of the Wheatstone bridge, similar to an older instrument previously tested at Fort Wadsworth.", "However, it differs from that older pattern by providing a much longer length of resistance wire for each degree of azimuth, which improves accuracy. It abandons absolute electrical resistance.", "Instead, the range is obtained by the intersection of arms that are parallel to the observing telescopes.", "The instrument was bought with the condition that it must at least match the English standard accuracy requirement for range finders (an allowable error of 1 percent per 1,000 yards).", "The Fiske instrument performed far better than this required accuracy.", "It has been handed over to the Board on the Regulation of Seacoast Artillery Fire for rigorous tests of accuracy, durability, and ease of operation under real service conditions.", "Lewis depression range finder:", "The Lewis instrument previously installed at Fort Wadsworth proved very successful.", "Because of this success, the Board recommended buying another Lewis instrument for Fort Hamilton that would incorporate improvements suggested by experience with the first one.", "The Lewis instrument ordered for Fort Hamilton was of the first type, intended for sites less than 100 feet above sea level and after Range Finder board tests everyone was content with its use.", "Before finally recommending full adoption, the Board decided to have three Lewis instruments built, one for each elevation category designed by the inventor:", "One for high elevations (200\u2013400 feet).", "One for medium elevations (100\u2013200 feet).", "One for low elevations (30\u2013100 feet).", "These three instruments are to be exposed to normal service conditions at representative artillery forts.", "Funds were allotted for this production, and the instruments are expected to be ready for issue soon.", "Zalinski range finder:", "The Zalinski (Zalinshi/Zalinski) range finder has not yet been submitted to the Board for testing. Captain Zalinski has informed the Board that his instrument is currently under construction.", "The Polarizing Photochronograph (18)", "The instrument is a new and clever device used to measure the speed (velocity) of projectiles.", "It works by using photography together with the properties of polarized light.", "It was invented by Dr. A. C. Crehore of Dartmouth College and Lieutenant G. O. Squier of the Third Artillery.", "The Board believed the potential results from this instrument were valuable enough to justify funding its development.", "The funding was given on the condition that the inventors give the United States the right to manufacture the instrument without paying them royalties", "Smokeless powders:", "An allotment of $2,400 was made in the previous year to buy and test smokeless powders.", "These experiments were carried out under the supervision of the Chief of Ordnance, and detailed information is contained in his report.", "Smokeless powder has become a very important topic and requires extensive experimentation.", "Many trials have been run, but the main outcome so far has been to identify unstable and dangerous compounds that must be rejected.", "A fully satisfactory smokeless powder for field, siege, and seacoast guns has not yet been developed", "Recognizing the importance of the issue, the Board has added a budget item in its estimates for the next year to fund further work on smokeless powders.", "Annual Report 6", "https://www.govinfSoo.gov/app/details/SERIALSET-03744_00_00-001-0002-0000 on pdf page 1100 - document page 1089", "Title (as part of War Department annual report): Sixth report of the Board of Ordnance and Fortification", "Where it appears: In the volume \u201cAnnual reports of the War Department for the fiscal year ended June 30, 1896,\u201d where the Board\u2019s Sixth report begins around p. 1089."], "preview": "The Board\u2019s reports on range and position finders are attached to the main report and labeled \u201cC.\u201d During the year, significant progress was made toward choosing the best instruments for both field and seacoast range finding. For field rang\u2026", "range": "1894\u20131895"}, {"num": 6, "start": 1896, "end": 1898, "name": "Overview", "page": "", "body": ["Range and Position Finder (p. 922)", "The Board has not yet recommended adopting any specific horizontal\u2011base range finder, but several designs are still under consideration.", "The Fiske instrument at Fort Hamilton has produced very good results; the Rueckman\u2011Crosby device is being developed at Fort Monroe; and the Gaillard design is also being studied by the Board.", "All horizontal\u2011base range finders rely on the same basic idea: solving a triangle in which the apex is the target whose distance is sought.", "Inventors are mainly trying to simplify how information from the two ends of the base line is communicated or automatically converted into the intersection of the two telescope sight lines on a plotting board.", "To create a standard of comparison for all these trial instruments, the Board allotted funds to build a pair of special azimuth instruments and install them at Fort Hamilton, New York Harbor.", "These azimuth instruments are linked by telephone and have given excellent results; together they function as a practical (but slower) range and position finder compared to some automatic devices.", "Separately, the Board appends the reports of the Range\u2011Finder Board as Appendix B, summarizing yearly progress in developing range and position finders for artillery.", "For the Lewis depression position finder (a vertical\u2011base instrument):", "After actual trials, the Range\u2011Finder Board recommended it for adoption as the standard type for vertical\u2011base range finders.", "The Secretary of War approved this recommendation on February 8, 1896, and the Board also urged acquiring government rights to use the instrument on fair terms.", "The Lewis instrument measures the distance from its height above the water to a target\u2014such as a ship\u2014by observing it through a powerful telescope and reading the range directly from a dial in yards.", "A second dial, on an arm moving in the vertical plane of the telescope, gives the azimuth (bearing) of the target; both dials move easily and experiments show the system is accurate to about 1 percent for ranges under 10,000 yards.", "Three Lewis instruments had been ordered and, by the time of the report, were being sent to San Francisco, Fort Monroe, and Fort Adams for service use.", "Board of Regulation and Seacoast Artillery Fire (p. 923)", "The reports of the board are appended (Appendix C) and show substancial progress", "A new system of fire control for the U.S. seacoast artillery based on polar coordinates has been proposed, approved by the Board of Ordnance and Fortification, and is printed in full in the appendix.", "The Board recommends that, when constructing new battery emplacements, careful provision be made for a system of fire control and communication between batteries, along with all necessary auxiliary appliances.", "The Board specifically urges that fire\u2011control appliances for this new system be installed at Fort Monroe, Fort Hancock, and San Francisco Harbor, where high\u2011power and pneumatic guns and mortars are being placed, emphasizing the supporting system rather than the weapons themselves.", "The Board recommends that a system of regulations and tactics for seacoast artillery fire control, based on the submitted report, be compiled and distributed to the Army for instructional and informational use.", "Several auxiliary fire\u2011control devices are noted as outgrowths of the Board\u2019s work:", "A multiplying scale for the position finder, developed by Lieutenant Rafferty.", "A \u201creplotting arm\u201d attachment for the Lewis position finder, also by Rafferty.", "A sliding scale to correct certain gun\u2011laying errors, by Lieutenant Millar. (This is a sighting/correction aid, not a gun itself.)", "A visual range and azimuth indicator, by Lieutenant Murray.", "A modified service sight for predicting a vessel\u2019s future position, by Lieutenant Hobbs.", "Two relocating instruments for converting position\u2011finder data into the equivalent data at the guns\u2014the Rafferty relocator and the Millar converter board\u2014have been procured and tested; both worked efficiently, though neither has yet been adopted for service.", "To solve the problem of communication between fire\u2011command officers, range\u2011finding stations, and the guns, two systems of telephones and a printing telegraph are being installed at \u201cthe Narrows.\u201d", "An electrical method of indicating the parallelism of two or more aiming arms\u2014using deflection of a galvanometer needle\u2014is being developed by Lieut. S. E. Allen, Fifth Artillery.", "A mechanical transmitter or dial telegraph for fire\u2011control communication, devised by Lieut. F. N. Lewis, Second Artillery, is under construction.", "The Board states that the Regulation of Seacoast Artillery Fire is very important and that it will encourage continued development of this integrated fire\u2011control system so a complete and efficient scheme can be presented to the War Department.", "Halpine Torpedo (p. 926)", "The Board has long wanted a reliable, controllable torpedo for harbor defense.", "After careful review, the Halpine system was judged worthy of testing, and funds were allotted for trials supervised by the Engineer Department.", "The Halpine torpedo is powered by an electric storage battery and guided electrically via a wire from the shore or a boat.", "It is designed to hurl a high\u2011explosive charge under a ship\u2019s keel, striking the most vulnerable point.", "Initial tests are expected to take place at Willets Point early next year.", "An experimental parapet (p. 927)", "One (in the form of the standard battery type at Sandy Hook Proving Ground) is being built to study how projectiles penetrate sand and concrete and to trace their paths accurately.", "The Board arranged at its May meeting to use the firing planned for other purposes (proof of guns, carriage tests, etc.) on this parapet in order to save money.", "The engineer member of the Board designed the parapet, which is now nearly finished, and it is expected that valuable data will be obtained from the firings.", "The polarizing photochronograph (p. 927)", "A new instrument previously reported as under construction\u2014has now been completed and is much better than the first model.", "It has already produced important results, and major investigations of smokeless powders in high\u2011power guns are planned using it.", "The instrument enables detailed study of projectile motion (inside and outside the bore) and gun recoil, and its value has been recognized both in the United States and in leading European military journals.", "For quicker dissemination, the Journal of the United States Artillery has been authorized to publish the Board\u2019s reports on experiments with this instrument, so they are not printed again as an appendix.", "Smokeless powders (p. 927)", "The Board reports decisive progress in U.S. production during the year and now believes satisfactory smokeless powders, for all calibers, can be obtained from American manufacturers.", "Development so far has mostly been funded by private manufacturers, but the government will still need to conduct expensive tests to select the best powder across all conditions (heat, erosion, permanence, cost, moisture, dryness, etc.).", "The Board has requested a substantial experimental budget and hopes that with this funding the problem of adopting a suitable smokeless powder for service can be solved in the coming year.", "As part of its November 1895 meeting, the Board visited Midvale Steel Works, Bethlehem Iron Works, the Army Gun Factory, and the Army Gun Carriage Factory to observe their methods and assess production capacity for ordnance materials.", "There is detailed information about these visits if you want to investigate private vs public investments more", "Annual Report 7", "https://www.govinfo.gov/app/details/SERIALSET-03590_00_00-026-0027-0000"], "preview": "Range and Position Finder (p. 922) The Board has not yet recommended adopting any specific horizontal\u2011base range finder, but several designs are still under consideration. The Fiske instrument at Fort Hamilton has produced very good results\u2026", "range": "1896\u20131898"}, {"num": 7, "start": 1896, "end": 1897, "name": "Overview", "page": "", "body": ["Smokeless Powders (p. 13)", "The development of satisfactory smokeless powders for cannon is being directed by Capt. Sidney E. Stuart of the Ordnance Department, with recurring financial support from the Board with considerable progress being made", "To industrialize production, contracts were given to leading powder makers to supply powder of a composition specified by the Ordnance Department, while each firm chose its own grain form.", "This has produced several grain types, all giving at least 25 percent more energy when fired than the brown cocoa powder used previously.", "These new powders are now being delivered; tests are not yet finished but are far enough along to indicate that final decisions will mainly concern the best grain form.", "The future service powder will likely be a nitroglycerine and gun\u2011cotton compound, in proportions and grain character that limit barrel erosion while maintaining high ballistic performance.", "The Board believes that orders could already be placed for smokeless powder and a standard grain form for all guns without leaving much to be desired ballistically.", "Further experiments will focus on adjusting grain form for each particular gun to obtain the best ballistic results with minimal powder expenditure.", "Special Methods of Throwing High Explosives (p. 14)", "The section reviews special methods of throwing high explosives that were under study in the previous annual report: the Sims\u2011Dudley, Maxim Powder and Torpedo, Pneumatic Torpedo and Construction Company, Mefford, and Justin systems.", "After close study, the Board finds that only the Pneumatic Torpedo and Construction Company\u2019s system has convincingly shown it can safely and accurately project nitro\u2011gelatin or similar high explosives in large quantities.", "Experiments are still underway to see if high explosives can be fired from powder guns with sufficient power, but so far no fully satisfactory success has been achieved.", "Batteries of 15\u2011inch pneumatic guns of this system at Fort Hancock (New York Harbor) and Fort Scott (San Francisco Harbor) demonstrate that:", "100\u2011pound charges of nitro\u2011gelatin can reach 4,800 yards.", "200\u2011pound charges can reach 3,500 yards.", "500\u2011pound charges can reach 2,600 yards.", "All of these ranges are obtained with high accuracy.", "As projectors of aerial torpedoes at coastal points where channels are narrow and too deep to be protected by underwater torpedoes (mines), the Board believes the pneumatic system could be very useful.", "The Board has not given up on the goal of firing large aerial torpedoes from powder guns and plans to continue experiments toward that objective.", "Auto-Mobile Dirigible Torpedos (p.14-15)", "The adoption of a standard type of automobile (self\u2011propelled) dirigible torpedo for harbor defense remains in a very unsatisfactory state.", "In the previous report, the Halpine torpedo was judged promising, and one unit was ordered.", "Lieutenant Halpine reports that he had to design and build a special motor to deliver the necessary power within strict limits of space and weight.", "The first two motors built did not meet contract requirements.", "A third motor is nearly finished, and the torpedo is expected to be ready for testing soon after November 1, 1897.", "Other torpedo systems, such as the Patrick and Lay types, have been brought to the Board\u2019s attention, but decisions on them are postponed until results of the Halpine trials are known.", "The Patrick torpedo has been tested by the Navy with excellent results but is more expensive than Halpine\u2019s system.", "The Lay torpedo has been used extensively in Europe.", "These torpedoes cost roughly $5,000 to $15,000 each; providing enough of them would require very large expenditures.", "The Board therefore wants to obtain the cheapest type that will still accomplish the required defensive work.", "Range Finders (p.15)", "Alternating Current Range and Position Finder is a new electrical range/position finder by Crehore and Squier; Board funded construction with drawings being nearly done and the build is expected to be quick.", "The Rueckman\u2011Crosby Range Finder is an earlier board-purchased instrument now being improved by Lt. Rueckman. He reports significant progress in its development.", "Lewis Subscale is an Azimuth-circle attachment for seacoast carriages that lets gunners set azimuth quickly and accurately.", "Tests showed it superior to the standard index; adopted for service with the Secretary of War\u2019s approval.", "Emergency / Supplementary Range Finders is the main advance this year: creation of a backup depression range finder for use if the primary system or communications fail.", "The board ordered two designs (Lewis and Rafferty) for service trials at Fort Wadsworth before choosing one.", "Rafferty Gun\u2011Carriage Range Finder is mounted directly on disappearing carriages, showing range and azimuth on the carriage circle. One ordered for the 10\u2011inch battery at Fort Monroe.", "Barr and Stroud Horizontal\u2011Base Range Finder is a English 4\u00bd\u2011foot tube instrument with mirrors at each end; user merges two images and reads distance from a scale.", "Convenient but short base limits long\u2011range accuracy; currently on test at Sandy Hook.", "Annual Report 8", "https://www.govinfo.gov/app/details/SERIALSET-03725_00_00-019-0021-0000"], "preview": "Smokeless Powders (p. 13) The development of satisfactory smokeless powders for cannon is being directed by Capt. Sidney E. Stuart of the Ordnance Department, with recurring financial support from the Board with considerable progress being \u2026", "range": "1896\u20131897"}, {"num": 3, "start": 1897, "end": 1891, "name": "Overview", "page": "", "body": ["Experimental parapet (p. 11)", "In October 1897, the Board allotted $10,000 to build an experimental steel\u2011rail parapet to test whether steel rails could effectively protect guns and magazines.", "The Chief of Engineers reports the parapet is complete, but firing tests have been delayed because the intended test gun was temporarily moved to Fort Washington\u2019s defenses.", "High Explosives (p. 11)", "On February 16, 1898, the Board recommended adopting emmensite and wet gun cotton as standard types of high explosives for filling shells.", "On April 12, jovite was added to this list, and all these recommendations were approved by the Secretary of War.", "Automobile Dirigible Torpedos (p.11)", "No significant progress has been made during the year toward a practical, reasonably priced automobile (self\u2011propelled) dirigible torpedo.", "The Halpine automobile torpedo, funded by an allotment on July 1, 1896, still has not been formally tested.", "On August 25, 1898, the inventor requested and received permission to conduct a preliminary trial of his first torpedo at Willets Point, to refine the design of a second torpedo for delivery.", "The Board expects the usefulness of the Halpine invention to be determined in the coming year.", "Range Finders (p.12-13)", "The Barr and Stroud fortress range finder was bought with Board funds and thoroughly tested at the proving ground, but the tests showed it is not satisfactory for regular service use.", "The alternating current range finder by Crehore and Squier was funded, built, and installed at Fort Monroe for trial; although the inventors dropped the original electrical features and the finished instrument is purely mechanical, the Board found its performance accurate and believes it will be a very satisfactory service instrument.", "Development of the Rueckman\u2011Crosby range finder has seen little progress this year because Lieutenant Rueckman has been occupied with other duties, limiting his time for further work.", "For the emergency type position finder, the Board decided it must achieve 1 percent accuracy out to 6,000 yards with a 60\u2011foot vertical base, and 1 percent out to 8,000 yards with longer bases, and be built in several classes to fit different base lengths; both the Rafferty and Lewis designs meet these standards, so the final choice will depend mainly on cost.", "The Rafferty gun\u2011carriage range finder was constructed under a Board allotment and sent to the Artillery School at Fort Monroe, where a board of artillery officers tested it and prepared a formal report on its performance."], "preview": "Experimental parapet (p. 11) In October 1897, the Board allotted $10,000 to build an experimental steel\u2011rail parapet to test whether steel rails could effectively protect guns and magazines. The Chief of Engineers reports the parapet is com\u2026", "range": "1897\u20131891"}];
+const tbody = document.getElementById('tbody');
+const fAR = document.getElementById('f-ar');
+const fQ  = document.getElementById('f-q');
+const count = document.getElementById('f-count');
+const mbg = document.getElementById('mbg');
+const mbody = document.getElementById('mbody');
+
+const arNums = [...new Set(T.map(t => t.num))].sort((a,b)=>a-b);
+for (const n of arNums) {
+  const o = document.createElement('option');
+  o.value = n;
+  const t = T.find(x => x.num === n);
+  o.textContent = `AR ${n} (${t.range})`;
+  fAR.appendChild(o);
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function row(t, i) {
+  return `<tr class="clickable" data-ar="${t.num}" data-i="${i}">
+    <td class="tight"><span class="chip brass">AR ${t.num}</span></td>
+    <td class="tight mono">${t.range}</td>
+    <td class="summary">${esc(t.name)}</td>
+    <td class="detail serif">${esc(t.preview)}</td>
+    <td class="tight mono">${esc(t.page || '—')}</td>
+  </tr>`;
+}
+tbody.innerHTML = T.map(row).join('');
+
+function open(i) {
+  const t = T[i];
+  const paras = t.body.map(b => `<p>${esc(b)}</p>`).join('');
+  mbody.innerHTML = `
+    <button class="modal-close" id="mclose">× close</button>
+    <h2>${esc(t.name)}</h2>
+    <div class="modal-meta">Annual Report ${t.num} · ${t.range} · Page ${esc(t.page || '—')}</div>
+    ${paras}
+    <div class="modal-source">Source: Data/Misc/BOF Non-Gun Assignment_complete.docx</div>`;
+  mbg.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('mclose').addEventListener('click', close);
+}
+function close() {
+  mbg.classList.remove('open');
+  document.body.style.overflow = '';
+}
+tbody.addEventListener('click', e => {
+  const tr = e.target.closest('tr.clickable');
+  if (tr) open(parseInt(tr.dataset.i));
+});
+mbg.addEventListener('click', e => { if (e.target === mbg) close(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+function apply() {
+  const a = fAR.value, q = fQ.value.trim().toLowerCase();
+  let n = 0;
+  for (const tr of tbody.children) {
+    const ok = (!a || tr.dataset.ar === a)
+            && (!q || tr.textContent.toLowerCase().includes(q));
+    tr.classList.toggle('hidden', !ok);
+    if (ok) n++;
+  }
+  count.textContent = `${n} of ${T.length} topics`;
+}
+[fAR, fQ].forEach(el => el.addEventListener('input', apply));
+document.getElementById('f-clear').addEventListener('click', () => {
+  fAR.value=''; fQ.value=''; apply();
+});
+apply();
+
+</script>
+</body>
+</html>
