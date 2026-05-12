@@ -19,3 +19,4 @@ __pycache__/
 qa_file.txt
 *.duplicate
 .gstack/
+.vercel

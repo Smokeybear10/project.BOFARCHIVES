@@ -1,6 +1,6 @@
 # Fortify the Ordnance | BOF Archive Dashboard
 
-An interactive archive of every weapon proposal and research dollar that passed through the U.S. Board of Ordnance & Fortification — the federal body that decided which 19th-century inventions the Army should adopt. 1,691 proposals, 1,382 grants, 202 technologies, 33 years (1888–1920).
+An interactive archive of every weapon proposal and research dollar that passed through the U.S. Board of Ordnance & Fortification — the federal body that decided which 19th-century inventions the Army should adopt. 1,691 proposals, 1,144 allotments, 202 technologies, 33 years (1888–1920).
 
 The source material — Excel spreadsheets, scanned PDFs, hand-transcribed reports — is unreadable as raw files. This is the readable version.
 
@@ -63,7 +63,7 @@ Shared: theme switcher, URL-hash filter sync, keyboard shortcuts (`/` search · 
 ```
 fortify-the-ordnance/
 ├── index.html              # dashboard — served at localhost:2104
-├── explainer.html          # plain-English walkthrough + presentation script
+├── about.html              # project background, team, data sources
 ├── app.js                  # filters, charts, table, modal
 ├── style.css               # dashboard styles
 ├── serve.sh                # boots http.server on port 2104
@@ -87,8 +87,8 @@ Classification rules (status keywords, technology clusters, proposer patterns) l
 ## Team
 
 - **Thomas Ou** — pipeline architecture, dashboard, brand identity, master ledger 1888–1919, historical events timeline
-- **Yunha** — financial × technology investment analysis (treemap, trajectory, ROI bubble) built off the master 1888–1918 allotment ledger
-- **Paul B** — technology review timeline 1888–1916, hand-classified into nine fine-grained categories. Canonical source at [paull0318.github.io/BOF-Visuals-20260511](https://paull0318.github.io/BOF-Visuals-20260511/)
+- **Yunha** — financial × technology investment analysis (treemap, trajectory) built off the master 1888–1918 allotment ledger, plus the canonical visual site at [paull0318.github.io/BOF-Visuals-20260511](https://paull0318.github.io/BOF-Visuals-20260511/) extending coverage back to 1888
+- **Paul B** — technology review timeline 1888–1916, hand-classified into nine fine-grained categories
 - **Tanisha** — technology type prevalence (stacked bars, heatmap, ranking) across 13 categories × 9 reporting periods. Original R/ggplot2 at [`team/tanisha/technology_prevalence.R`](team/tanisha/technology_prevalence.R), Plotly port at [`bof_pipeline/tanisha_charts.py`](bof_pipeline/tanisha_charts.py)
 
 ---

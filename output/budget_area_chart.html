@@ -69,15 +69,428 @@
     white-space:nowrap;flex-shrink:0;
   }
 </style>
+
+<style id="bof-chart-frame">
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #F4EDDB;
+    font-family: 'Source Serif 4', Georgia, serif;
+    color: #1A1A2E;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 36px;
+    box-sizing: border-box;
+  }
+  .plotly-graph-div {
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 1480px;
+    background: #FBF6E6;
+    border: 1px solid #D6CEBF;
+    border-radius: 8px;
+    box-shadow: 0 6px 22px rgba(60, 40, 10, 0.10), 0 2px 6px rgba(60, 40, 10, 0.05);
+    padding: 18px 22px;
+    box-sizing: border-box;
+  }
+  @media (max-width: 720px) {
+    body { padding: 12px; }
+    .plotly-graph-div { padding: 10px; }
+  }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="bof-chart-resize">
+  // Force Plotly to relayout when the viewport changes — critical for tablets
+  // rotating, browser windows being resized, and DevTools opening.
+  (function() {
+    function resizeCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try { Plotly.Plots.resize(div); } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(resizeCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(resizeCharts, 200);
+    });
+    // First paint nudge — some browsers ignore Plotly's autosize on initial load
+    window.addEventListener('load', function() { setTimeout(resizeCharts, 50); });
+  })();
+</script>
+
+
+<script id="bof-chart-resize">
+  // Force Plotly to relayout when the viewport changes — critical for tablets
+  // rotating, browser windows being resized, and DevTools opening.
+  (function() {
+    function resizeCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try { Plotly.Plots.resize(div); } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(resizeCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(resizeCharts, 200);
+    });
+    // First paint nudge — some browsers ignore Plotly's autosize on initial load
+    window.addEventListener('load', function() { setTimeout(resizeCharts, 50); });
+  })();
+</script>
+
+
+<script id="bof-chart-resize">
+  // Force Plotly to relayout when the viewport changes — critical for tablets
+  // rotating, browser windows being resized, and DevTools opening.
+  (function() {
+    function resizeCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try { Plotly.Plots.resize(div); } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(resizeCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(resizeCharts, 200);
+    });
+    // First paint nudge — some browsers ignore Plotly's autosize on initial load
+    window.addEventListener('load', function() { setTimeout(resizeCharts, 50); });
+  })();
+</script>
+
+
+<script id="bof-chart-resize">
+  // Force Plotly to relayout when the viewport changes — critical for tablets
+  // rotating, browser windows being resized, and DevTools opening.
+  (function() {
+    function resizeCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try { Plotly.Plots.resize(div); } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(resizeCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(resizeCharts, 200);
+    });
+    // First paint nudge — some browsers ignore Plotly's autosize on initial load
+    window.addEventListener('load', function() { setTimeout(resizeCharts, 50); });
+  })();
+</script>
+
+
+<script id="bof-chart-resize">
+  // Force Plotly to relayout when the viewport changes — critical for tablets
+  // rotating, browser windows being resized, and DevTools opening.
+  (function() {
+    function resizeCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try { Plotly.Plots.resize(div); } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(resizeCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(resizeCharts, 200);
+    });
+    // First paint nudge — some browsers ignore Plotly's autosize on initial load
+    window.addEventListener('load', function() { setTimeout(resizeCharts, 50); });
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style id="bof-chart-frame">
+  /* ── Base ─────────────────────────────────────────────────────────── */
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #EAE3D8;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1A1A2E;
+    overflow-x: hidden;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header strip ─────────────────────────────────────────────────── */
+  .bof-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: #FBF6E6;
+    border-bottom: 1px solid #D6CEBF;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: #55556A;
+    flex-shrink: 0;
+  }
+  .bof-bar .bof-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+    min-width: 0;
+  }
+  .bof-bar .bof-brand svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: #C9A24C;
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .bof-bar .bof-brand:hover svg { transform: rotate(45deg); }
+  .bof-bar .bof-brand strong {
+    color: #1A1A2E;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bof-bar a.bof-back {
+    color: #55556A;
+    text-decoration: none;
+    letter-spacing: 1.2px;
+    white-space: nowrap;
+  }
+  .bof-bar a.bof-back:hover { color: #C9A24C; }
+
+  /* ── Chart container ──────────────────────────────────────────────── */
+  .bof-chart-wrap {
+    flex: 1;
+    display: flex;
+    align-items: stretch;             /* chart fills full height of wrap */
+    justify-content: center;
+    padding: 16px 24px 20px;
+    box-sizing: border-box;
+    min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Chart fills BOTH dimensions of the wrap (which is flex:1, so it takes
+     all remaining viewport after the header). On narrow screens, min-width
+     forces horizontal scroll instead of collapsing the chart. */
+  .plotly-graph-div {
+    margin: 0 auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 720px;
+    min-height: 520px;
+    flex-shrink: 0;
+  }
+  .plotly-graph-div .gtitle { font-family: 'Source Serif 4', Georgia, serif !important; }
+  .modebar-container, .modebar { display: none !important; }
+  .plotly-graph-div .bartext { font-family: 'Inter', sans-serif !important; }
+
+  /* Subtle scroll hint on narrow screens */
+  .bof-chart-wrap::-webkit-scrollbar { height: 10px; }
+  .bof-chart-wrap::-webkit-scrollbar-track { background: transparent; }
+  .bof-chart-wrap::-webkit-scrollbar-thumb {
+    background: rgba(201, 162, 76, 0.35);
+    border-radius: 5px;
+  }
+  .bof-chart-wrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 162, 76, 0.65);
+  }
+
+  /* ── Responsive breakpoints ───────────────────────────────────────── */
+
+  /* Ultra-wide (1920+) */
+  @media (min-width: 1920px) {
+    .bof-chart-wrap { padding: 20px 40px 28px; }
+    .bof-bar { padding: 16px 40px; font-size: 12px; }
+  }
+
+  /* Large desktop (1280-1919) */
+  @media (min-width: 1280px) and (max-width: 1919px) {
+    .bof-chart-wrap { padding: 18px 32px 22px; }
+  }
+
+  /* Small laptop / tablet landscape (900-1279) */
+  @media (min-width: 900px) and (max-width: 1279px) {
+    .bof-chart-wrap { padding: 14px 18px 18px; }
+    .bof-bar { padding: 12px 22px; }
+  }
+
+  /* Tablet portrait (600-899) */
+  @media (min-width: 600px) and (max-width: 899px) {
+    .bof-bar { padding: 12px 18px; font-size: 10.5px; }
+    .bof-chart-wrap { padding: 10px 12px 14px; }
+    .plotly-graph-div { min-height: 440px; }
+  }
+
+  /* Mobile (<600): chart keeps 720px min-width and scrolls horizontally.
+     Hint banner tells the user the chart is scrollable. */
+  @media (max-width: 599px) {
+    .bof-bar {
+      padding: 10px 12px;
+      font-size: 9.5px;
+      letter-spacing: 0.9px;
+      gap: 8px;
+    }
+    .bof-bar .bof-brand { gap: 6px; }
+    .bof-bar .bof-brand strong { letter-spacing: 1px; font-size: 10px; }
+    .bof-bar .bof-brand svg { width: 14px; height: 14px; }
+    .bof-chart-wrap {
+      padding: 8px 6px 16px;
+      align-items: flex-start;
+    }
+    .plotly-graph-div { min-height: 420px; }
+    body::before {
+      content: "↔ swipe to scroll chart";
+      position: fixed;
+      bottom: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      background: rgba(201, 162, 76, 0.92);
+      color: #1A1A2E;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 100;
+      animation: bof-hint-fade 5s ease-in forwards;
+    }
+  }
+  @keyframes bof-hint-fade {
+    0%, 60% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* Very small (<380): hide "back to dashboard" text, keep just back arrow */
+  @media (max-width: 379px) {
+    .bof-bar a.bof-back { font-size: 16px; }
+    .bof-bar a.bof-back .bof-back-text { display: none; }
+  }
+</style>
+<script id="bof-chart-resize">
+  // Every Plotly chart hard-codes its own height/width on the div inline.
+  // Strip those, set its own layout to autosize, then resize from the
+  // CSS-driven container dimensions. This is what makes every chart fill
+  // its frame identically regardless of what the Python writer set.
+  (function() {
+    function fitAllCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try {
+          // Strip Plotly's inline width/height so the CSS wins
+          div.style.removeProperty('height');
+          div.style.removeProperty('width');
+          // Tell Plotly the chart is autosizing — this disables any
+          // Python-side fixed height/width baked into the layout.
+          Plotly.relayout(div, {
+            autosize: true,
+            width: null,
+            height: null,
+          });
+          Plotly.Plots.resize(div);
+        } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(fitAllCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(fitAllCharts, 200);
+    });
+    // First paint: do it as soon as the document is ready, and again after
+    // load to catch lazy-init charts.
+    if (document.readyState === 'complete') {
+      setTimeout(fitAllCharts, 30);
+    } else {
+      window.addEventListener('load', function() { setTimeout(fitAllCharts, 30); });
+      document.addEventListener('DOMContentLoaded', function() { setTimeout(fitAllCharts, 60); });
+    }
+  })();
+</script>
 </head>
 <body>
+<div class="bof-bar">
+  <a class="bof-brand" href="/" title="Back to dashboard">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+    </svg>
+    <strong>FORTIFY THE ORDNANCE</strong>
+  </a>
+  <a class="bof-back" href="/" aria-label="Back to dashboard">←<span class="bof-back-text">&nbsp;back to dashboard</span></a>
+</div>
+<div class="bof-chart-wrap">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div class="card">
   <div class="eyebrow">U.S. Military Budget &nbsp;·&nbsp; Historical Analysis</div>
   <h1>U.S. Military Appropriations, 1865–1920</h1>
   <p class="sub">Stacked area showing Army and Navy appropriations over 55 fiscal years. Toggle between nominal and 2025 inflation-adjusted dollars. Dotted lines mark the three major military inflection points of the era.</p>
   <div class="rule"></div>
   <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>                <div id="f0f074ef-04f0-47c3-b52c-6ca12ce045f0" class="plotly-graph-div" style="height:500px; width:100%;"></div>            <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("f0f074ef-04f0-47c3-b52c-6ca12ce045f0")) {                    Plotly.newPlot(                        "f0f074ef-04f0-47c3-b52c-6ca12ce045f0",                        [{"customdata":["$112M","$20M","$16M","$17M","$18M","$18M","$17M","$17M","$26M","$19M","$19M","$17M","$19M","$19M","$19M","$14M","$15M","$15M","$16M","$15M","$15M","$16M","$26M","$20M","$22M","$24M","$32M","$24M","$22M","$25M","$29M","$31M","$33M","$24M","$48M","$65M","$77M","$77M","$98M","$119M","$102M","$101M","$100M","$119M","$137M","$131M","$126M","$123M","$141M","$145M","$275M","$616M","$517M","$1.6B","$593M"],"fillcolor":"rgba(10,110,93,0.50)","hovertemplate":"\u003cb\u003eNavy\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eAppropriation: %{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#0A6E5D","width":2},"name":"Navy","stackgroup":"nominal","visible":true,"x":[1866,1867,1868,1869,1870,1871,1872,1873,1874,1875,1876,1877,1878,1879,1880,1881,1882,1883,1884,1885,1886,1887,1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920],"y":[111562528.95,20033616.56,16288244.01,17356350.0,17905952.77,18177677.79,16844562.25,16634612.45,26197815.89,19162918.75,18940054.4,16934054.4,18919970.69,18629809.0,18948397.5,14405797.7,14566037.55,14819976.8,15894434.23,14980472.59,15070837.95,16489097.2,25767348.19,19942835.35,21692510.27,24136035.53,31541654.78,23543385.0,22104061.38,25327126.27,29416245.31,30562660.95,33003234.19,23551351.9,48099969.58,65140916.67,77016635.6,76760938.13,97505140.94,119028416.94,102091670.27,100727807.5,100303602.93,119047090.0,136935199.05,131350854.38,126478338.24,123225007.76,140800643.53,144945833.61,275004772.42,616394150.44,516922111.08,1592666415.84,592811416.88],"type":"scatter"},{"customdata":["$467M","$36M","$18M","$37M","$42M","$29M","$26M","$42M","$28M","$29M","$29M","$26M","$25M","$25M","$26M","$26M","$26M","$24M","$24M","$26M","$24M","$24M","$24M","$24M","$25M","$26M","$25M","$24M","$24M","$23M","$23M","$24M","$23M","$81M","$114M","$112M","$50M","$76M","$72M","$68M","$49M","$78M","$83M","$95M","$93M","$80M","$88M","$94M","$99M","$157M","$435M","$5.6B","$9.2B","$742M"],"fillcolor":"rgba(29,52,97,0.50)","hovertemplate":"\u003cb\u003eArmy\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eAppropriation: %{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1D3461","width":2},"name":"Army","stackgroup":"nominal","visible":true,"x":[1866,1867,1868,1869,1870,1871,1872,1873,1874,1875,1876,1877,1878,1880,1881,1882,1883,1884,1885,1886,1887,1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920],"y":[467079527.7,36232224.83,18068512.0,37364413.0,42119393.2,29021367.22,26044580.0,41748844.32,28057500.0,29176500.0,28838860.0,25933390.32,25188000.0,24942800.0,25550800.0,26378800.0,26163000.0,24478250.0,24334450.0,25786552.5,23887588.46,24471300.0,23824615.73,24231626.79,24613529.19,25949207.0,24656149.82,23568284.68,23592884.68,23252608.09,23278408.78,23902307.65,23192392.0,81437954.06,114249095.55,112118749.1,49717136.41,76100000.0,72357920.88,68357919.64,49273165.08,77630582.75,83227694.61,94887598.92,92951017.55,80057075.02,88000000.0,94399012.08,98538905.76,157060640.0,434604332.52,5645584931.93,9208524279.29,742329523.0],"type":"scatter"},{"customdata":["$2.3B","$435M","$368M","$410M","$439M","$478M","$443M","$445M","$738M","$559M","$568M","$518M","$607M","$598M","$596M","$453M","$458M","$471M","$521M","$496M","$515M","$557M","$871M","$696M","$765M","$852M","$1.1B","$840M","$825M","$968M","$1.1B","$1.2B","$1.3B","$911M","$1.8B","$2.5B","$2.9B","$2.8B","$3.5B","$4.3B","$3.6B","$3.4B","$3.5B","$4.2B","$4.6B","$4.4B","$4.2B","$4.0B","$4.5B","$4.6B","$8.1B","$15.5B","$11.0B","$29.6B","$9.5B"],"fillcolor":"rgba(10,110,93,0.50)","hovertemplate":"\u003cb\u003eNavy\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003e2025 Value: %{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#0A6E5D","width":2},"name":"Navy (2025 $)","stackgroup":"adjusted","visible":false,"x":[1866,1867,1868,1869,1870,1871,1872,1873,1874,1875,1876,1877,1878,1879,1880,1881,1882,1883,1884,1885,1886,1887,1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920],"y":[2252659708.97,434582272.88,368264866.18,409726313.45,438834238.11,478357883.33,443276046.4,445046926.69,737793117.43,559298092.58,568292349.55,517780888.83,607428024.0,598112346.67,596412421.85,453431309.69,458474957.15,471086344.22,520706936.49,495824685.63,514735251.32,557246870.26,870804141.64,695942632.35,765319509.65,851527953.51,1112800845.52,839848131.5,825178666.99,968012565.23,1124300277.03,1182190421.85,1276593926.6,910986863.46,1838399447.45,2460420320.36,2875149666.3,2800476720.21,3517319930.36,4342525232.29,3641850928.31,3440296649.75,3500282293.5,4200023852.02,4627707034.11,4438984840.76,4186188514.42,3996115431.58,4520422260.61,4607429808.2,8100057425.82,15460477538.39,10990628471.18,29556505412.63,9516142320.18],"type":"scatter"},{"customdata":["$9.4B","$786M","$409M","$882M","$1.0B","$764M","$685M","$1.1B","$790M","$852M","$865M","$793M","$809M","$785M","$804M","$830M","$832M","$802M","$805M","$881M","$807M","$827M","$831M","$855M","$868M","$915M","$880M","$880M","$902M","$889M","$900M","$925M","$897M","$3.1B","$4.3B","$4.2B","$1.8B","$2.7B","$2.6B","$2.4B","$1.7B","$2.7B","$2.9B","$3.2B","$3.1B","$2.6B","$2.9B","$3.0B","$3.1B","$4.6B","$10.9B","$120.0B","$170.9B","$11.9B"],"fillcolor":"rgba(29,52,97,0.50)","hovertemplate":"\u003cb\u003eArmy\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003e2025 Value: %{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1D3461","width":2},"name":"Army (2025 $)","stackgroup":"adjusted","visible":false,"x":[1866,1867,1868,1869,1870,1871,1872,1873,1874,1875,1876,1877,1878,1880,1881,1882,1883,1884,1885,1886,1887,1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920],"y":[9431224290.41,785973045.4,408515377.69,882050845.53,1032250674.51,763716903.5,685380734.81,1116959887.92,790166267.27,851559254.15,865303930.05,792947369.43,808663888.5,785089913.58,804227086.13,830288893.48,831649886.51,801915587.79,805423256.76,880723926.95,807277908.9,827004363.59,831404637.05,854900447.3,868374100.37,915497290.53,879543079.99,879840378.71,901729180.67,888723677.74,900429185.16,924562138.42,897101980.97,3112590112.91,4315272345.61,4185565645.0,1813835089.87,2745168553.37,2639841016.58,2438488394.2,1682894812.81,2709064742.4,2936302790.02,3206713920.29,3141267407.71,2649734433.66,2853788888.89,3030692082.7,3132281076.03,4626102275.03,10900801891.48,120034576117.7,170890649163.09,11916291063.55],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"title":{"text":"Fiscal Year","font":{"size":11,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"}},"tickfont":{"size":11},"gridcolor":"#D6CEBF","linecolor":"#D6CEBF","tickmode":"linear","dtick":5},"yaxis":{"title":{"text":"Appropriation (Nominal $)","font":{"size":11,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"}},"tickfont":{"size":11},"gridcolor":"#D6CEBF","linecolor":"#D6CEBF","tickformat":"$,.0f"},"legend":{"font":{"size":12,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"},"orientation":"h","y":1.01,"x":0,"xanchor":"left","yanchor":"bottom","bgcolor":"rgba(0,0,0,0)"},"font":{"size":12,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","color":"#1A1A2E"},"hoverlabel":{"font":{"size":12,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"},"bgcolor":"#FDFBF8","bordercolor":"#D6CEBF"},"margin":{"l":80,"r":36,"t":40,"b":60},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"#EAE3D8","updatemenus":[{"bgcolor":"#FDFBF8","bordercolor":"#D6CEBF","borderwidth":1,"buttons":[{"args":[{"visible":[true,true,false,false]},{"yaxis.title.text":"Appropriation (Nominal $)"}],"label":"Nominal $","method":"update"},{"args":[{"visible":[false,false,true,true]},{"yaxis.title.text":"Appropriation (2025 $)"}],"label":"2025 Inflation-Adjusted","method":"update"}],"direction":"right","font":{"color":"#1A1A2E","family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","size":11},"showactive":true,"type":"buttons","x":1.0,"xanchor":"right","y":1.0,"yanchor":"bottom"}],"hovermode":"x unified","height":500,"shapes":[{"layer":"below","line":{"color":"rgba(26,26,46,0.28)","dash":"dot","width":1.3},"type":"line","x0":1865,"x1":1865,"y0":0,"y1":11017214509.0326},{"layer":"below","line":{"color":"rgba(26,26,46,0.28)","dash":"dot","width":1.3},"type":"line","x0":1898,"x1":1898,"y0":0,"y1":11017214509.0326},{"layer":"below","line":{"color":"rgba(26,26,46,0.28)","dash":"dot","width":1.3},"type":"line","x0":1917,"x1":1917,"y0":0,"y1":11017214509.0326}],"annotations":[{"font":{"color":"#55556A","family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","size":10},"showarrow":false,"text":"Civil War ends","x":1865,"xanchor":"center","y":11395256183.36215},{"font":{"color":"#55556A","family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","size":10},"showarrow":false,"text":"Spanish-American War","x":1898,"xanchor":"center","y":11395256183.36215},{"font":{"color":"#55556A","family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","size":10},"showarrow":false,"text":"U.S. enters WWI","x":1917,"xanchor":"center","y":11395256183.36215}]},                        {"responsive": true}                    )                };                            </script>        </div>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>                <div id="a2244528-247e-468c-993b-cea9aca63fca" class="plotly-graph-div" style="height:500px; width:100%;"></div>            <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("a2244528-247e-468c-993b-cea9aca63fca")) {                    Plotly.newPlot(                        "a2244528-247e-468c-993b-cea9aca63fca",                        [{"customdata":["$112M","$20M","$16M","$17M","$18M","$18M","$17M","$17M","$26M","$19M","$19M","$17M","$19M","$19M","$19M","$14M","$15M","$15M","$16M","$15M","$15M","$16M","$26M","$20M","$22M","$24M","$32M","$24M","$22M","$25M","$29M","$31M","$33M","$24M","$48M","$65M","$77M","$77M","$98M","$119M","$102M","$101M","$100M","$119M","$137M","$131M","$126M","$123M","$141M","$145M","$275M","$616M","$517M","$1.6B","$593M"],"fillcolor":"rgba(10,110,93,0.50)","hovertemplate":"\u003cb\u003eNavy\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eAppropriation: %{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#0A6E5D","width":2},"name":"Navy","stackgroup":"nominal","visible":true,"x":[1866,1867,1868,1869,1870,1871,1872,1873,1874,1875,1876,1877,1878,1879,1880,1881,1882,1883,1884,1885,1886,1887,1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920],"y":[111562528.95,20033616.56,16288244.01,17356350.0,17905952.77,18177677.79,16844562.25,16634612.45,26197815.89,19162918.75,18940054.4,16934054.4,18919970.69,18629809.0,18948397.5,14405797.7,14566037.55,14819976.8,15894434.23,14980472.59,15070837.95,16489097.2,25767348.19,19942835.35,21692510.27,24136035.53,31541654.78,23543385.0,22104061.38,25327126.27,29416245.31,30562660.95,33003234.19,23551351.9,48099969.58,65140916.67,77016635.6,76760938.13,97505140.94,119028416.94,102091670.27,100727807.5,100303602.93,119047090.0,136935199.05,131350854.38,126478338.24,123225007.76,140800643.53,144945833.61,275004772.42,616394150.44,516922111.08,1592666415.84,592811416.88],"type":"scatter"},{"customdata":["$467M","$36M","$18M","$37M","$42M","$29M","$26M","$42M","$28M","$29M","$29M","$26M","$25M","$25M","$26M","$26M","$26M","$24M","$24M","$26M","$24M","$24M","$24M","$24M","$25M","$26M","$25M","$24M","$24M","$23M","$23M","$24M","$23M","$81M","$114M","$112M","$50M","$76M","$72M","$68M","$49M","$78M","$83M","$95M","$93M","$80M","$88M","$94M","$99M","$157M","$435M","$5.6B","$9.2B","$742M"],"fillcolor":"rgba(29,52,97,0.50)","hovertemplate":"\u003cb\u003eArmy\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003eAppropriation: %{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1D3461","width":2},"name":"Army","stackgroup":"nominal","visible":true,"x":[1866,1867,1868,1869,1870,1871,1872,1873,1874,1875,1876,1877,1878,1880,1881,1882,1883,1884,1885,1886,1887,1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920],"y":[467079527.7,36232224.83,18068512.0,37364413.0,42119393.2,29021367.22,26044580.0,41748844.32,28057500.0,29176500.0,28838860.0,25933390.32,25188000.0,24942800.0,25550800.0,26378800.0,26163000.0,24478250.0,24334450.0,25786552.5,23887588.46,24471300.0,23824615.73,24231626.79,24613529.19,25949207.0,24656149.82,23568284.68,23592884.68,23252608.09,23278408.78,23902307.65,23192392.0,81437954.06,114249095.55,112118749.1,49717136.41,76100000.0,72357920.88,68357919.64,49273165.08,77630582.75,83227694.61,94887598.92,92951017.55,80057075.02,88000000.0,94399012.08,98538905.76,157060640.0,434604332.52,5645584931.93,9208524279.29,742329523.0],"type":"scatter"},{"customdata":["$2.3B","$435M","$368M","$410M","$439M","$478M","$443M","$445M","$738M","$559M","$568M","$518M","$607M","$598M","$596M","$453M","$458M","$471M","$521M","$496M","$515M","$557M","$871M","$696M","$765M","$852M","$1.1B","$840M","$825M","$968M","$1.1B","$1.2B","$1.3B","$911M","$1.8B","$2.5B","$2.9B","$2.8B","$3.5B","$4.3B","$3.6B","$3.4B","$3.5B","$4.2B","$4.6B","$4.4B","$4.2B","$4.0B","$4.5B","$4.6B","$8.1B","$15.5B","$11.0B","$29.6B","$9.5B"],"fillcolor":"rgba(10,110,93,0.50)","hovertemplate":"\u003cb\u003eNavy\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003e2025 Value: %{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#0A6E5D","width":2},"name":"Navy (2025 $)","stackgroup":"adjusted","visible":false,"x":[1866,1867,1868,1869,1870,1871,1872,1873,1874,1875,1876,1877,1878,1879,1880,1881,1882,1883,1884,1885,1886,1887,1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920],"y":[2252659708.97,434582272.88,368264866.18,409726313.45,438834238.11,478357883.33,443276046.4,445046926.69,737793117.43,559298092.58,568292349.55,517780888.83,607428024.0,598112346.67,596412421.85,453431309.69,458474957.15,471086344.22,520706936.49,495824685.63,514735251.32,557246870.26,870804141.64,695942632.35,765319509.65,851527953.51,1112800845.52,839848131.5,825178666.99,968012565.23,1124300277.03,1182190421.85,1276593926.6,910986863.46,1838399447.45,2460420320.36,2875149666.3,2800476720.21,3517319930.36,4342525232.29,3641850928.31,3440296649.75,3500282293.5,4200023852.02,4627707034.11,4438984840.76,4186188514.42,3996115431.58,4520422260.61,4607429808.2,8100057425.82,15460477538.39,10990628471.18,29556505412.63,9516142320.18],"type":"scatter"},{"customdata":["$9.4B","$786M","$409M","$882M","$1.0B","$764M","$685M","$1.1B","$790M","$852M","$865M","$793M","$809M","$785M","$804M","$830M","$832M","$802M","$805M","$881M","$807M","$827M","$831M","$855M","$868M","$915M","$880M","$880M","$902M","$889M","$900M","$925M","$897M","$3.1B","$4.3B","$4.2B","$1.8B","$2.7B","$2.6B","$2.4B","$1.7B","$2.7B","$2.9B","$3.2B","$3.1B","$2.6B","$2.9B","$3.0B","$3.1B","$4.6B","$10.9B","$120.0B","$170.9B","$11.9B"],"fillcolor":"rgba(29,52,97,0.50)","hovertemplate":"\u003cb\u003eArmy\u003c\u002fb\u003e\u003cbr\u003eYear: %{x}\u003cbr\u003e2025 Value: %{customdata}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1D3461","width":2},"name":"Army (2025 $)","stackgroup":"adjusted","visible":false,"x":[1866,1867,1868,1869,1870,1871,1872,1873,1874,1875,1876,1877,1878,1880,1881,1882,1883,1884,1885,1886,1887,1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920],"y":[9431224290.41,785973045.4,408515377.69,882050845.53,1032250674.51,763716903.5,685380734.81,1116959887.92,790166267.27,851559254.15,865303930.05,792947369.43,808663888.5,785089913.58,804227086.13,830288893.48,831649886.51,801915587.79,805423256.76,880723926.95,807277908.9,827004363.59,831404637.05,854900447.3,868374100.37,915497290.53,879543079.99,879840378.71,901729180.67,888723677.74,900429185.16,924562138.42,897101980.97,3112590112.91,4315272345.61,4185565645.0,1813835089.87,2745168553.37,2639841016.58,2438488394.2,1682894812.81,2709064742.4,2936302790.02,3206713920.29,3141267407.71,2649734433.66,2853788888.89,3030692082.7,3132281076.03,4626102275.03,10900801891.48,120034576117.7,170890649163.09,11916291063.55],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"title":{"text":"Fiscal Year","font":{"size":11,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"}},"tickfont":{"size":11},"gridcolor":"#D6CEBF","linecolor":"#D6CEBF","tickmode":"linear","dtick":5},"yaxis":{"title":{"text":"Appropriation (Nominal $)","font":{"size":11,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"}},"tickfont":{"size":11},"gridcolor":"#D6CEBF","linecolor":"#D6CEBF","tickformat":"$,.0f"},"legend":{"font":{"size":12,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"},"orientation":"h","y":1.01,"x":0,"xanchor":"left","yanchor":"bottom","bgcolor":"rgba(0,0,0,0)"},"font":{"size":12,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","color":"#1A1A2E"},"hoverlabel":{"font":{"size":12,"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"},"bgcolor":"#FDFBF8","bordercolor":"#D6CEBF"},"margin":{"l":80,"r":36,"t":40,"b":60},"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"#EAE3D8","updatemenus":[{"bgcolor":"#FDFBF8","bordercolor":"#D6CEBF","borderwidth":1,"buttons":[{"args":[{"visible":[true,true,false,false]},{"yaxis.title.text":"Appropriation (Nominal $)"}],"label":"Nominal $","method":"update"},{"args":[{"visible":[false,false,true,true]},{"yaxis.title.text":"Appropriation (2025 $)"}],"label":"2025 Inflation-Adjusted","method":"update"}],"direction":"right","font":{"color":"#1A1A2E","family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","size":11},"showactive":true,"type":"buttons","x":1.0,"xanchor":"right","y":1.0,"yanchor":"bottom"}],"hovermode":"x unified","height":500,"shapes":[{"layer":"below","line":{"color":"rgba(26,26,46,0.28)","dash":"dot","width":1.3},"type":"line","x0":1865,"x1":1865,"y0":0,"y1":11017214509.0326},{"layer":"below","line":{"color":"rgba(26,26,46,0.28)","dash":"dot","width":1.3},"type":"line","x0":1898,"x1":1898,"y0":0,"y1":11017214509.0326},{"layer":"below","line":{"color":"rgba(26,26,46,0.28)","dash":"dot","width":1.3},"type":"line","x0":1917,"x1":1917,"y0":0,"y1":11017214509.0326}],"annotations":[{"font":{"color":"#55556A","family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","size":10},"showarrow":false,"text":"Civil War ends","x":1865,"xanchor":"center","y":11395256183.36215},{"font":{"color":"#55556A","family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","size":10},"showarrow":false,"text":"Spanish-American War","x":1898,"xanchor":"center","y":11395256183.36215},{"font":{"color":"#55556A","family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","size":10},"showarrow":false,"text":"U.S. enters WWI","x":1917,"xanchor":"center","y":11395256183.36215}]},                        {"responsive": true}                    )                };                            </script>        </div>
   <div class="footer">
     <div class="src">Source: U.S. Congressional Appropriations Acts, 1865–1920 &nbsp;·&nbsp; Inflation adjustment to 2025 dollars via CPI</div>
     <div class="badge">Interactive</div>

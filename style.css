@@ -645,21 +645,69 @@ main { padding: 20px; }
   filter: brightness(0.88) saturate(0.85);
 }
 
-/* ── Master-ledger cards: inline SVG preview instead of <img> ───────── */
+/* ── Researcher cards: inline SVG preview thumbnails ─────────────────── */
 .archive-card.master-card .preview {
   width: 100%;
   aspect-ratio: 16/10;
-  background: #EAE3D8;
-  border-bottom: 1px solid var(--border);
+  background:
+    /* faint graph-paper grid */
+    linear-gradient(rgba(94, 81, 56, 0.06) 1px, transparent 1px) 0 0 / 20px 20px,
+    linear-gradient(90deg, rgba(94, 81, 56, 0.06) 1px, transparent 1px) 0 0 / 20px 20px,
+    /* warm paper gradient — top a touch lighter than bottom */
+    radial-gradient(ellipse at 30% 20%, #F3EBDC 0%, #EAE0CC 70%, #DCD1BC 100%);
+  border-bottom: 1px solid color-mix(in srgb, #C9A24C 22%, var(--border));
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  overflow: hidden;
+  padding: 10px 14px;
+  box-sizing: border-box;
+  transition: background 0.25s ease;
+}
+/* Soft vignette + top sheen */
+.archive-card.master-card .preview::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 248, 232, 0.55) 0%, rgba(255, 248, 232, 0) 38%),
+    radial-gradient(ellipse at 50% 110%, rgba(60, 40, 10, 0.10) 0%, rgba(60, 40, 10, 0) 60%);
+  z-index: 1;
+}
+/* Brass corner tick — subtle "framed artifact" touch */
+.archive-card.master-card .preview::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-top: 1px solid rgba(201, 162, 76, 0.55);
+  border-right: 1px solid rgba(201, 162, 76, 0.55);
+  pointer-events: none;
+  z-index: 2;
+  transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease;
 }
 .archive-card.master-card .preview svg {
   width: 100%;
   height: 100%;
   display: block;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 1px 0.5px rgba(60, 40, 10, 0.08));
+  transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.25s ease;
+  transform-origin: center 60%;
+}
+.archive-card.master-card:hover .preview svg {
+  transform: scale(1.035);
+  filter: drop-shadow(0 2px 3px rgba(60, 40, 10, 0.18));
+}
+.archive-card.master-card:hover .preview::after {
+  width: 24px;
+  height: 24px;
+  border-color: #C9A24C;
 }
 :root.theme-terminal .archive-card.master-card .preview,
 :root.theme-slate .archive-card.master-card .preview {
@@ -670,6 +718,7 @@ main { padding: 20px; }
 }
 .archive-card.master-card:hover {
   border-color: #C9A24C;
+  box-shadow: 0 8px 22px rgba(60, 40, 10, 0.12), 0 2px 6px rgba(60, 40, 10, 0.06);
 }
 
 .archive-card .meta {

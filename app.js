@@ -2096,7 +2096,15 @@ function resizeSpendingCharts() {
 }
 
 // ── Sidebar navigation ────────────────────────────────────────────────
-const VIEW_NAMES = ['proposals', 'budget', 'timeline', 'spending', 'master', 'yunha', 'paul', 'tanisha'];
+const VIEW_NAMES = ['proposals', 'budget', 'timeline', 'spending', 'money', 'technology'];
+const VIEW_PANELS = {
+  proposals:  ['proposals'],
+  budget:     ['budget'],
+  timeline:   ['timeline'],
+  spending:   ['spending'],
+  money:      ['master', 'yunha'],
+  technology: ['paul', 'tanisha'],
+};
 
 function wireViewTabs() {
   document.querySelectorAll('.sb-link[data-view]').forEach(btn => {
@@ -2109,9 +2117,13 @@ let TIMELINE_RENDERED = false;
 function setView(name) {
   if (!VIEW_NAMES.includes(name)) name = 'proposals';
   VIEW = name;
-  VIEW_NAMES.forEach(v => {
-    const el = document.getElementById(`view-${v}`);
-    if (el) el.hidden = (name !== v);
+  const visiblePanels = new Set(VIEW_PANELS[name] || [name]);
+  // All panel IDs across every view, flattened
+  const allPanels = new Set();
+  Object.values(VIEW_PANELS).forEach(arr => arr.forEach(p => allPanels.add(p)));
+  allPanels.forEach(panel => {
+    const el = document.getElementById(`view-${panel}`);
+    if (el) el.hidden = !visiblePanels.has(panel);
   });
   document.querySelectorAll('.sb-link[data-view]').forEach(b => {
     const active = b.dataset.view === name;

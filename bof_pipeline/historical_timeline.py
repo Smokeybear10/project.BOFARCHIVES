@@ -139,9 +139,13 @@ def load_historical_events(path: Path) -> pd.DataFrame:
 
 
 def save_historical_events_chart(events: pd.DataFrame, out: Path) -> None:
-    """Stacked annual bar — counts per year × category, 1888-1930."""
+    """Stacked annual bar — counts per year × category, BOF lifespan 1888-1920."""
 
-    years = list(range(int(events["year"].min()), int(events["year"].max()) + 1))
+    # The Board was active 1888-1920. The source spreadsheet has a handful of
+    # retrospective 1930 entries; chart only the active period so we don't draw
+    # a 9-year empty gap (1921-1929) just to surface 8 1930 rows.
+    events = events[events["year"].between(1888, 1920)]
+    years = list(range(1888, 1921))
     pivot = (
         events.groupby(["year", "category"])
         .size()
@@ -192,7 +196,7 @@ def save_historical_events_chart(events: pd.DataFrame, out: Path) -> None:
              showarrow=False,
              font=dict(family=_SERIF, size=10, color=_TEXT_MID),
              align="center"),
-        dict(x=1930, y=pivot.sum(axis=1).get(1930, 0) + 2,
+        dict(x=1920, y=pivot.sum(axis=1).get(1920, 0) + 2,
              text="BOF<br>dissolved",
              showarrow=False,
              font=dict(family=_SERIF, size=10, color=_TEXT_MID),
@@ -211,7 +215,7 @@ def save_historical_events_chart(events: pd.DataFrame, out: Path) -> None:
     fig.update_layout(
         title=dict(
             text=(
-                f"<b>BOF Historical Events · 1888–1930</b>"
+                f"<b>BOF Historical Events · 1888–1920</b>"
                 f"<br><span style='font-size:12px;color:{_TEXT_MID};'>{subtitle}</span>"
             ),
             x=0.04, xanchor="left",
@@ -220,18 +224,19 @@ def save_historical_events_chart(events: pd.DataFrame, out: Path) -> None:
         paper_bgcolor=_PLOT_BG,
         plot_bgcolor=_PLOT_BG,
         font=dict(family=_SANS, color=_TEXT_DARK, size=12),
-        margin=dict(l=70, r=30, t=110, b=60),
+        margin=dict(l=80, r=30, t=110, b=110),
         height=560,
         barmode="stack",
         xaxis=dict(
             title="Year", tickmode="linear", dtick=2,
+            range=[1887.5, 1920.5],
             gridcolor=_GRID, zerolinecolor=_GRID,
         ),
         yaxis=dict(
             title="Events recorded", gridcolor=_GRID, zerolinecolor=_GRID,
         ),
         legend=dict(
-            orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1,
+            orientation="h", yanchor="top", y=-0.14, xanchor="center", x=0.5,
             bgcolor="rgba(0,0,0,0)",
         ),
         hoverlabel=dict(
@@ -242,7 +247,12 @@ def save_historical_events_chart(events: pd.DataFrame, out: Path) -> None:
     )
 
     out.parent.mkdir(parents=True, exist_ok=True)
-    fig.write_html(out, include_plotlyjs="cdn", full_html=True)
+    fig.write_html(
+        out,
+        include_plotlyjs="cdn",
+        full_html=True,
+        config={"displayModeBar": False, "responsive": True},
+    )
 
 
 __all__ = ["load_historical_events", "save_historical_events_chart"]

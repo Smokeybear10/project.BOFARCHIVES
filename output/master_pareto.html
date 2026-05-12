@@ -1,7 +1,491 @@
-<html>
-<head><meta charset="utf-8" /></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top 20 Projects by Allotment · Fortify the Ordnance</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path fill-rule='evenodd' clip-rule='evenodd' d='M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z' fill='%23C9A24C'/><circle cx='32' cy='32' r='2.2' fill='%23C9A24C'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #EAE3D8;
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: #1A1A2E;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .bof-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: #FBF6E6;
+    border-bottom: 1px solid #D6CEBF;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: #55556A;
+    flex-shrink: 0;
+  }
+  .bof-bar .bof-brand {
+    display: flex; align-items: center; gap: 10px;
+    color: inherit; text-decoration: none;
+  }
+  .bof-bar .bof-brand svg {
+    width: 18px; height: 18px;
+    color: #C9A24C;
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .bof-bar .bof-brand:hover svg { transform: rotate(45deg); }
+  .bof-bar .bof-brand strong {
+    color: #1A1A2E; font-weight: 700; letter-spacing: 1.4px;
+  }
+  .bof-bar a.bof-back {
+    color: #55556A; text-decoration: none; letter-spacing: 1.2px;
+  }
+  .bof-bar a.bof-back:hover { color: #C9A24C; }
+
+  .chart-frame {
+    flex: 1;
+    width: 100%;
+    padding: 18px 32px 28px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .chart-frame svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 100%;
+    flex: 1;
+  }
+
+  /* Shared SVG element styling */
+  .chart-title {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 700;
+    font-size: 26px;
+    fill: #1A1A2E;
+  }
+  .chart-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    fill: #55556A;
+    line-height: 1.45;
+  }
+  .chart-subtitle b { font-weight: 700; color: #1A1A2E; }
+  .axis-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    fill: #55556A;
+    letter-spacing: 0.4px;
+  }
+  .tick {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    fill: #55556A;
+  }
+  .grid-line {
+    stroke: #D6CEBF;
+    stroke-width: 1;
+  }
+  .legend-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    fill: #1A1A2E;
+  }
+  .annot {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 11px;
+    fill: #55556A;
+  }
+  .y-label-vert {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 13px;
+    fill: #1A1A2E;
+    text-anchor: end;
+  }
+  .bar-value {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    fill: #1A1A2E;
+  }
+  .row-bar { transition: opacity 0.15s; }
+  .row-bar:hover { opacity: 0.78; cursor: pointer; }
+
+  /* Stacked-bar segment labels — hidden until the year column is hovered.
+     Hovering the invisible column hit-rect (or any segment) reveals counts. */
+  .seg-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    fill: white;
+    paint-order: stroke;
+    stroke: rgba(0, 0, 0, 0.35);
+    stroke-width: 0.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-total {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 13px;
+    font-weight: 700;
+    fill: #1A1A2E;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-col:hover .seg-label,
+  .year-col:hover .year-total { opacity: 1; }
+  /* Slight tint on the hovered column for visual feedback */
+  .year-col:hover .seg-rect { filter: brightness(1.08); }
+  .year-col { cursor: pointer; }
+
+  /* Trajectory year-column hover: vertical guide + cluster value labels */
+  .year-col-label,
+  .year-col-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-col-label { fill: #1A1A2E; font-size: 12px; letter-spacing: 0.4px; }
+  .year-col:hover .year-guide,
+  .year-col:hover .year-col-label,
+  .year-col:hover .year-col-val,
+  .year-col:hover .year-col-bg { opacity: 1; }
+  .year-col:hover .year-col-bg { opacity: 0.95; }
+
+  /* Treemap tiles */
+  .tm-tile { cursor: pointer; }
+  .tm-rect { transition: filter 0.12s ease-out; }
+  .tm-tile:hover .tm-rect { filter: brightness(0.82); }
+  .tm-tile:hover .tm-label { opacity: 0; transition: opacity 0.12s; }
+  .tm-tile .tm-card {
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+  }
+  .tm-tile:hover .tm-card { opacity: 1; }
+
+  /* Pareto row hover — rank badge + cumulative pill */
+  .pareto-row { cursor: pointer; }
+  .pareto-bar { transition: filter 0.12s ease-out; }
+  .pareto-row:hover .pareto-bar { filter: brightness(0.88); }
+  .pareto-rank,
+  .pareto-cum {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .pareto-rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    fill: #C9A24C;
+    letter-spacing: 0.4px;
+  }
+  .pareto-row:hover .pareto-rank,
+  .pareto-row:hover .pareto-cum { opacity: 1; }
+
+  /* Master timeline year-column hover card */
+  .mt-col { cursor: pointer; }
+  .mt-card,
+  .mt-guide {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .mt-col:hover .mt-card,
+  .mt-col:hover .mt-guide { opacity: 1; }
+
+  /* Heatmap cell hover: highlight row + col, dim the rest, show badge */
+  .hm-cell { cursor: pointer; }
+  .hm-rect { transition: filter 0.1s ease-out, opacity 0.1s ease-out; }
+  .hm-badge {
+    opacity: 0;
+    transition: opacity 0.12s ease-out;
+  }
+  /* When the SVG has a hovered cell, dim all cells, then re-light the
+     hovered row + col. CSS-only: uses :has() (supported in modern browsers). */
+  svg:has(.hm-cell:hover) .hm-rect { opacity: 0.32; }
+  svg:has(.hm-cell:hover) .hm-num { opacity: 0.35; }
+  /* Re-light the hovered cell itself */
+  .hm-cell:hover .hm-rect { opacity: 1 !important; filter: brightness(1.06); }
+  .hm-cell:hover .hm-num { opacity: 1 !important; }
+  .hm-cell:hover .hm-badge { opacity: 1; }
+  @media (max-width: 720px) {
+    .bof-bar { padding: 10px 14px; font-size: 10px; }
+    .chart-frame { padding: 10px 12px 18px; }
+  }
+</style>
+</head>
 <body>
-    <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>                <div id="1699a0a3-0ca1-46ab-a023-dd6fd85fdf0a" class="plotly-graph-div" style="height:540px; width:100%;"></div>            <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("1699a0a3-0ca1-46ab-a023-dd6fd85fdf0a")) {                    Plotly.newPlot(                        "1699a0a3-0ca1-46ab-a023-dd6fd85fdf0a",                        [{"customdata":[[1,"For carriages for breech-loading rifled mortars of 12-inch caliber, procured under the fortification act approved September 22, 1888"],[1,"For the manufacture and test of a 12-inch elevating carriage of designs of A. H. Emery"],[1,"To apply on purchase of experimental casemate carriage for 12-inch B.L. rifle, with necessary detailed construction drawings of the same"],[1,"Oil-electric self-propelled armored railway car"],[4,"Confidential investigations"],[1,"For finishing and assembling eleven 8-inch guns by West Point Foundry Co"],[1,"Experimental parapet for seacoast fortifications"],[1,"For 50 Eureka 8-inch shell ior use by the committee on high explosives in\nsubterra shell trials"],[2,"Tests of armor plate"],[1,"for completing 12-inch hooped steel type gun"],[1,"Construction of emplacement and mounting disappearing gun and accessories, including all expenses except ship's fire and trans portation"],[1,"For the purchase of a second 10-inch pneumatic disappearing gun carriage, in\naccordance with the provisions embodied in this act"],[1,"Purchase of a 10-inch Howell disappearing gun carriage"],[1,"For the purchase of one Gordon disappearing 10-inch gun carriage in general\nfeatures of the design submitted in the letter of Capt. Gordon of Sept 5,1893"],[1,"For purchase of one 12-inch barbette gravity return carriage, one 12-inch mortar carriage, and one 12-inch mortar Canet or Raskazoff carriage"],[1,"Construction of a Gatling 8-inch cast-steel gun"],[4,"Expenses of Board for year"],[1,"for the purchase and delivery of one Armstrong 12-cm. R. F. gun and 500 rounds of ammunition"],[1,"For the purchase of material for and the manufacture of one 12-inch hooped steel type gun"],[1,"For carriages for howitzers of 7-inch caliber"],[1,"Construction of 10-inch Brown wire-wound gun"],[1,"Experiments and tests of explosives for charging shells"],[1,"To enable the Chief of Ordnance to discharge the liabilities of his Department\ncalled for in the contract for the modified Gordon 10-inch disappearing gun carriage"],[3,"Expenses of the Board for the year"],[3,"for purchase of motor tractor"]],"hovertemplate":"\u003cb\u003e%{customdata[1]}\u003c\u002fb\u003e\u003cbr\u003eTotal allotted: $%{y:,.0f}\u003cbr\u003eAllotment count: %{customdata[0]}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#C9A24C","line":{"width":0}},"name":"Total allotted","x":["For carriages for breech-loading rifled mortars of 12-inc\u2026","For the manufacture and test of a 12-inch elevating carri\u2026","To apply on purchase of experimental casemate carriage fo\u2026","Oil-electric self-propelled armored railway car","Confidential investigations","For finishing and assembling eleven 8-inch guns by West P\u2026","Experimental parapet for seacoast fortifications","For 50 Eureka 8-inch shell ior use by the committee on hi\u2026","Tests of armor plate","for completing 12-inch hooped steel type gun","Construction of emplacement and mounting disappearing gun\u2026","For the purchase of a second 10-inch pneumatic disappeari\u2026","Purchase of a 10-inch Howell disappearing gun carriage","For the purchase of one Gordon disappearing 10-inch gun c\u2026","For purchase of one 12-inch barbette gravity return carri\u2026","Construction of a Gatling 8-inch cast-steel gun","Expenses of Board for year","for the purchase and delivery of one Armstrong 12-cm. R. \u2026","For the purchase of material for and the manufacture of o\u2026","For carriages for howitzers of 7-inch caliber","Construction of 10-inch Brown wire-wound gun","Experiments and tests of explosives for charging shells","To enable the Chief of Ordnance to discharge the liabilit\u2026","Expenses of the Board for the year","for purchase of motor tractor"],"y":[225000.0,130000.0,80000.0,74000.0,71500.0,65000.0,62000.0,61250.0,54669.4,51000.0,50000.0,50000.0,50000.0,47700.0,45000.0,40000.0,37240.729999999996,35000.0,35000.0,35000.0,33000.0,31834.0,31800.0,31679.05,30619.83],"yaxis":"y","type":"bar"},{"hovertemplate":"\u003cb\u003eThrough this project\u003c\u002fb\u003e\u003cbr\u003e%{y:.1f}% of all spending\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1A1A2E","width":2.5},"marker":{"color":"#1A1A2E","line":{"color":"#EAE3D8","width":2},"size":7},"mode":"lines+markers","name":"Cumulative share (%)","x":["For carriages for breech-loading rifled mortars of 12-inc\u2026","For the manufacture and test of a 12-inch elevating carri\u2026","To apply on purchase of experimental casemate carriage fo\u2026","Oil-electric self-propelled armored railway car","Confidential investigations","For finishing and assembling eleven 8-inch guns by West P\u2026","Experimental parapet for seacoast fortifications","For 50 Eureka 8-inch shell ior use by the committee on hi\u2026","Tests of armor plate","for completing 12-inch hooped steel type gun","Construction of emplacement and mounting disappearing gun\u2026","For the purchase of a second 10-inch pneumatic disappeari\u2026","Purchase of a 10-inch Howell disappearing gun carriage","For the purchase of one Gordon disappearing 10-inch gun c\u2026","For purchase of one 12-inch barbette gravity return carri\u2026","Construction of a Gatling 8-inch cast-steel gun","Expenses of Board for year","for the purchase and delivery of one Armstrong 12-cm. R. \u2026","For the purchase of material for and the manufacture of o\u2026","For carriages for howitzers of 7-inch caliber","Construction of 10-inch Brown wire-wound gun","Experiments and tests of explosives for charging shells","To enable the Chief of Ordnance to discharge the liabilit\u2026","Expenses of the Board for the year","for purchase of motor tractor"],"y":[5.11544948820337,8.071042525831984,9.889869010526516,11.572283508868956,13.197859679564694,14.675656198379002,16.085246724017264,17.477785751361512,18.720712659141007,19.88021454313377,21.016981096067852,22.153747649001936,23.290514201936016,24.37498949343513,25.3980793910758,26.307492633423067,27.154172958840046,27.949909545893902,28.745646132947762,29.541382720001618,30.291648644938114,31.015405173860184,31.73838870152626,32.458622390900786,33.15477436291134],"yaxis":"y2","type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"shapes":[{"line":{"color":"#C5483D","dash":"dot","width":1},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":80,"y1":80,"yref":"y2"}],"annotations":[{"font":{"color":"#C5483D","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"80% line","x":1,"xanchor":"right","xref":"x domain","y":80,"yanchor":"bottom","yref":"y2"}],"title":{"font":{"family":"Georgia, 'Times New Roman', serif","size":20,"color":"#1A1A2E"},"text":"\u003cb\u003ePareto \u00b7 Top 25 Projects by Allotment\u003c\u002fb\u003e\u003cbr\u003e\u003cspan style='font-size:12px;color:#55556A;'\u003eCumulative share of all $4,398,440 allotted, 1888\u20131919.  Read left-to-right: how few projects account for how much.\u003c\u002fspan\u003e","x":0.04,"xanchor":"left"},"font":{"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","color":"#1A1A2E","size":12},"margin":{"l":70,"r":70,"t":100,"b":180},"hoverlabel":{"font":{"family":"Georgia, 'Times New Roman', serif"},"bgcolor":"#FFF8EC","bordercolor":"#C9A24C"},"xaxis":{"title":{"text":""},"tickangle":-45,"gridcolor":"#D6CEBF","automargin":true},"yaxis":{"title":{"text":"Total allotted ($)"},"tickformat":"$,.0f","gridcolor":"#D6CEBF","zerolinecolor":"#D6CEBF","side":"left"},"yaxis2":{"title":{"text":"Cumulative %"},"overlaying":"y","side":"right","range":[0,105],"tickformat":",.0f","ticksuffix":"%","showgrid":false},"legend":{"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"right","x":1,"bgcolor":"rgba(0,0,0,0)"},"paper_bgcolor":"#EAE3D8","plot_bgcolor":"#EAE3D8","height":540},                        {"responsive": true}                    )                };                            </script>        </div>
+<div class="bof-bar">
+  <a class="bof-brand" href="/" title="Back to dashboard">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+    </svg>
+    <strong>FORTIFY THE ORDNANCE</strong>
+  </a>
+  <a class="bof-back" href="/">← back to dashboard</a>
+</div>
+<div class="chart-frame">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet" role="img">
+<text class="chart-title" x="60" y="58">Top 20 Projects by Total Allotment</text><foreignObject x="60" y="78" width="1480" height="64"><div xmlns="http://www.w3.org/1999/xhtml" class="chart-subtitle">These 20 projects account for <b>30%</b> of the $4,398,440 the Board allotted 1888–1918. It takes <b>195 of 1,075</b> projects to reach 80% of total spend.</div></foreignObject>
+<g class="grid">
+<line class="grid-line" x1="360.0" y1="150" x2="360.0" y2="820"/>
+<line class="grid-line" x1="588.0" y1="150" x2="588.0" y2="820"/>
+<line class="grid-line" x1="816.0" y1="150" x2="816.0" y2="820"/>
+<line class="grid-line" x1="1044.0" y1="150" x2="1044.0" y2="820"/>
+<line class="grid-line" x1="1272.0" y1="150" x2="1272.0" y2="820"/>
+<line class="grid-line" x1="1500.0" y1="150" x2="1500.0" y2="820"/>
+</g>
+<text class="tick" x="360.0" y="842" text-anchor="middle">$0</text>
+<text class="tick" x="588.0" y="842" text-anchor="middle">$50k</text>
+<text class="tick" x="816.0" y="842" text-anchor="middle">$100k</text>
+<text class="tick" x="1044.0" y="842" text-anchor="middle">$150k</text>
+<text class="tick" x="1272.0" y="842" text-anchor="middle">$200k</text>
+<text class="tick" x="1500.0" y="842" text-anchor="middle">$250k</text>
+<text class="axis-label" x="930.0" y="874" text-anchor="middle">Total allotted ($)</text>
+<g class="pareto-row" data-rank="20">
+<rect class="pareto-hit" x="0" y="150.0" width="1600" height="33.5" fill="transparent"/>
+<title>For carriages for breech-loading rifled mortars of 12-inch caliber, procured under the fortification act approved September 22, 1888
+Total: $225,000
+Cumulative: 5.1%</title>
+<text class="y-label-vert" x="346" y="163.8"><tspan x="346" dy="0">Carriages for breech-loading rifled</tspan><tspan x="346" dy="16">mortars of 12-inch caliber</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="156.4" width="1026.0" height="20.8" rx="1.5"/>
+<text class="bar-value" x="1394.0" y="170.8">$225k</text>
+<text class="pareto-rank" x="40" y="171.8" text-anchor="start">#20</text>
+<g class="pareto-cum"><rect x="1472.0" y="154.8" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="1518.0" y="169.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">5.1% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="19">
+<rect class="pareto-hit" x="0" y="183.5" width="1600" height="33.5" fill="transparent"/>
+<title>For the manufacture and test of a 12-inch elevating carriage of designs of A. H. Emery
+Total: $130,000
+Cumulative: 8.1%</title>
+<text class="y-label-vert" x="346" y="197.2"><tspan x="346" dy="0">A 12-inch elevating carriage of</tspan><tspan x="346" dy="16">designs of A. H. Emery</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="189.9" width="592.8" height="20.8" rx="1.5"/>
+<text class="bar-value" x="960.8" y="204.2">$130k</text>
+<text class="pareto-rank" x="40" y="205.2" text-anchor="start">#19</text>
+<g class="pareto-cum"><rect x="1038.8" y="188.2" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="1084.8" y="203.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">8.1% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="18">
+<rect class="pareto-hit" x="0" y="217.0" width="1600" height="33.5" fill="transparent"/>
+<title>To apply on purchase of experimental casemate carriage for 12-inch B.L. rifle, with necessary detailed construction drawings of the same
+Total: $80,000
+Cumulative: 9.9%</title>
+<text class="y-label-vert" x="346" y="230.8"><tspan x="346" dy="0">Casemate carriage for 12-inch B.L.</tspan><tspan x="346" dy="16">rifle, with necessary detailed…</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="223.4" width="364.8" height="20.8" rx="1.5"/>
+<text class="bar-value" x="732.8" y="237.8">$80k</text>
+<text class="pareto-rank" x="40" y="238.8" text-anchor="start">#18</text>
+<g class="pareto-cum"><rect x="810.8" y="221.8" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="856.8" y="236.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">9.9% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="17">
+<rect class="pareto-hit" x="0" y="250.5" width="1600" height="33.5" fill="transparent"/>
+<title>Oil-electric self-propelled armored railway car
+Total: $74,000
+Cumulative: 11.6%</title>
+<text class="y-label-vert" x="346" y="264.2"><tspan x="346" dy="0">Oil-electric self-propelled armored</tspan><tspan x="346" dy="16">railway car</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="256.9" width="337.4" height="20.8" rx="1.5"/>
+<text class="bar-value" x="705.4" y="271.2">$74k</text>
+<text class="pareto-rank" x="40" y="272.2" text-anchor="start">#17</text>
+<g class="pareto-cum"><rect x="783.4" y="255.2" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="829.4" y="270.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">11.6% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="16">
+<rect class="pareto-hit" x="0" y="284.0" width="1600" height="33.5" fill="transparent"/>
+<title>Confidential investigations
+Total: $71,500
+Cumulative: 13.2%</title>
+<text class="y-label-vert" x="346" y="305.8"><tspan x="346" dy="0">Confidential investigations</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="290.4" width="326.0" height="20.8" rx="1.5"/>
+<text class="bar-value" x="694.0" y="304.8">$72k</text>
+<text class="pareto-rank" x="40" y="305.8" text-anchor="start">#16</text>
+<g class="pareto-cum"><rect x="772.0" y="288.8" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="818.0" y="303.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">13.2% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="15">
+<rect class="pareto-hit" x="0" y="317.5" width="1600" height="33.5" fill="transparent"/>
+<title>For finishing and assembling eleven 8-inch guns by West Point Foundry Co
+Total: $65,000
+Cumulative: 14.7%</title>
+<text class="y-label-vert" x="346" y="331.2"><tspan x="346" dy="0">Finishing and assembling eleven 8-inch</tspan><tspan x="346" dy="16">guns by West Point Foundry Co</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="323.9" width="296.4" height="20.8" rx="1.5"/>
+<text class="bar-value" x="664.4" y="338.2">$65k</text>
+<text class="pareto-rank" x="40" y="339.2" text-anchor="start">#15</text>
+<g class="pareto-cum"><rect x="742.4" y="322.2" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="788.4" y="337.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">14.7% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="14">
+<rect class="pareto-hit" x="0" y="351.0" width="1600" height="33.5" fill="transparent"/>
+<title>Experimental parapet for seacoast fortifications
+Total: $62,000
+Cumulative: 16.1%</title>
+<text class="y-label-vert" x="346" y="364.8"><tspan x="346" dy="0">Experimental parapet for seacoast</tspan><tspan x="346" dy="16">fortifications</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="357.4" width="282.7" height="20.8" rx="1.5"/>
+<text class="bar-value" x="650.7" y="371.8">$62k</text>
+<text class="pareto-rank" x="40" y="372.8" text-anchor="start">#14</text>
+<g class="pareto-cum"><rect x="728.7" y="355.8" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="774.7" y="370.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">16.1% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="13">
+<rect class="pareto-hit" x="0" y="384.5" width="1600" height="33.5" fill="transparent"/>
+<title>For 50 Eureka 8-inch shell ior use by the committee on high explosives in
+subterra shell trials
+Total: $61,250
+Cumulative: 17.5%</title>
+<text class="y-label-vert" x="346" y="398.2"><tspan x="346" dy="0">50 Eureka 8-inch shell ior use by the</tspan><tspan x="346" dy="16">committee on high explosives in…</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="390.9" width="279.3" height="20.8" rx="1.5"/>
+<text class="bar-value" x="647.3" y="405.2">$61k</text>
+<text class="pareto-rank" x="40" y="406.2" text-anchor="start">#13</text>
+<g class="pareto-cum"><rect x="725.3" y="389.2" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="771.3" y="404.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">17.5% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="12">
+<rect class="pareto-hit" x="0" y="418.0" width="1600" height="33.5" fill="transparent"/>
+<title>Tests of armor plate
+Total: $54,669
+Cumulative: 18.7%</title>
+<text class="y-label-vert" x="346" y="439.8"><tspan x="346" dy="0">Armor plate</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="424.4" width="249.3" height="20.8" rx="1.5"/>
+<text class="bar-value" x="617.3" y="438.8">$55k</text>
+<text class="pareto-rank" x="40" y="439.8" text-anchor="start">#12</text>
+<g class="pareto-cum"><rect x="695.3" y="422.8" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="741.3" y="437.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">18.7% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="11">
+<rect class="pareto-hit" x="0" y="451.5" width="1600" height="33.5" fill="transparent"/>
+<title>for completing 12-inch hooped steel type gun
+Total: $51,000
+Cumulative: 19.9%</title>
+<text class="y-label-vert" x="346" y="465.2"><tspan x="346" dy="0">Completing 12-inch hooped steel type</tspan><tspan x="346" dy="16">gun</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="457.9" width="232.6" height="20.8" rx="1.5"/>
+<text class="bar-value" x="600.6" y="472.2">$51k</text>
+<text class="pareto-rank" x="40" y="473.2" text-anchor="start">#11</text>
+<g class="pareto-cum"><rect x="678.6" y="456.2" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="724.6" y="471.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">19.9% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="10">
+<rect class="pareto-hit" x="0" y="485.0" width="1600" height="33.5" fill="transparent"/>
+<title>Construction of emplacement and mounting disappearing gun and accessories, including all expenses except ship&#x27;s fire and trans portation
+Total: $50,000
+Cumulative: 21.0%</title>
+<text class="y-label-vert" x="346" y="498.8"><tspan x="346" dy="0">Emplacement and mounting disappearing</tspan><tspan x="346" dy="16">gun and accessories, including all…</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="491.4" width="228.0" height="20.8" rx="1.5"/>
+<text class="bar-value" x="596.0" y="505.8">$50k</text>
+<text class="pareto-rank" x="40" y="506.8" text-anchor="start">#10</text>
+<g class="pareto-cum"><rect x="674.0" y="489.8" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="720.0" y="504.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">21.0% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="9">
+<rect class="pareto-hit" x="0" y="518.5" width="1600" height="33.5" fill="transparent"/>
+<title>For the purchase of a second 10-inch pneumatic disappearing gun carriage, in
+accordance with the provisions embodied in this act
+Total: $50,000
+Cumulative: 22.2%</title>
+<text class="y-label-vert" x="346" y="532.2"><tspan x="346" dy="0">A second 10-inch pneumatic</tspan><tspan x="346" dy="16">disappearing gun carriage</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="524.9" width="228.0" height="20.8" rx="1.5"/>
+<text class="bar-value" x="596.0" y="539.2">$50k</text>
+<text class="pareto-rank" x="40" y="540.2" text-anchor="start">#9</text>
+<g class="pareto-cum"><rect x="674.0" y="523.2" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="720.0" y="538.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">22.2% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="8">
+<rect class="pareto-hit" x="0" y="552.0" width="1600" height="33.5" fill="transparent"/>
+<title>Purchase of a 10-inch Howell disappearing gun carriage
+Total: $50,000
+Cumulative: 23.3%</title>
+<text class="y-label-vert" x="346" y="565.8"><tspan x="346" dy="0">10-inch Howell disappearing gun</tspan><tspan x="346" dy="16">carriage</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="558.4" width="228.0" height="20.8" rx="1.5"/>
+<text class="bar-value" x="596.0" y="572.8">$50k</text>
+<text class="pareto-rank" x="40" y="573.8" text-anchor="start">#8</text>
+<g class="pareto-cum"><rect x="674.0" y="556.8" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="720.0" y="571.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">23.3% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="7">
+<rect class="pareto-hit" x="0" y="585.5" width="1600" height="33.5" fill="transparent"/>
+<title>For the purchase of one Gordon disappearing 10-inch gun carriage in general
+features of the design submitted in the letter of Capt. Gordon of Sept 5,1893
+Total: $47,700
+Cumulative: 24.4%</title>
+<text class="y-label-vert" x="346" y="599.2"><tspan x="346" dy="0">One Gordon disappearing 10-inch gun</tspan><tspan x="346" dy="16">carriage in general features of the…</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="591.9" width="217.5" height="20.8" rx="1.5"/>
+<text class="bar-value" x="585.5" y="606.2">$48k</text>
+<text class="pareto-rank" x="40" y="607.2" text-anchor="start">#7</text>
+<g class="pareto-cum"><rect x="663.5" y="590.2" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="709.5" y="605.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">24.4% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="6">
+<rect class="pareto-hit" x="0" y="619.0" width="1600" height="33.5" fill="transparent"/>
+<title>For purchase of one 12-inch barbette gravity return carriage, one 12-inch mortar carriage, and one 12-inch mortar Canet or Raskazoff carriage
+Total: $45,000
+Cumulative: 25.4%</title>
+<text class="y-label-vert" x="346" y="632.8"><tspan x="346" dy="0">One 12-inch barbette gravity return</tspan><tspan x="346" dy="16">carriage, one 12-inch mortar…</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="625.4" width="205.2" height="20.8" rx="1.5"/>
+<text class="bar-value" x="573.2" y="639.8">$45k</text>
+<text class="pareto-rank" x="40" y="640.8" text-anchor="start">#6</text>
+<g class="pareto-cum"><rect x="651.2" y="623.8" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="697.2" y="638.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">25.4% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="5">
+<rect class="pareto-hit" x="0" y="652.5" width="1600" height="33.5" fill="transparent"/>
+<title>Construction of a Gatling 8-inch cast-steel gun
+Total: $40,000
+Cumulative: 26.3%</title>
+<text class="y-label-vert" x="346" y="674.2"><tspan x="346" dy="0">Gatling 8-inch cast-steel gun</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="658.9" width="182.4" height="20.8" rx="1.5"/>
+<text class="bar-value" x="550.4" y="673.2">$40k</text>
+<text class="pareto-rank" x="40" y="674.2" text-anchor="start">#5</text>
+<g class="pareto-cum"><rect x="628.4" y="657.2" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="674.4" y="672.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">26.3% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="4">
+<rect class="pareto-hit" x="0" y="686.0" width="1600" height="33.5" fill="transparent"/>
+<title>Expenses of Board for year
+Total: $37,241
+Cumulative: 27.2%</title>
+<text class="y-label-vert" x="346" y="707.8"><tspan x="346" dy="0">Expenses of Board for year</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="692.4" width="169.8" height="20.8" rx="1.5"/>
+<text class="bar-value" x="537.8" y="706.8">$37k</text>
+<text class="pareto-rank" x="40" y="707.8" text-anchor="start">#4</text>
+<g class="pareto-cum"><rect x="615.8" y="690.8" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="661.8" y="705.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">27.2% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="3">
+<rect class="pareto-hit" x="0" y="719.5" width="1600" height="33.5" fill="transparent"/>
+<title>for the purchase and delivery of one Armstrong 12-cm. R. F. gun and 500 rounds of ammunition
+Total: $35,000
+Cumulative: 27.9%</title>
+<text class="y-label-vert" x="346" y="733.2"><tspan x="346" dy="0">One Armstrong 12-cm. R. F. gun and 500</tspan><tspan x="346" dy="16">rounds of ammunition</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="725.9" width="159.6" height="20.8" rx="1.5"/>
+<text class="bar-value" x="527.6" y="740.2">$35k</text>
+<text class="pareto-rank" x="40" y="741.2" text-anchor="start">#3</text>
+<g class="pareto-cum"><rect x="605.6" y="724.2" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="651.6" y="739.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">27.9% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="2">
+<rect class="pareto-hit" x="0" y="753.0" width="1600" height="33.5" fill="transparent"/>
+<title>For the purchase of material for and the manufacture of one 12-inch hooped steel type gun
+Total: $35,000
+Cumulative: 28.7%</title>
+<text class="y-label-vert" x="346" y="766.8"><tspan x="346" dy="0">Material for and the manufacture of</tspan><tspan x="346" dy="16">one 12-inch hooped steel type gun</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="759.4" width="159.6" height="20.8" rx="1.5"/>
+<text class="bar-value" x="527.6" y="773.8">$35k</text>
+<text class="pareto-rank" x="40" y="774.8" text-anchor="start">#2</text>
+<g class="pareto-cum"><rect x="605.6" y="757.8" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="651.6" y="772.8" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">28.7% cum</text></g>
+</g>
+<g class="pareto-row" data-rank="1">
+<rect class="pareto-hit" x="0" y="786.5" width="1600" height="33.5" fill="transparent"/>
+<title>For carriages for howitzers of 7-inch caliber
+Total: $35,000
+Cumulative: 29.5%</title>
+<text class="y-label-vert" x="346" y="800.2"><tspan x="346" dy="0">Carriages for howitzers of 7-inch</tspan><tspan x="346" dy="16">caliber</tspan></text>
+<rect class="pareto-bar" fill="#C9A24C" x="360" y="792.9" width="159.6" height="20.8" rx="1.5"/>
+<text class="bar-value" x="527.6" y="807.2">$35k</text>
+<text class="pareto-rank" x="40" y="808.2" text-anchor="start">#1</text>
+<g class="pareto-cum"><rect x="605.6" y="791.2" width="92" height="22" rx="11" fill="#FBF6E6" stroke="#C9A24C" stroke-width="1"/><text x="651.6" y="806.2" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#1A1A2E">29.5% cum</text></g>
+</g>
+<line class="grid-line" x1="360" y1="820" x2="1500" y2="820" stroke-width="1.2"/>
+</svg>
+</div>
 </body>
 </html>

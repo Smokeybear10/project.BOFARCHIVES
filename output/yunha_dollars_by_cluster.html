@@ -1,7 +1,341 @@
-<html>
-<head><meta charset="utf-8" /></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dollars by Technology Cluster · Fortify the Ordnance</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path fill-rule='evenodd' clip-rule='evenodd' d='M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z' fill='%23C9A24C'/><circle cx='32' cy='32' r='2.2' fill='%23C9A24C'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #EAE3D8;
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: #1A1A2E;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .bof-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: #FBF6E6;
+    border-bottom: 1px solid #D6CEBF;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: #55556A;
+    flex-shrink: 0;
+  }
+  .bof-bar .bof-brand {
+    display: flex; align-items: center; gap: 10px;
+    color: inherit; text-decoration: none;
+  }
+  .bof-bar .bof-brand svg {
+    width: 18px; height: 18px;
+    color: #C9A24C;
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .bof-bar .bof-brand:hover svg { transform: rotate(45deg); }
+  .bof-bar .bof-brand strong {
+    color: #1A1A2E; font-weight: 700; letter-spacing: 1.4px;
+  }
+  .bof-bar a.bof-back {
+    color: #55556A; text-decoration: none; letter-spacing: 1.2px;
+  }
+  .bof-bar a.bof-back:hover { color: #C9A24C; }
+
+  .chart-frame {
+    flex: 1;
+    width: 100%;
+    padding: 18px 32px 28px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .chart-frame svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 100%;
+    flex: 1;
+  }
+
+  /* Shared SVG element styling */
+  .chart-title {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 700;
+    font-size: 26px;
+    fill: #1A1A2E;
+  }
+  .chart-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    fill: #55556A;
+    line-height: 1.45;
+  }
+  .chart-subtitle b { font-weight: 700; color: #1A1A2E; }
+  .axis-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    fill: #55556A;
+    letter-spacing: 0.4px;
+  }
+  .tick {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    fill: #55556A;
+  }
+  .grid-line {
+    stroke: #D6CEBF;
+    stroke-width: 1;
+  }
+  .legend-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    fill: #1A1A2E;
+  }
+  .annot {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 11px;
+    fill: #55556A;
+  }
+  .y-label-vert {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 13px;
+    fill: #1A1A2E;
+    text-anchor: end;
+  }
+  .bar-value {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    fill: #1A1A2E;
+  }
+  .row-bar { transition: opacity 0.15s; }
+  .row-bar:hover { opacity: 0.78; cursor: pointer; }
+
+  /* Stacked-bar segment labels — hidden until the year column is hovered.
+     Hovering the invisible column hit-rect (or any segment) reveals counts. */
+  .seg-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    fill: white;
+    paint-order: stroke;
+    stroke: rgba(0, 0, 0, 0.35);
+    stroke-width: 0.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-total {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 13px;
+    font-weight: 700;
+    fill: #1A1A2E;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-col:hover .seg-label,
+  .year-col:hover .year-total { opacity: 1; }
+  /* Slight tint on the hovered column for visual feedback */
+  .year-col:hover .seg-rect { filter: brightness(1.08); }
+  .year-col { cursor: pointer; }
+
+  /* Trajectory year-column hover: vertical guide + cluster value labels */
+  .year-col-label,
+  .year-col-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-col-label { fill: #1A1A2E; font-size: 12px; letter-spacing: 0.4px; }
+  .year-col:hover .year-guide,
+  .year-col:hover .year-col-label,
+  .year-col:hover .year-col-val,
+  .year-col:hover .year-col-bg { opacity: 1; }
+  .year-col:hover .year-col-bg { opacity: 0.95; }
+
+  /* Treemap tiles */
+  .tm-tile { cursor: pointer; }
+  .tm-rect { transition: filter 0.12s ease-out; }
+  .tm-tile:hover .tm-rect { filter: brightness(0.82); }
+  .tm-tile:hover .tm-label { opacity: 0; transition: opacity 0.12s; }
+  .tm-tile .tm-card {
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+  }
+  .tm-tile:hover .tm-card { opacity: 1; }
+
+  /* Pareto row hover — rank badge + cumulative pill */
+  .pareto-row { cursor: pointer; }
+  .pareto-bar { transition: filter 0.12s ease-out; }
+  .pareto-row:hover .pareto-bar { filter: brightness(0.88); }
+  .pareto-rank,
+  .pareto-cum {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .pareto-rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    fill: #C9A24C;
+    letter-spacing: 0.4px;
+  }
+  .pareto-row:hover .pareto-rank,
+  .pareto-row:hover .pareto-cum { opacity: 1; }
+
+  /* Master timeline year-column hover card */
+  .mt-col { cursor: pointer; }
+  .mt-card,
+  .mt-guide {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .mt-col:hover .mt-card,
+  .mt-col:hover .mt-guide { opacity: 1; }
+
+  /* Heatmap cell hover: highlight row + col, dim the rest, show badge */
+  .hm-cell { cursor: pointer; }
+  .hm-rect { transition: filter 0.1s ease-out, opacity 0.1s ease-out; }
+  .hm-badge {
+    opacity: 0;
+    transition: opacity 0.12s ease-out;
+  }
+  /* When the SVG has a hovered cell, dim all cells, then re-light the
+     hovered row + col. CSS-only: uses :has() (supported in modern browsers). */
+  svg:has(.hm-cell:hover) .hm-rect { opacity: 0.32; }
+  svg:has(.hm-cell:hover) .hm-num { opacity: 0.35; }
+  /* Re-light the hovered cell itself */
+  .hm-cell:hover .hm-rect { opacity: 1 !important; filter: brightness(1.06); }
+  .hm-cell:hover .hm-num { opacity: 1 !important; }
+  .hm-cell:hover .hm-badge { opacity: 1; }
+  @media (max-width: 720px) {
+    .bof-bar { padding: 10px 14px; font-size: 10px; }
+    .chart-frame { padding: 10px 12px 18px; }
+  }
+</style>
+</head>
 <body>
-    <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>                <div id="d5910e65-62aa-4c91-9055-c33540460c75" class="plotly-graph-div" style="height:520px; width:100%;"></div>            <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("d5910e65-62aa-4c91-9055-c33540460c75")) {                    Plotly.newPlot(                        "d5910e65-62aa-4c91-9055-c33540460c75",                        [{"branchvalues":"total","hovertemplate":"\u003cb\u003e%{label}\u003c\u002fb\u003e\u003cbr\u003eTotal allotted: $%{value:,.0f}\u003cbr\u003e%{percentParent} of grand total\u003cextra\u003e\u003c\u002fextra\u003e","labels":["Artillery","Other\u002fUnclassified","Fortification and Engineering","Explosives","Armor and Protection","Small Arms","Communications and Observation","Logistics and Support","Total"],"marker":{"colors":["#1D3461","#546E7A","#2D6A4F","#6B2D8B","#7C4318","#0A6E5D","#1B4F72","#5D4037","#1A1A2E"],"line":{"color":"#EAE3D8","width":2}},"parents":["Total","Total","Total","Total","Total","Total","Total","Total",""],"text":["$1,898,193\u003cbr\u003e373 line items \u00b7 103 revoked","$1,698,529\u003cbr\u003e539 line items \u00b7 162 revoked","$386,570\u003cbr\u003e107 line items \u00b7 32 revoked","$250,641\u003cbr\u003e57 line items \u00b7 19 revoked","$100,809\u003cbr\u003e14 line items \u00b7 4 revoked","$47,778\u003cbr\u003e22 line items \u00b7 7 revoked","$15,614\u003cbr\u003e22 line items \u00b7 7 revoked","$307\u003cbr\u003e10 line items \u00b7 0 revoked",""],"textfont":{"color":"white","family":"Georgia, 'Times New Roman', serif","size":14},"textinfo":"label+text","values":[1898192.82,1698529.33,386570.0,250640.85,100808.85,47777.83,15613.81,306.97,4398440.46],"type":"treemap"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"title":{"font":{"family":"Georgia, 'Times New Roman', serif","size":18,"color":"#1A1A2E"},"text":"\u003cb\u003eInvestment Dollars by Technology Cluster\u003c\u002fb\u003e\u003cbr\u003e\u003cspan style='font-size:11px;color:#55556A;'\u003eBOF allotments classified by primary technology cluster \u00b7 1888\u20131918 \u00b7 $4,398,440 total across 1,144 line items\u003c\u002fspan\u003e\u003cbr\u003e\u003cspan style='font-size:10px;color:#55556A;'\u003eOriginal analysis by \u003cb\u003eYunha\u003c\u002fb\u003e \u00b7 Financial data on technology investment\u003c\u002fspan\u003e","x":0.04,"xanchor":"left"},"font":{"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","color":"#1A1A2E","size":12},"margin":{"l":70,"r":30,"t":110,"b":70},"hoverlabel":{"font":{"family":"Georgia, 'Times New Roman', serif"},"bgcolor":"#FFF8EC","bordercolor":"#1D3461"},"paper_bgcolor":"#EAE3D8","plot_bgcolor":"#EAE3D8","height":520},                        {"responsive": true}                    )                };                            </script>        </div>
+<div class="bof-bar">
+  <a class="bof-brand" href="/" title="Back to dashboard">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+    </svg>
+    <strong>FORTIFY THE ORDNANCE</strong>
+  </a>
+  <a class="bof-back" href="/">← back to dashboard</a>
+</div>
+<div class="chart-frame">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet">
+<text class="chart-title" x="60" y="58">Investment Dollars by Technology Cluster</text><foreignObject x="60" y="78" width="1480" height="64"><div xmlns="http://www.w3.org/1999/xhtml" class="chart-subtitle">BOF allotments classified by primary technology cluster · 1888–1918 · <b>$4,398,440</b> total across <b>1,144</b> line items. Hover any tile (including the thin ones) for details.</div></foreignObject>
+<g class="tm-tile">
+<title>Artillery
+Total: $1,898,193
+373 line items · 103 revoked
+43.2% of grand total</title>
+<rect class="tm-rect" fill="#1D3461" x="60.0" y="150.0" width="1340.3" height="295.5" stroke="#EAE3D8" stroke-width="3"/>
+<text class="tm-label" x="74.0" y="176.0" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="16" fill="white">Artillery</text>
+<text class="tm-label" x="74.0" y="198.0" font-family="Inter, sans-serif" font-size="13" fill="white" opacity="0.85">$1,898k · 43.2%</text>
+<g class="tm-card" pointer-events="none"><rect x="610.2" y="254.7" width="240.0" height="86" rx="4" fill="#FBF6E6" stroke="#1D3461" stroke-width="1.5"/><text x="730.2" y="276.7" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="13" fill="#1A1A2E">Artillery</text><text x="730.2" y="298.7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="16" fill="#1D3461">$1,898k</text><text x="730.2" y="318.7" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">373 line items · 103 revoked · 43.2%</text></g>
+</g>
+<g class="tm-tile">
+<title>Other/Unclassified
+Total: $1,698,529
+539 line items · 162 revoked
+38.6% of grand total</title>
+<rect class="tm-rect" fill="#546E7A" x="60.0" y="445.5" width="1340.3" height="264.4" stroke="#EAE3D8" stroke-width="3"/>
+<text class="tm-label" x="74.0" y="471.5" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="16" fill="white">Other/Unclassified</text>
+<text class="tm-label" x="74.0" y="493.5" font-family="Inter, sans-serif" font-size="13" fill="white" opacity="0.85">$1,699k · 38.6%</text>
+<g class="tm-card" pointer-events="none"><rect x="610.2" y="534.6" width="240.0" height="86" rx="4" fill="#FBF6E6" stroke="#546E7A" stroke-width="1.5"/><text x="730.2" y="556.6" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="13" fill="#1A1A2E">Other/Unclassified</text><text x="730.2" y="578.6" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="16" fill="#546E7A">$1,699k</text><text x="730.2" y="598.6" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">539 line items · 162 revoked · 38.6%</text></g>
+</g>
+<g class="tm-tile">
+<title>Fortification and Engineering
+Total: $386,570
+107 line items · 32 revoked
+8.8% of grand total</title>
+<rect class="tm-rect" fill="#2D6A4F" x="60.0" y="709.8" width="1340.3" height="60.2" stroke="#EAE3D8" stroke-width="3"/>
+<text class="tm-label" x="74.0" y="735.8" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="16" fill="white">Fortification and Engineering</text>
+<text class="tm-label" x="74.0" y="757.8" font-family="Inter, sans-serif" font-size="13" fill="white" opacity="0.85">$387k · 8.8%</text>
+<g class="tm-card" pointer-events="none"><rect x="610.2" y="696.9" width="240.0" height="86" rx="4" fill="#FBF6E6" stroke="#2D6A4F" stroke-width="1.5"/><text x="730.2" y="718.9" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="13" fill="#1A1A2E">Fortification and Engineering</text><text x="730.2" y="740.9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="16" fill="#2D6A4F">$387k</text><text x="730.2" y="760.9" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">107 line items · 32 revoked · 8.8%</text></g>
+</g>
+<g class="tm-tile">
+<title>Explosives
+Total: $250,641
+57 line items · 19 revoked
+5.7% of grand total</title>
+<rect class="tm-rect" fill="#6B2D8B" x="1400.3" y="150.0" width="87.7" height="596.2" stroke="#EAE3D8" stroke-width="3"/>
+</g>
+<g class="tm-tile">
+<title>Armor and Protection
+Total: $100,809
+14 line items · 4 revoked
+2.3% of grand total</title>
+<rect class="tm-rect" fill="#7C4318" x="1488.0" y="150.0" width="35.3" height="596.2" stroke="#EAE3D8" stroke-width="3"/>
+</g>
+<g class="tm-tile">
+<title>Small Arms
+Total: $47,778
+22 line items · 7 revoked
+1.1% of grand total</title>
+<rect class="tm-rect" fill="#0A6E5D" x="1523.3" y="150.0" width="16.7" height="596.2" stroke="#EAE3D8" stroke-width="3"/>
+</g>
+<g class="tm-tile">
+<title>Communications and Observation
+Total: $15,614
+22 line items · 7 revoked
+0.4% of grand total</title>
+<rect class="tm-rect" fill="#1B4F72" x="1400.3" y="746.2" width="139.7" height="23.3" stroke="#EAE3D8" stroke-width="3"/>
+</g>
+<g class="tm-tile">
+<title>Logistics and Support
+Total: $307
+10 line items · 0 revoked
+0.0% of grand total</title>
+<rect class="tm-rect" fill="#5D4037" x="1400.3" y="769.5" width="139.7" height="0.5" stroke="#EAE3D8" stroke-width="3"/>
+</g>
+<rect fill="#1D3461" x="60.0" y="800" width="16" height="16" rx="2"/>
+<text class="legend-text" x="84.0" y="812" font-weight="600">Artillery</text>
+<text x="84.0" y="828" font-family="JetBrains Mono, monospace" font-size="11" fill="#55556A">$1,898k · 43.2% · 373 items</text>
+<rect fill="#546E7A" x="430.0" y="800" width="16" height="16" rx="2"/>
+<text class="legend-text" x="454.0" y="812" font-weight="600">Other/Unclassified</text>
+<text x="454.0" y="828" font-family="JetBrains Mono, monospace" font-size="11" fill="#55556A">$1,699k · 38.6% · 539 items</text>
+<rect fill="#2D6A4F" x="800.0" y="800" width="16" height="16" rx="2"/>
+<text class="legend-text" x="824.0" y="812" font-weight="600">Fortification and Engineering</text>
+<text x="824.0" y="828" font-family="JetBrains Mono, monospace" font-size="11" fill="#55556A">$387k · 8.8% · 107 items</text>
+<rect fill="#6B2D8B" x="1170.0" y="800" width="16" height="16" rx="2"/>
+<text class="legend-text" x="1194.0" y="812" font-weight="600">Explosives</text>
+<text x="1194.0" y="828" font-family="JetBrains Mono, monospace" font-size="11" fill="#55556A">$251k · 5.7% · 57 items</text>
+<rect fill="#7C4318" x="60.0" y="838" width="16" height="16" rx="2"/>
+<text class="legend-text" x="84.0" y="850" font-weight="600">Armor and Protection</text>
+<text x="84.0" y="866" font-family="JetBrains Mono, monospace" font-size="11" fill="#55556A">$101k · 2.3% · 14 items</text>
+<rect fill="#0A6E5D" x="430.0" y="838" width="16" height="16" rx="2"/>
+<text class="legend-text" x="454.0" y="850" font-weight="600">Small Arms</text>
+<text x="454.0" y="866" font-family="JetBrains Mono, monospace" font-size="11" fill="#55556A">$48k · 1.1% · 22 items</text>
+<rect fill="#1B4F72" x="800.0" y="838" width="16" height="16" rx="2"/>
+<text class="legend-text" x="824.0" y="850" font-weight="600">Communications and Observation</text>
+<text x="824.0" y="866" font-family="JetBrains Mono, monospace" font-size="11" fill="#55556A">$16k · 0.4% · 22 items</text>
+<rect fill="#5D4037" x="1170.0" y="838" width="16" height="16" rx="2"/>
+<text class="legend-text" x="1194.0" y="850" font-weight="600">Logistics and Support</text>
+<text x="1194.0" y="866" font-family="JetBrains Mono, monospace" font-size="11" fill="#55556A">$0k · 0.0% · 10 items</text>
+</svg>
+</div>
 </body>
 </html>

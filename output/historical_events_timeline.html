@@ -1,7 +1,826 @@
-<html>
-<head><meta charset="utf-8" /></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historical Events 1888–1920 · Fortify the Ordnance</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path fill-rule='evenodd' clip-rule='evenodd' d='M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z' fill='%23C9A24C'/><circle cx='32' cy='32' r='2.2' fill='%23C9A24C'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #EAE3D8;
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: #1A1A2E;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .bof-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: #FBF6E6;
+    border-bottom: 1px solid #D6CEBF;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: #55556A;
+    flex-shrink: 0;
+  }
+  .bof-bar .bof-brand {
+    display: flex; align-items: center; gap: 10px;
+    color: inherit; text-decoration: none;
+  }
+  .bof-bar .bof-brand svg {
+    width: 18px; height: 18px;
+    color: #C9A24C;
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .bof-bar .bof-brand:hover svg { transform: rotate(45deg); }
+  .bof-bar .bof-brand strong {
+    color: #1A1A2E; font-weight: 700; letter-spacing: 1.4px;
+  }
+  .bof-bar a.bof-back {
+    color: #55556A; text-decoration: none; letter-spacing: 1.2px;
+  }
+  .bof-bar a.bof-back:hover { color: #C9A24C; }
+
+  .chart-frame {
+    flex: 1;
+    width: 100%;
+    padding: 18px 32px 28px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .chart-frame svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 100%;
+    flex: 1;
+  }
+
+  /* Shared SVG element styling */
+  .chart-title {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 700;
+    font-size: 26px;
+    fill: #1A1A2E;
+  }
+  .chart-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    fill: #55556A;
+    line-height: 1.45;
+  }
+  .chart-subtitle b { font-weight: 700; color: #1A1A2E; }
+  .axis-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    fill: #55556A;
+    letter-spacing: 0.4px;
+  }
+  .tick {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    fill: #55556A;
+  }
+  .grid-line {
+    stroke: #D6CEBF;
+    stroke-width: 1;
+  }
+  .legend-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    fill: #1A1A2E;
+  }
+  .annot {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 11px;
+    fill: #55556A;
+  }
+  .y-label-vert {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 13px;
+    fill: #1A1A2E;
+    text-anchor: end;
+  }
+  .bar-value {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    fill: #1A1A2E;
+  }
+  .row-bar { transition: opacity 0.15s; }
+  .row-bar:hover { opacity: 0.78; cursor: pointer; }
+
+  /* Stacked-bar segment labels — hidden until the year column is hovered.
+     Hovering the invisible column hit-rect (or any segment) reveals counts. */
+  .seg-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    fill: white;
+    paint-order: stroke;
+    stroke: rgba(0, 0, 0, 0.35);
+    stroke-width: 0.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-total {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 13px;
+    font-weight: 700;
+    fill: #1A1A2E;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-col:hover .seg-label,
+  .year-col:hover .year-total { opacity: 1; }
+  /* Slight tint on the hovered column for visual feedback */
+  .year-col:hover .seg-rect { filter: brightness(1.08); }
+  .year-col { cursor: pointer; }
+
+  /* Trajectory year-column hover: vertical guide + cluster value labels */
+  .year-col-label,
+  .year-col-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-col-label { fill: #1A1A2E; font-size: 12px; letter-spacing: 0.4px; }
+  .year-col:hover .year-guide,
+  .year-col:hover .year-col-label,
+  .year-col:hover .year-col-val,
+  .year-col:hover .year-col-bg { opacity: 1; }
+  .year-col:hover .year-col-bg { opacity: 0.95; }
+
+  /* Treemap tiles */
+  .tm-tile { cursor: pointer; }
+  .tm-rect { transition: filter 0.12s ease-out; }
+  .tm-tile:hover .tm-rect { filter: brightness(0.82); }
+  .tm-tile:hover .tm-label { opacity: 0; transition: opacity 0.12s; }
+  .tm-tile .tm-card {
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+  }
+  .tm-tile:hover .tm-card { opacity: 1; }
+
+  /* Pareto row hover — rank badge + cumulative pill */
+  .pareto-row { cursor: pointer; }
+  .pareto-bar { transition: filter 0.12s ease-out; }
+  .pareto-row:hover .pareto-bar { filter: brightness(0.88); }
+  .pareto-rank,
+  .pareto-cum {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .pareto-rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    fill: #C9A24C;
+    letter-spacing: 0.4px;
+  }
+  .pareto-row:hover .pareto-rank,
+  .pareto-row:hover .pareto-cum { opacity: 1; }
+
+  /* Master timeline year-column hover card */
+  .mt-col { cursor: pointer; }
+  .mt-card,
+  .mt-guide {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .mt-col:hover .mt-card,
+  .mt-col:hover .mt-guide { opacity: 1; }
+
+  /* Heatmap cell hover: highlight row + col, dim the rest, show badge */
+  .hm-cell { cursor: pointer; }
+  .hm-rect { transition: filter 0.1s ease-out, opacity 0.1s ease-out; }
+  .hm-badge {
+    opacity: 0;
+    transition: opacity 0.12s ease-out;
+  }
+  /* When the SVG has a hovered cell, dim all cells, then re-light the
+     hovered row + col. CSS-only: uses :has() (supported in modern browsers). */
+  svg:has(.hm-cell:hover) .hm-rect { opacity: 0.32; }
+  svg:has(.hm-cell:hover) .hm-num { opacity: 0.35; }
+  /* Re-light the hovered cell itself */
+  .hm-cell:hover .hm-rect { opacity: 1 !important; filter: brightness(1.06); }
+  .hm-cell:hover .hm-num { opacity: 1 !important; }
+  .hm-cell:hover .hm-badge { opacity: 1; }
+  @media (max-width: 720px) {
+    .bof-bar { padding: 10px 14px; font-size: 10px; }
+    .chart-frame { padding: 10px 12px 18px; }
+  }
+</style>
+</head>
 <body>
-    <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>                <div id="fc8b9ee4-1c24-435e-98d1-a10709a4a902" class="plotly-graph-div" style="height:560px; width:100%;"></div>            <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("fc8b9ee4-1c24-435e-98d1-a10709a4a902")) {                    Plotly.newPlot(                        "fc8b9ee4-1c24-435e-98d1-a10709a4a902",                        [{"customdata":["BOF Formally Established in Legislation by the passing of the Fortification Act  \u00b7 Additional duties relating to BOF Section 15, act Sept. 22, 1888, ch. 1028, \u00a76,  \u00b7 BOF Formally Established in Legislation by the passing of the Fortification Act ","","","BOF expanded civilian member added to Board via Section 12, act Feb. 24, 1891, c \u00b7 BOF expanded civilian member added to Board via Section 12, act Feb. 24, 1891, c \u00b7 BOF expanded civilian member added to Board via Section 12, act Feb. 24, 1891, c","","Section 14, act Feb. 18, 1893, ch. 136, 27 Stat. 461, related to qualifications  \u00b7 Section 14, act Feb. 18, 1893, ch. 136, 27 Stat. 461, related to qualifications  \u00b7 Section 14, act Feb. 18, 1893, ch. 136, 27 Stat. 461, related to qualifications ","","","","","","","","Section 13, act Mar. 2, 1901, ch. 803, 31 Stat. 910, provided for additional mem \u00b7 Section 13, act Mar. 2, 1901, ch. 803, 31 Stat. 910, provided for additional mem \u00b7 Section 13, act Mar. 2, 1901, ch. 803, 31 Stat. 910, provided for additional mem","","","","","","","","","","","","","","","","","","","","","","","","","","","","","BOF Formally Dissolved by \u00a7\u00a711 to 15. Repealed. Dec. 16, 1930, ch. 14, \u00a71, 46 St \u00b7 BOF Formally Dissolved by \u00a7\u00a711 to 15. Repealed. Dec. 16, 1930, ch. 14, \u00a71, 46 St \u00b7 BOF Formally Dissolved by \u00a7\u00a711 to 15. Repealed. Dec. 16, 1930, ch. 14, \u00a71, 46 St"],"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003e\u003cb\u003eLegislation\u003c\u002fb\u003e: %{y} events\u003cbr\u003e\u003cspan style='font-size:11px;'\u003e%{customdata}\u003c\u002fspan\u003e\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#1F3A5F","line":{"width":0}},"name":"Legislation","x":[1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920,1921,1922,1923,1924,1925,1926,1927,1928,1929,1930],"y":[8,0,0,4,0,4,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4],"type":"bar"},{"customdata":["Secretary Taft transmits Taft Board report to President Roosevelt recommending r","","","","","","","","","","","","","","Secretary Stimson publishes article in Scientific American arguing United States","","General strike threatened at Government gun factory at Watervliet Arsenal. Petit","","","","","Secretary of War Garrison issues public statement: many US seacoast defenses can","","Secretary Stimson and Panama Fortification Board depart Washington for Isthmus (","","","","","","","","","Sec. II, General Order No. 49, W.D. 1920 dissolves the Board \u00b7 Sec. II, General Order No. 49, W.D. 1920 dissolves the Board \u00b7 Sec. II, General Order No. 49, W.D. 1920 dissolves the Board","","","","","","","","","",""],"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003e\u003cb\u003eOrganizational\u003c\u002fb\u003e: %{y} events\u003cbr\u003e\u003cspan style='font-size:11px;'\u003e%{customdata}\u003c\u002fspan\u003e\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#6B89A8","line":{"width":0}},"name":"Organizational","x":[1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920,1921,1922,1923,1924,1925,1926,1927,1928,1929,1930],"y":[1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0],"type":"bar"},{"customdata":["Henry L. Stimson sworn in as Secretary of War, succeeding Jacob M. Dickinson. Ce","Crozier on special ordnance duty in Europe; studies recent artillery development","Capt. Charles C. Morrison, Ordnance Department, Recorder \u00b7 Capt. Charles C. Morrison, Ordnance Department, Recorder \u00b7 Capt. Charles C. Morrison, Ordnance Department, Recorder","BG Stephen V. Benet is Chief of Ordnance \u00b7 BG Stephen V. Benet is Chief of Ordnance \u00b7 BG Stephen V. Benet is Chief of Ordnance","Lieut. Col. Alfred Mordecai, Ordnance Department \u00b7 Capt. D.M. Taylor, Ordnance Department, Recorder \u00b7 Lieut. Col. Alfred Mordecai, Ordnance Department","","Maj. Clifton Comly, Ordnance Department \u00b7 Capt. Charles C. Morrison, Ordnance Department, Recorder \u00b7 Lieut. Fremont P. Peck, Ordnance Department, Recorder","Army Maj. Gen. John M. Schofield, President \u00b7 Col. Henry L. Abbot, Corps of Army Engineers \u00b7 Col. Henry W. Closson, Fourth Artillery","Crozier serves in office of Chief of Ordnance and on Ordnance Board; becomes joi","","Capt. James C. Ayres, Ordnance Department, Recorder \u00b7 Capt. James C. Ayres, Ordnance Department, Recorder \u00b7 Capt. James C. Ayres, Ordnance Department, Recorder","Maj. Frank H. Phipps, Ordnance Department \u00b7 Col. P. C. Hains, Corps of Engineers \u00b7 Col. Royal T. Frank, First Artillery","Hon. Joseph H. Outhwaite, Civilian Member \u00b7 Capt. C. B. Wheeler, Ordnance Department \u00b7 Capt. J. E. Kuhn, Corps of Engineers","Brig. Gen. John M. Willson, Chief of Engineers \u00b7 Brig. Gen. A. R. Buffington, Chief of Ordnance \u00b7 BG Adelbert R. Buffington is Chief of Ordnance","Lieut. I. N. Lewis, Sixth Artillery, Recorder \u00b7 Col. John I. Rodgers, Fifth Artillery \u00b7 Lieut. Col. John P. Story, Artillery Corps","Maj. Gen. Nelson A. Miles, President \u00b7 Brig. Gen. George L. Gillespie, Chief of Engineers \u00b7 Maj. Sedgwick Pratt, Artillery Corps","Hon. Thomas J. Henderson, Civilian Member \u00b7 Col. Wallace F. Randolph, Chief of Artillery \u00b7 Maj. Charles Shaler, Ordnance Department","Brig. Gen. John P. Story, Chief of Artillery \u00b7 BG William Crozier first appointed as Chief of Ordnance \u00b7 Brig. Gen. John P. Story, Chief of Artillery","Lieut Col. Ramsay D. Potts, Artillery Corps \u00b7 Capt. Tracy C. Dickson, Ordnance Department, Recorder \u00b7 Maj. Gen. John C. Bates, Assistant Chief of Staff, President","Big. Gen. Thomas H. Barry, General Staff \u00b7 Brig. Gen. William P. Duvall, General Staff (Temporary during absence of General \u00b7 Big. Gen. Thomas H. Barry, General Staff","Brig. Gen. Alexander Mackenzie, Chief of Engineers \u00b7 Lieut. Col. George F. E. Harrison, Coast Artillery Corps \u00b7 Maj. Lawson M. Fuller, Ordnance Department, Recorder","BG William Crozier re-appointed as Chief of Ordnance \u00b7 BG William Crozier re-appointed as Chief of Ordnance \u00b7 BG William Crozier re-appointed as Chief of Ordnance","Maj. Gen. J. Franklin Bell, Chief of Staff, President \u00b7 Brig. Gen. William L. Marshall, Chief of Engineers \u00b7 Col. Montgomery M. Macomb, General Staff","Gen. Thomas J. Henderson, Civilian Member \u00b7 Brig. Gen. Arthur Murray, Chief of Coast Artillery \u00b7 Capt. Sherwood A. Cheney, General Staff, Recorder","Brig. Gen. William Crozier, Chief of Ordnance \u00b7 Capt. Stanley D. Embick, Coast Artillery Corps \u00b7 Brig. Gen. William Crozier, Chief of Ordnance","Brig. Gen. William H. Bixby, Chief of Engineers \u00b7 Hon. William Warner, Civilian Member \u00b7 Col. Rogers Birnie, Ordnance Department","Maj. Gen. Leonard Wood, Chief of Staff, President \u00b7 Lieut. Col. Edwin St. J. Greble, General Staff \u00b7 Maj. William Chamberlaine, Coast Artillery Corps","Capt. Robert R. Ralston, Corps of Engineers, Recorder \u00b7 Hon. Francis M. Cockrell, Civilian Member \u00b7 Capt. Robert R. Ralston, Corps of Engineers, Recorder","Gen. Dan C. Kingman, Chief of Engineers \u00b7 Col. Richmond P. Davis, Coast Artillery Corps \u00b7 Gen. Dan C. Kingman, Chief of Engineers","Cold Charles G. Treat, General Staff \u00b7 Maj. Gen. Hugh L. Scott, Chief of Staff, President \u00b7 Capt. Alvin B. Barber, Corps of Engineers, Recorder","Maj. Erasmus M. Weaver, Coast Artillery Corps \u00b7 Brig.\u002fMaj, Gen. William Crozier, Chief of Ordnance \u00b7 Maj. Gen. Tasker H. Bliss, Chief of Staff, President","Col. John E. Stephens, General Staff \u00b7 Col. John E. Stephens, General Staff \u00b7 Col. John E. Stephens, General Staff","Brig. Gen. William M. Black, Chief of Engineers \u00b7 Brig. Gen. Clarence C. Williams, Chief of Ordnance \u00b7 Gen. Peyton C. March, Chief of Staff, President","","","","","","","","","","MG Clarence C. Williams is Chief of Ordnance \u00b7 MG Clarence C. Williams is Chief of Ordnance \u00b7 MG Clarence C. Williams is Chief of Ordnance"],"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003e\u003cb\u003ePersonnel\u003c\u002fb\u003e: %{y} events\u003cbr\u003e\u003cspan style='font-size:11px;'\u003e%{customdata}\u003c\u002fspan\u003e\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#9F8B6B","line":{"width":0}},"name":"Personnel","x":[1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920,1921,1922,1923,1924,1925,1926,1927,1928,1929,1930],"y":[1,1,6,4,8,0,12,16,1,0,6,16,15,12,17,21,40,10,17,9,16,4,18,13,8,23,24,8,8,44,37,4,37,0,0,0,0,0,0,0,0,0,4],"type":"bar"},{"customdata":["","","","Lewis range and position finder first mentioned by BOF under Range and Position ","BOF orders tests of available range finders including Lewis and Fiske instrument","Construction and Modification of Haskell Multi-Charge Gun, \ngun is also approach","","BOF orders three Lewis range finders of different elevation types (30-100 ft; 10","Postponing of Haskell Multi-Charge Gun Testing due to Miscommunication on Ammuni","BOF tests Lewis portable modification alongside Rafferty emergency position find \u00b7 Brown gun breaks down and new one is commisioned: Of which a full account was gi","BOF records first mention of anti-torpedo apparatus: apparatus for destroying to \u00b7 BOF allots $130 for repair of Lewis range finder.","","Gen. Crozier annual report: 12-inch gun (model 1900) life only ~60 rounds at 2,5","Vickers-Maxim 1-pounder equipment arrives at proving ground. Awaiting competitiv \u00b7 BOF Allotment and testing: the Board at its meeting, April 6, 1901, made an allo","","New U.S. magazine rifle model of 1903 described: 23 aimed shots\u002fminute single-lo \u00b7 Unsuccesful test: In July, 1903, the gun was returned to the proving ground and ","Airship of Hippolyte Fran\u00e7ois breaks its framework colliding with a fence at the \u00b7 American and British Manufacturing Company produces Hotchkiss 1-pounder guns mou \u00b7 BOF funds Dr. S.P. Langley's heavier-than-air aerodrome experiments. BOF later c","BOF authorizes purchase of two Morris tube outfits and their adaptation to coast \u00b7 C.P. Goerz A.G. of Berlin begins developing Doppel-Fernrohre (double telescopes) \u00b7 Coast Artillery Board completes testing of Goerz stereoscopic telescope. Tests r","","Maj. Isaac Newton Lewis redesigns the range finder at Fort Monroe. BOF arranges  \u00b7 Competitive test of depression range and position finders at Fort Wadsworth. Ove \u00b7 BOF repeatedly notes no action taken on Vickers-Maxim 1-pounder pending completi","Artillery Board recommends against adoption of Morris tube outfit. BOF approves  \u00b7 BOF decides not to recommend adoption of 1-pounder gun. McClean trials discontin \u00b7 BOF tests: wireless telephone apparatus achieves conversation over 5 miles. Tele","U.S. Army accepts Wright 1909 Military Flyer at $30000 (base contract plus speed \u00b7 Last BOF mention: reports on Vickers-Maxim and Hotchkiss 1-pounder guns submitte","","Several European armies conduct comparative tests of stereoscopic and panoramic ","Signal Corps Dirigible No. 1 transferred to Fort Omaha for operations and traini","Motor tractors first considered: One of the most important pieces of work undert \u00b7 Purchase of European Tractor model: Allotments aggregating $10,000 were made in  \u00b7 Holt Catterpillar Company fails to sell to BOF: In 1913-14 the Holt Catterpillar","","14-inch guns for Philippine fortifications at Manila Bay receive final test at S","Armored railroad car first BOF allotment-An allotment of $6,000 was made by the ","Armored railroad car second BOF allotment- Self-propelled armored railway car- F","","","","","","","","","","","","",""],"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003e\u003cb\u003eTechnology\u003c\u002fb\u003e: %{y} events\u003cbr\u003e\u003cspan style='font-size:11px;'\u003e%{customdata}\u003c\u002fspan\u003e\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#C9A24C","line":{"width":0}},"name":"Technology","x":[1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920,1921,1922,1923,1924,1925,1926,1927,1928,1929,1930],"y":[0,0,0,1,1,1,0,1,1,2,2,0,1,2,0,2,4,4,0,4,4,2,0,1,1,3,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0],"type":"bar"},{"customdata":["","","","","","","","","","","","","Invention of Browning recoil gun \u00b7 Invention of Browning recoil gun \u00b7 Invention of Browning recoil gun","","","","","","","","BOF disapproves further experiments with De Knight semi-automatic machine gun; r","Model 1909 Benet Merci\u00e9 adopted as official light machine gun of US Army \u00b7 Model 1909 Benet Merci\u00e9 adopted as official light machine gun of US Army \u00b7 Model 1909 Benet Merci\u00e9 adopted as official light machine gun of US Army","Maj. Gen. Wood confirms Col. Lewis offered his gun to the US Government without ","Col. Lewis testifies: offered Lewis gun to US Government in 1911 and again in 19","Unofficial and successful test of Lewis machine gun fired from airplane in Colle \u00b7 Letter from Automatic Arms Company to BOF offering Lewis Machine Gun \u00b7 BOF rejects offer of the gun for test given \"cetain limitations\" imposed by the ","BOF agrees to test of Lewis Gun \u00b7 Date not specified yet - test at Springfield Armory; BOF reports Lewis gun has m \u00b7 BOF agrees to test of Lewis Gun","Field test of Benet Merci\u00e9 and Vickers that results in selection of Vickers Gun \u00b7 Field test of Benet Merci\u00e9 and Vickers that results in selection of Vickers Gun \u00b7 Field test of Benet Merci\u00e9 and Vickers that results in selection of Vickers Gun","Savage Arms Company (same as AAC?) starts producing Lewis Machine Gun for Britis \u00b7 Ordnance Department asks SAC for a gun \u00b7 SAC says British Army taking 100% of supply so no Lewis Machine Guns available f","Ordnance Department asks SAC for a gun again \u00b7 SAC again says British Army taking 100% of supply so no Lewis Machine Guns avail \u00b7 Need exact date - Lewis Machine Gun test at Springfield Armory, one using Americ","Lewis testifies before Senate Military Committeee and says Lewis Machine Gun can \u00b7 Letter from The School of Musketry saying the Lewis Machine Gun doesn't work wel \u00b7 Lewis testifies before Senate Military Committeee and says Lewis Machine Gun can","Lewis gun production reaches 2,500 complete guns per week for Allied armies in E \u00b7 US finally adopts Lewis gun; by May 1918, US receives 16,000 Lewis guns (10,000 ","","","","","","","","","","","",""],"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003e\u003cb\u003eMachine Gun\u003c\u002fb\u003e: %{y} events\u003cbr\u003e\u003cspan style='font-size:11px;'\u003e%{customdata}\u003c\u002fspan\u003e\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#A8852E","line":{"width":0}},"name":"Machine Gun","x":[1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920,1921,1922,1923,1924,1925,1926,1927,1928,1929,1930],"y":[0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,1,4,1,1,25,8,6,13,24,8,2,0,0,0,0,0,0,0,0,0,0,0,0],"type":"bar"},{"customdata":["","","","","","","","","","","","","","","","","","","","","","Maj. Gen. J. F. Bell (Chief of Staff) annual report calls for Army strengthening \u00b7 Congress asked for $200,000 for military dirigible airships; regarded as 'hobby ","Maj. Gen. J. Franklin Bell opines that heavier-than-air machines will develop as \u00b7 Second International Aviation Meet at Belmont Park, N.Y.: Grahame-White wins int \u00b7 Aviation tournament at Halethorpe (Baltimore): Hubert Latham flies over city of ","","","","","","War Department announces only 114 aviators from Regular Army to be detailed unde","","","","","","","","","","","","","",""],"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003e\u003cb\u003eAirplane\u003c\u002fb\u003e: %{y} events\u003cbr\u003e\u003cspan style='font-size:11px;'\u003e%{customdata}\u003c\u002fspan\u003e\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#5B7B95","line":{"width":0}},"name":"Airplane","x":[1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920,1921,1922,1923,1924,1925,1926,1927,1928,1929,1930],"y":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"type":"bar"},{"customdata":["","","","","","","","","","","","","","","","","","","","","","","","","","First demo of autopilot \u00b7 First demo of autopilot \u00b7 First demo of autopilot","","","","","","","","","","","","","","","","",""],"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003e\u003cb\u003eOther\u003c\u002fb\u003e: %{y} events\u003cbr\u003e\u003cspan style='font-size:11px;'\u003e%{customdata}\u003c\u002fspan\u003e\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#8C8273","line":{"width":0}},"name":"Other","x":[1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920,1921,1922,1923,1924,1925,1926,1927,1928,1929,1930],"y":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"title":{"font":{"family":"Georgia, 'Times New Roman', serif","size":20,"color":"#1A1A2E"},"text":"\u003cb\u003eBOF Historical Events \u00b7 1888\u20131930\u003c\u002fb\u003e\u003cbr\u003e\u003cspan style='font-size:12px;color:#55556A;'\u003e640 events across 43 years.  Personnel (460) \u00b7 Machine Gun (97) \u00b7 Technology (40)\u003c\u002fspan\u003e","x":0.04,"xanchor":"left"},"font":{"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","color":"#1A1A2E","size":12},"margin":{"l":70,"r":30,"t":110,"b":60},"xaxis":{"title":{"text":"Year"},"tickmode":"linear","dtick":2,"gridcolor":"#D6CEBF","zerolinecolor":"#D6CEBF"},"yaxis":{"title":{"text":"Events recorded"},"gridcolor":"#D6CEBF","zerolinecolor":"#D6CEBF"},"legend":{"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"right","x":1,"bgcolor":"rgba(0,0,0,0)"},"hoverlabel":{"font":{"family":"Georgia, 'Times New Roman', serif"},"bgcolor":"#FFF8EC","bordercolor":"#C9A24C"},"paper_bgcolor":"#EAE3D8","plot_bgcolor":"#EAE3D8","height":560,"barmode":"stack","annotations":[{"align":"center","font":{"color":"#55556A","family":"Georgia, 'Times New Roman', serif","size":10},"showarrow":false,"text":"BOF\u003cbr\u003eestablished","x":1888,"y":12},{"align":"center","font":{"color":"#55556A","family":"Georgia, 'Times New Roman', serif","size":10},"showarrow":false,"text":"Spanish-American\u003cbr\u003eWar","x":1898,"y":10},{"align":"center","font":{"color":"#55556A","family":"Georgia, 'Times New Roman', serif","size":10},"showarrow":false,"text":"U.S. enters\u003cbr\u003eWWI","x":1917,"y":55},{"align":"center","font":{"color":"#55556A","family":"Georgia, 'Times New Roman', serif","size":10},"showarrow":false,"text":"BOF\u003cbr\u003edissolved","x":1930,"y":10}]},                        {"responsive": true}                    )                };                            </script>        </div>
+<div class="bof-bar">
+  <a class="bof-brand" href="/" title="Back to dashboard">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+    </svg>
+    <strong>FORTIFY THE ORDNANCE</strong>
+  </a>
+  <a class="bof-back" href="/">← back to dashboard</a>
+</div>
+<div class="chart-frame">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet">
+<text class="chart-title" x="60" y="58">Historical Events · 1888–1920</text><foreignObject x="60" y="78" width="1480" height="64"><div xmlns="http://www.w3.org/1999/xhtml" class="chart-subtitle"><b>632</b> events recorded across the Board's lifespan. <b>Personnel</b> (456) · <b>Machine Gun</b> (97) · <b>Technology</b> (40).</div></foreignObject>
+<g class="grid">
+<line class="grid-line" x1="90" y1="770.0" x2="1550" y2="770.0"/>
+<line class="grid-line" x1="90" y1="566.7" x2="1550" y2="566.7"/>
+<line class="grid-line" x1="90" y1="363.3" x2="1550" y2="363.3"/>
+<line class="grid-line" x1="90" y1="160.0" x2="1550" y2="160.0"/>
+</g>
+<text class="tick" x="78" y="774.0" text-anchor="end">0</text>
+<text class="tick" x="78" y="570.7" text-anchor="end">20</text>
+<text class="tick" x="78" y="367.3" text-anchor="end">40</text>
+<text class="tick" x="78" y="164.0" text-anchor="end">60</text>
+<text class="axis-label" x="22" y="465.0" transform="rotate(-90 22 465.0)" text-anchor="middle">Events recorded</text>
+<line stroke="#55556A" stroke-width="1" stroke-dasharray="3,3" opacity="0.45" x1="90.0" y1="146" x2="90.0" y2="770"/>
+<text class="annot" x="90.0" y="142" text-anchor="middle">BOF established</text>
+<line stroke="#55556A" stroke-width="1" stroke-dasharray="3,3" opacity="0.45" x1="546.2" y1="146" x2="546.2" y2="770"/>
+<text class="annot" x="546.2" y="142" text-anchor="middle">Spanish-American War</text>
+<line stroke="#55556A" stroke-width="1" stroke-dasharray="3,3" opacity="0.45" x1="1413.1" y1="146" x2="1413.1" y2="770"/>
+<text class="annot" x="1413.1" y="142" text-anchor="middle">U.S. enters WWI</text>
+<line stroke="#55556A" stroke-width="1" stroke-dasharray="3,3" opacity="0.45" x1="1550.0" y1="146" x2="1550.0" y2="770"/>
+<text class="annot" x="1550.0" y="142" text-anchor="middle">BOF dissolved</text>
+<g class="year-col" data-year="1888">
+<rect class="year-hit" x="71.6" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1888: Legislation — 8 events</title>
+<rect class="seg-rect" fill="#1F3A5F" x="73.6" y="688.7" width="32.7" height="81.3"/>
+</g>
+<g class="seg">
+<title>1888: Organizational — 1 events</title>
+<rect class="seg-rect" fill="#6B89A8" x="73.6" y="678.5" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1888: Personnel — 1 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="73.6" y="668.3" width="32.7" height="10.2"/>
+</g>
+<text class="seg-label" x="90.0" y="733.3" text-anchor="middle">8</text>
+<text class="seg-label" x="90.0" y="687.6" text-anchor="middle">1</text>
+<text class="seg-label" x="90.0" y="677.4" text-anchor="middle">1</text>
+<text class="year-total" x="90.0" y="660.3" text-anchor="middle">10</text>
+</g>
+<g class="year-col" data-year="1889">
+<rect class="year-hit" x="117.3" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1889: Personnel — 1 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="119.3" y="759.8" width="32.7" height="10.2"/>
+</g>
+<text class="seg-label" x="135.6" y="768.9" text-anchor="middle">1</text>
+<text class="year-total" x="135.6" y="751.8" text-anchor="middle">1</text>
+</g>
+<g class="year-col" data-year="1890">
+<rect class="year-hit" x="162.9" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1890: Personnel — 6 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="164.9" y="709.0" width="32.7" height="61.0"/>
+</g>
+<text class="seg-label" x="181.2" y="743.5" text-anchor="middle">6</text>
+<text class="year-total" x="181.2" y="701.0" text-anchor="middle">6</text>
+</g>
+<g class="year-col" data-year="1891">
+<rect class="year-hit" x="208.5" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1891: Legislation — 4 events</title>
+<rect class="seg-rect" fill="#1F3A5F" x="210.5" y="729.3" width="32.7" height="40.7"/>
+</g>
+<g class="seg">
+<title>1891: Personnel — 4 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="210.5" y="688.7" width="32.7" height="40.7"/>
+</g>
+<g class="seg">
+<title>1891: Technology — 1 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="210.5" y="678.5" width="32.7" height="10.2"/>
+</g>
+<text class="seg-label" x="226.9" y="753.7" text-anchor="middle">4</text>
+<text class="seg-label" x="226.9" y="713.0" text-anchor="middle">4</text>
+<text class="seg-label" x="226.9" y="687.6" text-anchor="middle">1</text>
+<text class="year-total" x="226.9" y="670.5" text-anchor="middle">9</text>
+</g>
+<g class="year-col" data-year="1892">
+<rect class="year-hit" x="254.1" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1892: Personnel — 8 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="256.1" y="688.7" width="32.7" height="81.3"/>
+</g>
+<g class="seg">
+<title>1892: Technology — 1 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="256.1" y="678.5" width="32.7" height="10.2"/>
+</g>
+<text class="seg-label" x="272.5" y="733.3" text-anchor="middle">8</text>
+<text class="seg-label" x="272.5" y="687.6" text-anchor="middle">1</text>
+<text class="year-total" x="272.5" y="670.5" text-anchor="middle">9</text>
+</g>
+<g class="year-col" data-year="1893">
+<rect class="year-hit" x="299.8" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1893: Legislation — 4 events</title>
+<rect class="seg-rect" fill="#1F3A5F" x="301.8" y="729.3" width="32.7" height="40.7"/>
+</g>
+<g class="seg">
+<title>1893: Technology — 1 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="301.8" y="719.2" width="32.7" height="10.2"/>
+</g>
+<text class="seg-label" x="318.1" y="753.7" text-anchor="middle">4</text>
+<text class="seg-label" x="318.1" y="728.2" text-anchor="middle">1</text>
+<text class="year-total" x="318.1" y="711.2" text-anchor="middle">5</text>
+</g>
+<g class="year-col" data-year="1894">
+<rect class="year-hit" x="345.4" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1894: Personnel — 12 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="347.4" y="648.0" width="32.7" height="122.0"/>
+</g>
+<text class="seg-label" x="363.8" y="713.0" text-anchor="middle">12</text>
+<text class="year-total" x="363.8" y="640.0" text-anchor="middle">12</text>
+</g>
+<g class="year-col" data-year="1895">
+<rect class="year-hit" x="391.0" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1895: Personnel — 16 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="393.0" y="607.3" width="32.7" height="162.7"/>
+</g>
+<g class="seg">
+<title>1895: Technology — 1 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="393.0" y="597.2" width="32.7" height="10.2"/>
+</g>
+<text class="seg-label" x="409.4" y="692.7" text-anchor="middle">16</text>
+<text class="seg-label" x="409.4" y="606.2" text-anchor="middle">1</text>
+<text class="year-total" x="409.4" y="589.2" text-anchor="middle">17</text>
+</g>
+<g class="year-col" data-year="1896">
+<rect class="year-hit" x="436.6" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1896: Personnel — 1 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="438.6" y="759.8" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1896: Technology — 1 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="438.6" y="749.7" width="32.7" height="10.2"/>
+</g>
+<text class="seg-label" x="455.0" y="768.9" text-anchor="middle">1</text>
+<text class="seg-label" x="455.0" y="758.8" text-anchor="middle">1</text>
+<text class="year-total" x="455.0" y="741.7" text-anchor="middle">2</text>
+</g>
+<g class="year-col" data-year="1897">
+<rect class="year-hit" x="482.3" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1897: Technology — 2 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="484.3" y="749.7" width="32.7" height="20.3"/>
+</g>
+<text class="seg-label" x="500.6" y="763.8" text-anchor="middle">2</text>
+<text class="year-total" x="500.6" y="741.7" text-anchor="middle">2</text>
+</g>
+<g class="year-col" data-year="1898">
+<rect class="year-hit" x="527.9" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1898: Personnel — 6 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="529.9" y="709.0" width="32.7" height="61.0"/>
+</g>
+<g class="seg">
+<title>1898: Technology — 2 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="529.9" y="688.7" width="32.7" height="20.3"/>
+</g>
+<text class="seg-label" x="546.2" y="743.5" text-anchor="middle">6</text>
+<text class="seg-label" x="546.2" y="702.8" text-anchor="middle">2</text>
+<text class="year-total" x="546.2" y="680.7" text-anchor="middle">8</text>
+</g>
+<g class="year-col" data-year="1899">
+<rect class="year-hit" x="573.5" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1899: Personnel — 16 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="575.5" y="607.3" width="32.7" height="162.7"/>
+</g>
+<text class="seg-label" x="591.9" y="692.7" text-anchor="middle">16</text>
+<text class="year-total" x="591.9" y="599.3" text-anchor="middle">16</text>
+</g>
+<g class="year-col" data-year="1900">
+<rect class="year-hit" x="619.1" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1900: Personnel — 15 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="621.1" y="617.5" width="32.7" height="152.5"/>
+</g>
+<g class="seg">
+<title>1900: Technology — 1 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="621.1" y="607.3" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1900: Machine Gun — 4 events</title>
+<rect class="seg-rect" fill="#A8852E" x="621.1" y="566.7" width="32.7" height="40.7"/>
+</g>
+<text class="seg-label" x="637.5" y="697.8" text-anchor="middle">15</text>
+<text class="seg-label" x="637.5" y="616.4" text-anchor="middle">1</text>
+<text class="seg-label" x="637.5" y="591.0" text-anchor="middle">4</text>
+<text class="year-total" x="637.5" y="558.7" text-anchor="middle">20</text>
+</g>
+<g class="year-col" data-year="1901">
+<rect class="year-hit" x="664.8" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1901: Legislation — 4 events</title>
+<rect class="seg-rect" fill="#1F3A5F" x="666.8" y="729.3" width="32.7" height="40.7"/>
+</g>
+<g class="seg">
+<title>1901: Personnel — 12 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="666.8" y="607.3" width="32.7" height="122.0"/>
+</g>
+<g class="seg">
+<title>1901: Technology — 2 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="666.8" y="587.0" width="32.7" height="20.3"/>
+</g>
+<text class="seg-label" x="683.1" y="753.7" text-anchor="middle">4</text>
+<text class="seg-label" x="683.1" y="672.3" text-anchor="middle">12</text>
+<text class="seg-label" x="683.1" y="601.2" text-anchor="middle">2</text>
+<text class="year-total" x="683.1" y="579.0" text-anchor="middle">18</text>
+</g>
+<g class="year-col" data-year="1902">
+<rect class="year-hit" x="710.4" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1902: Organizational — 1 events</title>
+<rect class="seg-rect" fill="#6B89A8" x="712.4" y="759.8" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1902: Personnel — 17 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="712.4" y="587.0" width="32.7" height="172.8"/>
+</g>
+<text class="seg-label" x="728.8" y="768.9" text-anchor="middle">1</text>
+<text class="seg-label" x="728.8" y="677.4" text-anchor="middle">17</text>
+<text class="year-total" x="728.8" y="579.0" text-anchor="middle">18</text>
+</g>
+<g class="year-col" data-year="1903">
+<rect class="year-hit" x="756.0" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1903: Personnel — 21 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="758.0" y="556.5" width="32.7" height="213.5"/>
+</g>
+<g class="seg">
+<title>1903: Technology — 2 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="758.0" y="536.2" width="32.7" height="20.3"/>
+</g>
+<text class="seg-label" x="774.4" y="667.2" text-anchor="middle">21</text>
+<text class="seg-label" x="774.4" y="550.3" text-anchor="middle">2</text>
+<text class="year-total" x="774.4" y="528.2" text-anchor="middle">23</text>
+</g>
+<g class="year-col" data-year="1904">
+<rect class="year-hit" x="801.6" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1904: Organizational — 1 events</title>
+<rect class="seg-rect" fill="#6B89A8" x="803.6" y="759.8" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1904: Personnel — 40 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="803.6" y="353.2" width="32.7" height="406.7"/>
+</g>
+<g class="seg">
+<title>1904: Technology — 4 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="803.6" y="312.5" width="32.7" height="40.7"/>
+</g>
+<text class="seg-label" x="820.0" y="768.9" text-anchor="middle">1</text>
+<text class="seg-label" x="820.0" y="560.5" text-anchor="middle">40</text>
+<text class="seg-label" x="820.0" y="336.8" text-anchor="middle">4</text>
+<text class="year-total" x="820.0" y="304.5" text-anchor="middle">45</text>
+</g>
+<g class="year-col" data-year="1905">
+<rect class="year-hit" x="847.3" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1905: Personnel — 10 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="849.3" y="668.3" width="32.7" height="101.7"/>
+</g>
+<g class="seg">
+<title>1905: Technology — 4 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="849.3" y="627.7" width="32.7" height="40.7"/>
+</g>
+<text class="seg-label" x="865.6" y="723.2" text-anchor="middle">10</text>
+<text class="seg-label" x="865.6" y="652.0" text-anchor="middle">4</text>
+<text class="year-total" x="865.6" y="619.7" text-anchor="middle">14</text>
+</g>
+<g class="year-col" data-year="1906">
+<rect class="year-hit" x="892.9" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1906: Personnel — 17 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="894.9" y="597.2" width="32.7" height="172.8"/>
+</g>
+<text class="seg-label" x="911.2" y="687.6" text-anchor="middle">17</text>
+<text class="year-total" x="911.2" y="589.2" text-anchor="middle">17</text>
+</g>
+<g class="year-col" data-year="1907">
+<rect class="year-hit" x="938.5" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1907: Personnel — 9 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="940.5" y="678.5" width="32.7" height="91.5"/>
+</g>
+<g class="seg">
+<title>1907: Technology — 4 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="940.5" y="637.8" width="32.7" height="40.7"/>
+</g>
+<text class="seg-label" x="956.9" y="728.2" text-anchor="middle">9</text>
+<text class="seg-label" x="956.9" y="662.2" text-anchor="middle">4</text>
+<text class="year-total" x="956.9" y="629.8" text-anchor="middle">13</text>
+</g>
+<g class="year-col" data-year="1908">
+<rect class="year-hit" x="984.1" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1908: Personnel — 16 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="986.1" y="607.3" width="32.7" height="162.7"/>
+</g>
+<g class="seg">
+<title>1908: Technology — 4 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="986.1" y="566.7" width="32.7" height="40.7"/>
+</g>
+<g class="seg">
+<title>1908: Machine Gun — 1 events</title>
+<rect class="seg-rect" fill="#A8852E" x="986.1" y="556.5" width="32.7" height="10.2"/>
+</g>
+<text class="seg-label" x="1002.5" y="692.7" text-anchor="middle">16</text>
+<text class="seg-label" x="1002.5" y="591.0" text-anchor="middle">4</text>
+<text class="seg-label" x="1002.5" y="565.6" text-anchor="middle">1</text>
+<text class="year-total" x="1002.5" y="548.5" text-anchor="middle">21</text>
+</g>
+<g class="year-col" data-year="1909">
+<rect class="year-hit" x="1029.8" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1909: Organizational — 1 events</title>
+<rect class="seg-rect" fill="#6B89A8" x="1031.8" y="759.8" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1909: Personnel — 4 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1031.8" y="719.2" width="32.7" height="40.7"/>
+</g>
+<g class="seg">
+<title>1909: Technology — 2 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="1031.8" y="698.8" width="32.7" height="20.3"/>
+</g>
+<g class="seg">
+<title>1909: Machine Gun — 4 events</title>
+<rect class="seg-rect" fill="#A8852E" x="1031.8" y="658.2" width="32.7" height="40.7"/>
+</g>
+<g class="seg">
+<title>1909: Airplane — 2 events</title>
+<rect class="seg-rect" fill="#5B7B95" x="1031.8" y="637.8" width="32.7" height="20.3"/>
+</g>
+<text class="seg-label" x="1048.1" y="768.9" text-anchor="middle">1</text>
+<text class="seg-label" x="1048.1" y="743.5" text-anchor="middle">4</text>
+<text class="seg-label" x="1048.1" y="713.0" text-anchor="middle">2</text>
+<text class="seg-label" x="1048.1" y="682.5" text-anchor="middle">4</text>
+<text class="seg-label" x="1048.1" y="652.0" text-anchor="middle">2</text>
+<text class="year-total" x="1048.1" y="629.8" text-anchor="middle">13</text>
+</g>
+<g class="year-col" data-year="1910">
+<rect class="year-hit" x="1075.4" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1910: Personnel — 18 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1077.4" y="587.0" width="32.7" height="183.0"/>
+</g>
+<g class="seg">
+<title>1910: Machine Gun — 1 events</title>
+<rect class="seg-rect" fill="#A8852E" x="1077.4" y="576.8" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1910: Airplane — 3 events</title>
+<rect class="seg-rect" fill="#5B7B95" x="1077.4" y="546.3" width="32.7" height="30.5"/>
+</g>
+<text class="seg-label" x="1093.8" y="682.5" text-anchor="middle">18</text>
+<text class="seg-label" x="1093.8" y="585.9" text-anchor="middle">1</text>
+<text class="seg-label" x="1093.8" y="565.6" text-anchor="middle">3</text>
+<text class="year-total" x="1093.8" y="538.3" text-anchor="middle">22</text>
+</g>
+<g class="year-col" data-year="1911">
+<rect class="year-hit" x="1121.0" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1911: Organizational — 1 events</title>
+<rect class="seg-rect" fill="#6B89A8" x="1123.0" y="759.8" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1911: Personnel — 13 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1123.0" y="627.7" width="32.7" height="132.2"/>
+</g>
+<g class="seg">
+<title>1911: Technology — 1 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="1123.0" y="617.5" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1911: Machine Gun — 1 events</title>
+<rect class="seg-rect" fill="#A8852E" x="1123.0" y="607.3" width="32.7" height="10.2"/>
+</g>
+<text class="seg-label" x="1139.4" y="768.9" text-anchor="middle">1</text>
+<text class="seg-label" x="1139.4" y="697.8" text-anchor="middle">13</text>
+<text class="seg-label" x="1139.4" y="626.6" text-anchor="middle">1</text>
+<text class="seg-label" x="1139.4" y="616.4" text-anchor="middle">1</text>
+<text class="year-total" x="1139.4" y="599.3" text-anchor="middle">16</text>
+</g>
+<g class="year-col" data-year="1912">
+<rect class="year-hit" x="1166.6" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1912: Personnel — 8 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1168.6" y="688.7" width="32.7" height="81.3"/>
+</g>
+<g class="seg">
+<title>1912: Technology — 1 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="1168.6" y="678.5" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1912: Machine Gun — 25 events</title>
+<rect class="seg-rect" fill="#A8852E" x="1168.6" y="424.3" width="32.7" height="254.2"/>
+</g>
+<text class="seg-label" x="1185.0" y="733.3" text-anchor="middle">8</text>
+<text class="seg-label" x="1185.0" y="687.6" text-anchor="middle">1</text>
+<text class="seg-label" x="1185.0" y="555.4" text-anchor="middle">25</text>
+<text class="year-total" x="1185.0" y="416.3" text-anchor="middle">34</text>
+</g>
+<g class="year-col" data-year="1913">
+<rect class="year-hit" x="1212.3" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1913: Personnel — 23 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1214.3" y="536.2" width="32.7" height="233.8"/>
+</g>
+<g class="seg">
+<title>1913: Technology — 3 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="1214.3" y="505.7" width="32.7" height="30.5"/>
+</g>
+<g class="seg">
+<title>1913: Machine Gun — 8 events</title>
+<rect class="seg-rect" fill="#A8852E" x="1214.3" y="424.3" width="32.7" height="81.3"/>
+</g>
+<g class="seg">
+<title>1913: Other — 4 events</title>
+<rect class="seg-rect" fill="#8C8273" x="1214.3" y="383.7" width="32.7" height="40.7"/>
+</g>
+<text class="seg-label" x="1230.6" y="657.1" text-anchor="middle">23</text>
+<text class="seg-label" x="1230.6" y="524.9" text-anchor="middle">3</text>
+<text class="seg-label" x="1230.6" y="469.0" text-anchor="middle">8</text>
+<text class="seg-label" x="1230.6" y="408.0" text-anchor="middle">4</text>
+<text class="year-total" x="1230.6" y="375.7" text-anchor="middle">38</text>
+</g>
+<g class="year-col" data-year="1914">
+<rect class="year-hit" x="1257.9" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1914: Personnel — 24 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1259.9" y="526.0" width="32.7" height="244.0"/>
+</g>
+<g class="seg">
+<title>1914: Machine Gun — 6 events</title>
+<rect class="seg-rect" fill="#A8852E" x="1259.9" y="465.0" width="32.7" height="61.0"/>
+</g>
+<text class="seg-label" x="1276.2" y="652.0" text-anchor="middle">24</text>
+<text class="seg-label" x="1276.2" y="499.5" text-anchor="middle">6</text>
+<text class="year-total" x="1276.2" y="457.0" text-anchor="middle">30</text>
+</g>
+<g class="year-col" data-year="1915">
+<rect class="year-hit" x="1303.5" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1915: Personnel — 8 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1305.5" y="688.7" width="32.7" height="81.3"/>
+</g>
+<g class="seg">
+<title>1915: Technology — 1 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="1305.5" y="678.5" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1915: Machine Gun — 13 events</title>
+<rect class="seg-rect" fill="#A8852E" x="1305.5" y="546.3" width="32.7" height="132.2"/>
+</g>
+<text class="seg-label" x="1321.9" y="733.3" text-anchor="middle">8</text>
+<text class="seg-label" x="1321.9" y="687.6" text-anchor="middle">1</text>
+<text class="seg-label" x="1321.9" y="616.4" text-anchor="middle">13</text>
+<text class="year-total" x="1321.9" y="538.3" text-anchor="middle">22</text>
+</g>
+<g class="year-col" data-year="1916">
+<rect class="year-hit" x="1349.1" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1916: Personnel — 8 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1351.1" y="688.7" width="32.7" height="81.3"/>
+</g>
+<g class="seg">
+<title>1916: Technology — 1 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="1351.1" y="678.5" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1916: Machine Gun — 24 events</title>
+<rect class="seg-rect" fill="#A8852E" x="1351.1" y="434.5" width="32.7" height="244.0"/>
+</g>
+<g class="seg">
+<title>1916: Airplane — 1 events</title>
+<rect class="seg-rect" fill="#5B7B95" x="1351.1" y="424.3" width="32.7" height="10.2"/>
+</g>
+<text class="seg-label" x="1367.5" y="733.3" text-anchor="middle">8</text>
+<text class="seg-label" x="1367.5" y="687.6" text-anchor="middle">1</text>
+<text class="seg-label" x="1367.5" y="560.5" text-anchor="middle">24</text>
+<text class="seg-label" x="1367.5" y="433.4" text-anchor="middle">1</text>
+<text class="year-total" x="1367.5" y="416.3" text-anchor="middle">34</text>
+</g>
+<g class="year-col" data-year="1917">
+<rect class="year-hit" x="1394.8" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1917: Personnel — 44 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1396.8" y="322.7" width="32.7" height="447.3"/>
+</g>
+<g class="seg">
+<title>1917: Technology — 1 events</title>
+<rect class="seg-rect" fill="#C9A24C" x="1396.8" y="312.5" width="32.7" height="10.2"/>
+</g>
+<g class="seg">
+<title>1917: Machine Gun — 8 events</title>
+<rect class="seg-rect" fill="#A8852E" x="1396.8" y="231.2" width="32.7" height="81.3"/>
+</g>
+<text class="seg-label" x="1413.1" y="550.3" text-anchor="middle">44</text>
+<text class="seg-label" x="1413.1" y="321.6" text-anchor="middle">1</text>
+<text class="seg-label" x="1413.1" y="275.8" text-anchor="middle">8</text>
+<text class="year-total" x="1413.1" y="223.2" text-anchor="middle">53</text>
+</g>
+<g class="year-col" data-year="1918">
+<rect class="year-hit" x="1440.4" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1918: Personnel — 37 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1442.4" y="393.8" width="32.7" height="376.2"/>
+</g>
+<g class="seg">
+<title>1918: Machine Gun — 2 events</title>
+<rect class="seg-rect" fill="#A8852E" x="1442.4" y="373.5" width="32.7" height="20.3"/>
+</g>
+<text class="seg-label" x="1458.8" y="585.9" text-anchor="middle">37</text>
+<text class="seg-label" x="1458.8" y="387.7" text-anchor="middle">2</text>
+<text class="year-total" x="1458.8" y="365.5" text-anchor="middle">39</text>
+</g>
+<g class="year-col" data-year="1919">
+<rect class="year-hit" x="1486.0" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1919: Personnel — 4 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1488.0" y="729.3" width="32.7" height="40.7"/>
+</g>
+<text class="seg-label" x="1504.4" y="753.7" text-anchor="middle">4</text>
+<text class="year-total" x="1504.4" y="721.3" text-anchor="middle">4</text>
+</g>
+<g class="year-col" data-year="1920">
+<rect class="year-hit" x="1531.6" y="160.0" width="36.7" height="610.0" fill="transparent"/>
+<g class="seg">
+<title>1920: Organizational — 4 events</title>
+<rect class="seg-rect" fill="#6B89A8" x="1533.6" y="729.3" width="32.7" height="40.7"/>
+</g>
+<g class="seg">
+<title>1920: Personnel — 37 events</title>
+<rect class="seg-rect" fill="#9F8B6B" x="1533.6" y="353.2" width="32.7" height="376.2"/>
+</g>
+<text class="seg-label" x="1550.0" y="753.7" text-anchor="middle">4</text>
+<text class="seg-label" x="1550.0" y="545.2" text-anchor="middle">37</text>
+<text class="year-total" x="1550.0" y="345.2" text-anchor="middle">41</text>
+</g>
+<line class="grid-line" x1="90" y1="770" x2="1550" y2="770" stroke-width="1.2"/>
+<text class="tick" x="90.0" y="792" text-anchor="middle">1888</text>
+<text class="tick" x="181.2" y="792" text-anchor="middle">1890</text>
+<text class="tick" x="272.5" y="792" text-anchor="middle">1892</text>
+<text class="tick" x="363.8" y="792" text-anchor="middle">1894</text>
+<text class="tick" x="455.0" y="792" text-anchor="middle">1896</text>
+<text class="tick" x="546.2" y="792" text-anchor="middle">1898</text>
+<text class="tick" x="637.5" y="792" text-anchor="middle">1900</text>
+<text class="tick" x="728.8" y="792" text-anchor="middle">1902</text>
+<text class="tick" x="820.0" y="792" text-anchor="middle">1904</text>
+<text class="tick" x="911.2" y="792" text-anchor="middle">1906</text>
+<text class="tick" x="1002.5" y="792" text-anchor="middle">1908</text>
+<text class="tick" x="1093.8" y="792" text-anchor="middle">1910</text>
+<text class="tick" x="1185.0" y="792" text-anchor="middle">1912</text>
+<text class="tick" x="1276.2" y="792" text-anchor="middle">1914</text>
+<text class="tick" x="1367.5" y="792" text-anchor="middle">1916</text>
+<text class="tick" x="1458.8" y="792" text-anchor="middle">1918</text>
+<text class="tick" x="1550.0" y="792" text-anchor="middle">1920</text>
+<text class="axis-label" x="820.0" y="824" text-anchor="middle">Year</text>
+<rect fill="#1F3A5F" x="90" y="862" width="14" height="12" rx="1"/>
+<text class="legend-text" x="110" y="872">Legislation</text>
+<rect fill="#6B89A8" x="222" y="862" width="14" height="12" rx="1"/>
+<text class="legend-text" x="242" y="872">Organizational</text>
+<rect fill="#9F8B6B" x="378" y="862" width="14" height="12" rx="1"/>
+<text class="legend-text" x="398" y="872">Personnel</text>
+<rect fill="#C9A24C" x="494" y="862" width="14" height="12" rx="1"/>
+<text class="legend-text" x="514" y="872">Technology</text>
+<rect fill="#A8852E" x="618" y="862" width="14" height="12" rx="1"/>
+<text class="legend-text" x="638" y="872">Machine Gun</text>
+<rect fill="#5B7B95" x="750" y="862" width="14" height="12" rx="1"/>
+<text class="legend-text" x="770" y="872">Airplane</text>
+<rect fill="#8C8273" x="858" y="862" width="14" height="12" rx="1"/>
+<text class="legend-text" x="878" y="872">Other</text>
+</svg>
+</div>
 </body>
 </html>

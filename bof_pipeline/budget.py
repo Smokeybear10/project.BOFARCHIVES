@@ -51,7 +51,7 @@ def load_budget_master(filepath: str | Path) -> pd.DataFrame:
             raise ValueError(f"Sheet '{sheet}' has unexpected structure: {list(df.columns)}")
 
         # Forward-fill organization name (some cells are blank in multi-row entries)
-        df["organization"] = df["organization"].ffill()
+        df["organization"] = df["organization"].ffill().astype(str).str.strip()
 
         # Cast numeric columns — strip stray string characters first
         for col in ("year", "appropriation_usd", "appropriation_2025_usd"):

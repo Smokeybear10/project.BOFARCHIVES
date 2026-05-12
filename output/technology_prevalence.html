@@ -69,8 +69,421 @@
     white-space:nowrap;flex-shrink:0;
   }
 </style>
+
+<style id="bof-chart-frame">
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #F4EDDB;
+    font-family: 'Source Serif 4', Georgia, serif;
+    color: #1A1A2E;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 36px;
+    box-sizing: border-box;
+  }
+  .plotly-graph-div {
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 1480px;
+    background: #FBF6E6;
+    border: 1px solid #D6CEBF;
+    border-radius: 8px;
+    box-shadow: 0 6px 22px rgba(60, 40, 10, 0.10), 0 2px 6px rgba(60, 40, 10, 0.05);
+    padding: 18px 22px;
+    box-sizing: border-box;
+  }
+  @media (max-width: 720px) {
+    body { padding: 12px; }
+    .plotly-graph-div { padding: 10px; }
+  }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+<script id="bof-chart-resize">
+  // Force Plotly to relayout when the viewport changes — critical for tablets
+  // rotating, browser windows being resized, and DevTools opening.
+  (function() {
+    function resizeCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try { Plotly.Plots.resize(div); } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(resizeCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(resizeCharts, 200);
+    });
+    // First paint nudge — some browsers ignore Plotly's autosize on initial load
+    window.addEventListener('load', function() { setTimeout(resizeCharts, 50); });
+  })();
+</script>
+
+
+<script id="bof-chart-resize">
+  // Force Plotly to relayout when the viewport changes — critical for tablets
+  // rotating, browser windows being resized, and DevTools opening.
+  (function() {
+    function resizeCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try { Plotly.Plots.resize(div); } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(resizeCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(resizeCharts, 200);
+    });
+    // First paint nudge — some browsers ignore Plotly's autosize on initial load
+    window.addEventListener('load', function() { setTimeout(resizeCharts, 50); });
+  })();
+</script>
+
+
+<script id="bof-chart-resize">
+  // Force Plotly to relayout when the viewport changes — critical for tablets
+  // rotating, browser windows being resized, and DevTools opening.
+  (function() {
+    function resizeCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try { Plotly.Plots.resize(div); } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(resizeCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(resizeCharts, 200);
+    });
+    // First paint nudge — some browsers ignore Plotly's autosize on initial load
+    window.addEventListener('load', function() { setTimeout(resizeCharts, 50); });
+  })();
+</script>
+
+
+<script id="bof-chart-resize">
+  // Force Plotly to relayout when the viewport changes — critical for tablets
+  // rotating, browser windows being resized, and DevTools opening.
+  (function() {
+    function resizeCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try { Plotly.Plots.resize(div); } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(resizeCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(resizeCharts, 200);
+    });
+    // First paint nudge — some browsers ignore Plotly's autosize on initial load
+    window.addEventListener('load', function() { setTimeout(resizeCharts, 50); });
+  })();
+</script>
+
+
+<script id="bof-chart-resize">
+  // Force Plotly to relayout when the viewport changes — critical for tablets
+  // rotating, browser windows being resized, and DevTools opening.
+  (function() {
+    function resizeCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try { Plotly.Plots.resize(div); } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(resizeCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(resizeCharts, 200);
+    });
+    // First paint nudge — some browsers ignore Plotly's autosize on initial load
+    window.addEventListener('load', function() { setTimeout(resizeCharts, 50); });
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style id="bof-chart-frame">
+  /* ── Base ─────────────────────────────────────────────────────────── */
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #EAE3D8;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1A1A2E;
+    overflow-x: hidden;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header strip ─────────────────────────────────────────────────── */
+  .bof-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: #FBF6E6;
+    border-bottom: 1px solid #D6CEBF;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: #55556A;
+    flex-shrink: 0;
+  }
+  .bof-bar .bof-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+    min-width: 0;
+  }
+  .bof-bar .bof-brand svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: #C9A24C;
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .bof-bar .bof-brand:hover svg { transform: rotate(45deg); }
+  .bof-bar .bof-brand strong {
+    color: #1A1A2E;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bof-bar a.bof-back {
+    color: #55556A;
+    text-decoration: none;
+    letter-spacing: 1.2px;
+    white-space: nowrap;
+  }
+  .bof-bar a.bof-back:hover { color: #C9A24C; }
+
+  /* ── Chart container ──────────────────────────────────────────────── */
+  .bof-chart-wrap {
+    flex: 1;
+    display: flex;
+    align-items: stretch;             /* chart fills full height of wrap */
+    justify-content: center;
+    padding: 16px 24px 20px;
+    box-sizing: border-box;
+    min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Chart fills BOTH dimensions of the wrap (which is flex:1, so it takes
+     all remaining viewport after the header). On narrow screens, min-width
+     forces horizontal scroll instead of collapsing the chart. */
+  .plotly-graph-div {
+    margin: 0 auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 720px;
+    min-height: 520px;
+    flex-shrink: 0;
+  }
+  .plotly-graph-div .gtitle { font-family: 'Source Serif 4', Georgia, serif !important; }
+  .modebar-container, .modebar { display: none !important; }
+  .plotly-graph-div .bartext { font-family: 'Inter', sans-serif !important; }
+
+  /* Subtle scroll hint on narrow screens */
+  .bof-chart-wrap::-webkit-scrollbar { height: 10px; }
+  .bof-chart-wrap::-webkit-scrollbar-track { background: transparent; }
+  .bof-chart-wrap::-webkit-scrollbar-thumb {
+    background: rgba(201, 162, 76, 0.35);
+    border-radius: 5px;
+  }
+  .bof-chart-wrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 162, 76, 0.65);
+  }
+
+  /* ── Responsive breakpoints ───────────────────────────────────────── */
+
+  /* Ultra-wide (1920+) */
+  @media (min-width: 1920px) {
+    .bof-chart-wrap { padding: 20px 40px 28px; }
+    .bof-bar { padding: 16px 40px; font-size: 12px; }
+  }
+
+  /* Large desktop (1280-1919) */
+  @media (min-width: 1280px) and (max-width: 1919px) {
+    .bof-chart-wrap { padding: 18px 32px 22px; }
+  }
+
+  /* Small laptop / tablet landscape (900-1279) */
+  @media (min-width: 900px) and (max-width: 1279px) {
+    .bof-chart-wrap { padding: 14px 18px 18px; }
+    .bof-bar { padding: 12px 22px; }
+  }
+
+  /* Tablet portrait (600-899) */
+  @media (min-width: 600px) and (max-width: 899px) {
+    .bof-bar { padding: 12px 18px; font-size: 10.5px; }
+    .bof-chart-wrap { padding: 10px 12px 14px; }
+    .plotly-graph-div { min-height: 440px; }
+  }
+
+  /* Mobile (<600): chart keeps 720px min-width and scrolls horizontally.
+     Hint banner tells the user the chart is scrollable. */
+  @media (max-width: 599px) {
+    .bof-bar {
+      padding: 10px 12px;
+      font-size: 9.5px;
+      letter-spacing: 0.9px;
+      gap: 8px;
+    }
+    .bof-bar .bof-brand { gap: 6px; }
+    .bof-bar .bof-brand strong { letter-spacing: 1px; font-size: 10px; }
+    .bof-bar .bof-brand svg { width: 14px; height: 14px; }
+    .bof-chart-wrap {
+      padding: 8px 6px 16px;
+      align-items: flex-start;
+    }
+    .plotly-graph-div { min-height: 420px; }
+    body::before {
+      content: "↔ swipe to scroll chart";
+      position: fixed;
+      bottom: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      background: rgba(201, 162, 76, 0.92);
+      color: #1A1A2E;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 100;
+      animation: bof-hint-fade 5s ease-in forwards;
+    }
+  }
+  @keyframes bof-hint-fade {
+    0%, 60% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* Very small (<380): hide "back to dashboard" text, keep just back arrow */
+  @media (max-width: 379px) {
+    .bof-bar a.bof-back { font-size: 16px; }
+    .bof-bar a.bof-back .bof-back-text { display: none; }
+  }
+</style>
+<script id="bof-chart-resize">
+  // Every Plotly chart hard-codes its own height/width on the div inline.
+  // Strip those, set its own layout to autosize, then resize from the
+  // CSS-driven container dimensions. This is what makes every chart fill
+  // its frame identically regardless of what the Python writer set.
+  (function() {
+    function fitAllCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try {
+          // Strip Plotly's inline width/height so the CSS wins
+          div.style.removeProperty('height');
+          div.style.removeProperty('width');
+          // Tell Plotly the chart is autosizing — this disables any
+          // Python-side fixed height/width baked into the layout.
+          Plotly.relayout(div, {
+            autosize: true,
+            width: null,
+            height: null,
+          });
+          Plotly.Plots.resize(div);
+        } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(fitAllCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(fitAllCharts, 200);
+    });
+    // First paint: do it as soon as the document is ready, and again after
+    // load to catch lazy-init charts.
+    if (document.readyState === 'complete') {
+      setTimeout(fitAllCharts, 30);
+    } else {
+      window.addEventListener('load', function() { setTimeout(fitAllCharts, 30); });
+      document.addEventListener('DOMContentLoaded', function() { setTimeout(fitAllCharts, 60); });
+    }
+  })();
+</script>
 </head>
 <body>
+<div class="bof-bar">
+  <a class="bof-brand" href="/" title="Back to dashboard">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+    </svg>
+    <strong>FORTIFY THE ORDNANCE</strong>
+  </a>
+  <a class="bof-back" href="/" aria-label="Back to dashboard">←<span class="bof-back-text">&nbsp;back to dashboard</span></a>
+</div>
+<div class="bof-chart-wrap">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div class="card">
   <div class="eyebrow">Board of Ordnance &amp; Fortification &nbsp;·&nbsp; Combined Analysis</div>
   <h1>Technology Type Prevalence by Year, 1897–1908</h1>

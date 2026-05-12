@@ -1,7 +1,264 @@
 <html>
-<head><meta charset="utf-8" /></head>
+<head><meta charset="utf-8" />
+
+<script id="bof-chart-resize">
+  // Force Plotly to relayout when the viewport changes — critical for tablets
+  // rotating, browser windows being resized, and DevTools opening.
+  (function() {
+    function resizeCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try { Plotly.Plots.resize(div); } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(resizeCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(resizeCharts, 200);
+    });
+    // First paint nudge — some browsers ignore Plotly's autosize on initial load
+    window.addEventListener('load', function() { setTimeout(resizeCharts, 50); });
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style id="bof-chart-frame">
+  /* ── Base ─────────────────────────────────────────────────────────── */
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #EAE3D8;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1A1A2E;
+    overflow-x: hidden;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header strip ─────────────────────────────────────────────────── */
+  .bof-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: #FBF6E6;
+    border-bottom: 1px solid #D6CEBF;
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: #55556A;
+    flex-shrink: 0;
+  }
+  .bof-bar .bof-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+    min-width: 0;
+  }
+  .bof-bar .bof-brand svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: #C9A24C;
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .bof-bar .bof-brand:hover svg { transform: rotate(45deg); }
+  .bof-bar .bof-brand strong {
+    color: #1A1A2E;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bof-bar a.bof-back {
+    color: #55556A;
+    text-decoration: none;
+    letter-spacing: 1.2px;
+    white-space: nowrap;
+  }
+  .bof-bar a.bof-back:hover { color: #C9A24C; }
+
+  /* ── Chart container ──────────────────────────────────────────────── */
+  .bof-chart-wrap {
+    flex: 1;
+    display: flex;
+    align-items: stretch;             /* chart fills full height of wrap */
+    justify-content: center;
+    padding: 16px 24px 20px;
+    box-sizing: border-box;
+    min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Chart fills BOTH dimensions of the wrap (which is flex:1, so it takes
+     all remaining viewport after the header). On narrow screens, min-width
+     forces horizontal scroll instead of collapsing the chart. */
+  .plotly-graph-div {
+    margin: 0 auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 720px;
+    min-height: 520px;
+    flex-shrink: 0;
+  }
+  .plotly-graph-div .gtitle { font-family: 'Source Serif 4', Georgia, serif !important; }
+  .modebar-container, .modebar { display: none !important; }
+  .plotly-graph-div .bartext { font-family: 'Inter', sans-serif !important; }
+
+  /* Subtle scroll hint on narrow screens */
+  .bof-chart-wrap::-webkit-scrollbar { height: 10px; }
+  .bof-chart-wrap::-webkit-scrollbar-track { background: transparent; }
+  .bof-chart-wrap::-webkit-scrollbar-thumb {
+    background: rgba(201, 162, 76, 0.35);
+    border-radius: 5px;
+  }
+  .bof-chart-wrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 162, 76, 0.65);
+  }
+
+  /* ── Responsive breakpoints ───────────────────────────────────────── */
+
+  /* Ultra-wide (1920+) */
+  @media (min-width: 1920px) {
+    .bof-chart-wrap { padding: 20px 40px 28px; }
+    .bof-bar { padding: 16px 40px; font-size: 12px; }
+  }
+
+  /* Large desktop (1280-1919) */
+  @media (min-width: 1280px) and (max-width: 1919px) {
+    .bof-chart-wrap { padding: 18px 32px 22px; }
+  }
+
+  /* Small laptop / tablet landscape (900-1279) */
+  @media (min-width: 900px) and (max-width: 1279px) {
+    .bof-chart-wrap { padding: 14px 18px 18px; }
+    .bof-bar { padding: 12px 22px; }
+  }
+
+  /* Tablet portrait (600-899) */
+  @media (min-width: 600px) and (max-width: 899px) {
+    .bof-bar { padding: 12px 18px; font-size: 10.5px; }
+    .bof-chart-wrap { padding: 10px 12px 14px; }
+    .plotly-graph-div { min-height: 440px; }
+  }
+
+  /* Mobile (<600): chart keeps 720px min-width and scrolls horizontally.
+     Hint banner tells the user the chart is scrollable. */
+  @media (max-width: 599px) {
+    .bof-bar {
+      padding: 10px 12px;
+      font-size: 9.5px;
+      letter-spacing: 0.9px;
+      gap: 8px;
+    }
+    .bof-bar .bof-brand { gap: 6px; }
+    .bof-bar .bof-brand strong { letter-spacing: 1px; font-size: 10px; }
+    .bof-bar .bof-brand svg { width: 14px; height: 14px; }
+    .bof-chart-wrap {
+      padding: 8px 6px 16px;
+      align-items: flex-start;
+    }
+    .plotly-graph-div { min-height: 420px; }
+    body::before {
+      content: "↔ swipe to scroll chart";
+      position: fixed;
+      bottom: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      background: rgba(201, 162, 76, 0.92);
+      color: #1A1A2E;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 100;
+      animation: bof-hint-fade 5s ease-in forwards;
+    }
+  }
+  @keyframes bof-hint-fade {
+    0%, 60% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* Very small (<380): hide "back to dashboard" text, keep just back arrow */
+  @media (max-width: 379px) {
+    .bof-bar a.bof-back { font-size: 16px; }
+    .bof-bar a.bof-back .bof-back-text { display: none; }
+  }
+</style>
+<script id="bof-chart-resize">
+  // Every Plotly chart hard-codes its own height/width on the div inline.
+  // Strip those, set its own layout to autosize, then resize from the
+  // CSS-driven container dimensions. This is what makes every chart fill
+  // its frame identically regardless of what the Python writer set.
+  (function() {
+    function fitAllCharts() {
+      if (typeof Plotly === 'undefined') return;
+      document.querySelectorAll('.plotly-graph-div').forEach(function(div) {
+        try {
+          // Strip Plotly's inline width/height so the CSS wins
+          div.style.removeProperty('height');
+          div.style.removeProperty('width');
+          // Tell Plotly the chart is autosizing — this disables any
+          // Python-side fixed height/width baked into the layout.
+          Plotly.relayout(div, {
+            autosize: true,
+            width: null,
+            height: null,
+          });
+          Plotly.Plots.resize(div);
+        } catch (e) { /* ignore */ }
+      });
+    }
+    var t;
+    window.addEventListener('resize', function() {
+      clearTimeout(t);
+      t = setTimeout(fitAllCharts, 80);
+    });
+    window.addEventListener('orientationchange', function() {
+      setTimeout(fitAllCharts, 200);
+    });
+    // First paint: do it as soon as the document is ready, and again after
+    // load to catch lazy-init charts.
+    if (document.readyState === 'complete') {
+      setTimeout(fitAllCharts, 30);
+    } else {
+      window.addEventListener('load', function() { setTimeout(fitAllCharts, 30); });
+      document.addEventListener('DOMContentLoaded', function() { setTimeout(fitAllCharts, 60); });
+    }
+  })();
+</script>
+</head>
 <body>
+<div class="bof-bar">
+  <a class="bof-brand" href="/" title="Back to dashboard">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+    </svg>
+    <strong>FORTIFY THE ORDNANCE</strong>
+  </a>
+  <a class="bof-back" href="/" aria-label="Back to dashboard">←<span class="bof-back-text">&nbsp;back to dashboard</span></a>
+</div>
+<div class="bof-chart-wrap">
+
+
+
     <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>                <div id="7ff8b86d-c669-4c7f-aebb-ccbcabeb8efb" class="plotly-graph-div" style="height:420px; width:100%;"></div>            <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("7ff8b86d-c669-4c7f-aebb-ccbcabeb8efb")) {                    Plotly.newPlot(                        "7ff8b86d-c669-4c7f-aebb-ccbcabeb8efb",                        [{"connector":{"line":{"color":"#55556A","dash":"dot","width":1}},"decreasing":{"marker":{"color":"#C5483D","line":{"color":"#1A1A2E","width":0}}},"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003e%{x:$,.0f}\u003cextra\u003e\u003c\u002fextra\u003e","increasing":{"marker":{"color":"#C9A24C","line":{"color":"#1A1A2E","width":0}}},"measure":["absolute","relative","relative","relative","total"],"orientation":"h","text":["$3,457,782","\u2212$940,659","$0","+$667,440","$3,731,000"],"textfont":{"color":"#1A1A2E","family":"Georgia, 'Times New Roman', serif","size":13},"textposition":"outside","totals":{"marker":{"color":"#6B89A8","line":{"color":"#1A1A2E","width":0}}},"x":[3457781.91,-940658.5499999999,0,667440.46,3731000.0],"y":["Net allotments retained","Less: revoked allotments","Less: unallotted balance","Carryover \u002f re-allotment","Congressional appropriation"],"type":"waterfall"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"title":{"font":{"family":"Georgia, 'Times New Roman', serif","size":20,"color":"#1A1A2E"},"text":"\u003cb\u003eAttribution Waterfall \u00b7 Where the dollars went\u003c\u002fb\u003e\u003cbr\u003e\u003cspan style='font-size:12px;color:#55556A;'\u003eFrom 33 congressional appropriations to 1,144 line-item allotments, 1888\u20131919.  $940,659 revoked (21% of allotted)\u003c\u002fspan\u003e","x":0.04,"xanchor":"left"},"font":{"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","color":"#1A1A2E","size":12},"margin":{"l":70,"r":30,"t":90,"b":60},"hoverlabel":{"font":{"family":"Georgia, 'Times New Roman', serif"},"bgcolor":"#FFF8EC","bordercolor":"#C9A24C"},"xaxis":{"title":{"text":"USD (nominal)"},"tickformat":"$,.0f","gridcolor":"#D6CEBF","zerolinecolor":"#55556A"},"yaxis":{"gridcolor":"#D6CEBF"},"paper_bgcolor":"#EAE3D8","plot_bgcolor":"#EAE3D8","height":420,"showlegend":false},                        {"responsive": true}                    )                };                            </script>        </div>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>                <div id="e66bd52f-15d6-490a-89f7-c79fc8957ba7" class="plotly-graph-div" style="height:420px; width:100%;"></div>            <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("e66bd52f-15d6-490a-89f7-c79fc8957ba7")) {                    Plotly.newPlot(                        "e66bd52f-15d6-490a-89f7-c79fc8957ba7",                        [{"connector":{"line":{"color":"#55556A","dash":"dot","width":1}},"decreasing":{"marker":{"color":"#C5483D","line":{"color":"#1A1A2E","width":0}}},"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003e%{x:$,.0f}\u003cextra\u003e\u003c\u002fextra\u003e","increasing":{"marker":{"color":"#C9A24C","line":{"color":"#1A1A2E","width":0}}},"measure":["absolute","relative","relative","relative","total"],"orientation":"h","text":["$3,457,782","\u2212$940,659","$0","+$667,440","$3,731,000"],"textfont":{"color":"#1A1A2E","family":"Georgia, 'Times New Roman', serif","size":13},"textposition":"outside","totals":{"marker":{"color":"#6B89A8","line":{"color":"#1A1A2E","width":0}}},"x":[3457781.91,-940658.5499999999,0,667440.46,3731000.0],"y":["Net allotments retained","Less: revoked allotments","Less: unallotted balance","Carryover \u002f re-allotment","Congressional appropriation"],"type":"waterfall"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"title":{"font":{"family":"Georgia, 'Times New Roman', serif","size":20,"color":"#1A1A2E"},"text":"\u003cb\u003eAttribution Waterfall \u00b7 Where the dollars went\u003c\u002fb\u003e\u003cbr\u003e\u003cspan style='font-size:12px;color:#55556A;'\u003eFrom 33 congressional appropriations to 1,144 line-item allotments, 1888\u20131919.  $940,659 revoked (21% of allotted)\u003c\u002fspan\u003e","x":0.04,"xanchor":"left"},"font":{"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","color":"#1A1A2E","size":12},"margin":{"l":70,"r":30,"t":90,"b":60},"hoverlabel":{"font":{"family":"Georgia, 'Times New Roman', serif"},"bgcolor":"#FFF8EC","bordercolor":"#C9A24C"},"xaxis":{"title":{"text":"USD (nominal)"},"tickformat":"$,.0f","gridcolor":"#D6CEBF","zerolinecolor":"#55556A"},"yaxis":{"gridcolor":"#D6CEBF"},"paper_bgcolor":"#EAE3D8","plot_bgcolor":"#EAE3D8","height":420,"showlegend":false},                        {"responsive": true}                    )                };                            </script>        </div>
+</div>
 </body>
 </html>

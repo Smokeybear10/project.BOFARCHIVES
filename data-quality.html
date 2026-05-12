@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Quality · Fortify the Ordnance</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path fill-rule='evenodd' clip-rule='evenodd' d='M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z' fill='%23C9A24C'/><circle cx='32' cy='32' r='2.2' fill='%23C9A24C'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    --sans: 'Inter', -apple-system, system-ui, sans-serif;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --bg: #F6F6F7;
+    --panel: #FFFFFF;
+    --panel-2: #FAFAFB;
+    --border: #E1E3E6;
+    --border-2: #C7CAD0;
+    --text: #1A1F36;
+    --text-mid: #5A6075;
+    --text-soft: #8C92A4;
+    --accent: #635BFF;
+    --brass: #C9A24C;
+    --green: #2D6A4F;
+    --amber: #B8860B;
+    --red:   #B0413E;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15.5px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color .15s; }
+  a:hover { border-bottom-color: var(--accent); }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 28px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: var(--text-mid);
+  }
+  .tb-l {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    border-bottom: 0;
+    cursor: pointer;
+  }
+  .tb-l svg {
+    width: 18px;
+    height: 18px;
+    color: var(--brass);
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .tb-l:hover svg { transform: rotate(45deg); }
+  .tb-l strong {
+    color: var(--text);
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    transition: color .15s;
+  }
+  .tb-l:hover strong { color: var(--brass); }
+  .tb-r { display: flex; gap: 22px; }
+  .tb-r a { color: var(--text-mid); border-bottom: 0; letter-spacing: 1.2px; }
+  .tb-r a:hover { color: var(--brass); border-bottom: 0; }
+
+  .wrap {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 72px 56px 96px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 32px;
+    height: 1px;
+    background: var(--brass);
+  }
+  .title {
+    font-family: var(--serif);
+    font-size: 60px;
+    font-weight: 700;
+    letter-spacing: -1.8px;
+    line-height: 1.02;
+    margin-bottom: 20px;
+    max-width: 1100px;
+  }
+  .title em { font-style: italic; color: var(--brass); font-weight: 400; }
+  .lede {
+    font-family: var(--serif);
+    font-size: 21px;
+    line-height: 1.5;
+    color: var(--text-mid);
+    margin-bottom: 12px;
+    max-width: 1040px;
+  }
+
+  section { margin-top: 56px; }
+  h2 {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 700;
+    margin: 22px 0 8px;
+  }
+
+  p { margin-bottom: 18px; color: var(--text); max-width: 1040px; }
+
+  /* Audit table */
+  .audit {
+    width: 100%;
+    margin: 18px 0 8px;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--panel);
+    font-size: 14px;
+  }
+  .audit th, .audit td {
+    text-align: left;
+    padding: 10px 14px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+  }
+  .audit thead th {
+    background: var(--panel-2);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--text-soft);
+  }
+  .audit tbody tr:last-child td { border-bottom: 0; }
+  .audit td.num {
+    font-variant-numeric: tabular-nums;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text-mid);
+    white-space: nowrap;
+  }
+  .audit td.tag {
+    white-space: nowrap;
+    width: 1%;
+  }
+
+  .pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .pill-fixed { background: rgba(45,106,79,.12); color: var(--green); }
+  .pill-known { background: rgba(184,134,11,.14); color: var(--amber); }
+  .pill-gap   { background: rgba(176,65,62,.12); color: var(--red); }
+
+  /* Findings — issue card list */
+  .finding {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 14px;
+    max-width: 1100px;
+  }
+  .finding h3 {
+    margin-top: 0;
+    margin-bottom: 4px;
+    font-size: 17px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .finding .meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text-soft);
+    margin-bottom: 12px;
+  }
+  .finding p { margin-bottom: 10px; font-size: 14.5px; color: var(--text-mid); }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--panel-2);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  /* File-path block inside a finding */
+  .files {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--brass);
+    border-radius: 0 4px 4px 0;
+  }
+  .files-label {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--brass);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .files ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .files li {
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text);
+    word-break: break-all;
+  }
+  .files li .note {
+    color: var(--text-soft);
+    font-size: 11px;
+    margin-left: 8px;
+  }
+  .files li.miss {
+    color: var(--red);
+    opacity: .85;
+  }
+
+  /* Stat strip — re-used from about */
+  .scope {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 28px 0;
+  }
+  .scope-cell { background: var(--panel); padding: 16px 18px; }
+  .scope-n {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    letter-spacing: -0.4px;
+  }
+  .scope-l {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    margin-top: 8px;
+    font-weight: 600;
+  }
+
+  footer {
+    margin-top: 88px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-soft);
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  footer a { color: var(--text-mid); border-bottom: 0; }
+  footer a:hover { color: var(--brass); border-bottom: 0; }
+
+  @media (max-width: 1080px) {
+    .wrap { padding: 56px 32px 80px; }
+    .title { font-size: 52px; }
+  }
+  @media (max-width: 760px) {
+    .audit { font-size: 13px; }
+    .audit th, .audit td { padding: 8px 10px; }
+    .scope { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .wrap { padding: 40px 20px 64px; }
+    .title { font-size: 38px; letter-spacing: -1px; }
+    .lede { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="tb-l" href="/" title="Back to dashboard">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+    </svg>
+    <strong>FORTIFY THE ORDNANCE</strong>
+  </a>
+  <div class="tb-r">
+    <a href="/about.html">about</a>
+    <a href="/">← back to dashboard</a>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="eyebrow">Data quality</div>
+  <h1 class="title">What's <em>missing</em>, and why</h1>
+  <p class="lede">
+    Every dataset on this site is a transcription of nineteenth-century paper records.
+    Some of those records were incomplete to start with, some were lost, and some have
+    transcription gaps. This page is the honest map of what's solid and what isn't.
+  </p>
+
+  <section>
+    <h2>Headline numbers, audited</h2>
+    <p>
+      Headline figures reconciled against the underlying CSVs. Numbers below are what
+      the data actually contains.
+    </p>
+
+    <div class="scope">
+      <div class="scope-cell"><div class="scope-n">1,691</div><div class="scope-l">Proposals (verified)</div></div>
+      <div class="scope-cell"><div class="scope-n">1,144</div><div class="scope-l">Allotments (verified)</div></div>
+      <div class="scope-cell"><div class="scope-n">202</div><div class="scope-l">Technologies (verified)</div></div>
+      <div class="scope-cell"><div class="scope-n">33</div><div class="scope-l">Appropriation years</div></div>
+    </div>
+
+    <table class="audit">
+      <thead>
+        <tr>
+          <th>Claim</th>
+          <th class="num">Said</th>
+          <th class="num">Actual</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Total proposals reviewed</td>
+          <td class="num">1,691</td>
+          <td class="num">1,691</td>
+          <td class="tag"><span class="pill pill-fixed">match</span></td>
+        </tr>
+        <tr>
+          <td>Total line-item allotments</td>
+          <td class="num">1,382</td>
+          <td class="num">1,144</td>
+          <td class="tag"><span class="pill pill-fixed">corrected</span></td>
+        </tr>
+        <tr>
+          <td>Technologies in review timeline</td>
+          <td class="num">202</td>
+          <td class="num">202</td>
+          <td class="tag"><span class="pill pill-fixed">match</span></td>
+        </tr>
+        <tr>
+          <td>Annual congressional appropriations</td>
+          <td class="num">33</td>
+          <td class="num">33</td>
+          <td class="tag"><span class="pill pill-fixed">match</span></td>
+        </tr>
+        <tr>
+          <td>Total Board appropriations (sum)</td>
+          <td class="num">—</td>
+          <td class="num">$3,731,000</td>
+          <td class="tag"><span class="pill pill-fixed">verified</span></td>
+        </tr>
+        <tr>
+          <td>Total allotted to projects (sum)</td>
+          <td class="num">—</td>
+          <td class="num">$4,398,440</td>
+          <td class="tag"><span class="pill pill-fixed">verified</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Known gaps in the proposal corpus</h2>
+    <p>
+      The proposal records come from nine annual "Subjects Considered" tables transcribed
+      from BOF annual reports. Several reports have structural gaps in the original
+      transcriptions.
+    </p>
+
+    <div class="finding">
+      <h3>FY1903 through FY1908 have no Board decisions recorded</h3>
+      <div class="meta">781 of 1,691 rows · 46% of corpus · status reads "Unknown"</div>
+      <p>
+        For fiscal years 1903–04 through 1907–08, the source spreadsheets contain the
+        Subject, Proposer, and a researcher's commentary, but the <code>Action</code>
+        column — the Board's actual verdict text — is entirely blank.
+      </p>
+      <p>
+        Previously these rows defaulted to "Investigating" because the keyword classifier
+        matched nothing. They're now correctly labelled <strong>Unknown</strong> in the
+        dashboard's status filter (bucketed as "Other"). Approval-rate and
+        rejection-rate charts for those years should be read as having no signal.
+      </p>
+      <div class="files">
+        <span class="files-label">Files to fix · re-transcribe Action column from original PDFs</span>
+        <ul>
+          <li>Data/Subjects&nbsp;Considered&nbsp;Data&nbsp;Visualization&nbsp;Assignment/Copy&nbsp;of&nbsp;Subjects&nbsp;Considered&nbsp;1903-1904.xlsx <span class="note">218 rows</span></li>
+          <li>Data/Subjects&nbsp;Considered&nbsp;Data&nbsp;Visualization&nbsp;Assignment/Copy&nbsp;of&nbsp;Subjects&nbsp;Considered&nbsp;1904-1905.xlsx <span class="note">139 rows</span></li>
+          <li>Data/Subjects&nbsp;Considered&nbsp;Data&nbsp;Visualization&nbsp;Assignment/Copy&nbsp;of&nbsp;Subjects&nbsp;Considered&nbsp;1905-1906.xlsx <span class="note">133 rows</span></li>
+          <li>Data/Subjects&nbsp;Considered&nbsp;Data&nbsp;Visualization&nbsp;Assignment/Copy&nbsp;of&nbsp;Subjects&nbsp;Considered&nbsp;1906-1907.xlsx <span class="note">142 rows</span></li>
+          <li>Data/Subjects&nbsp;Considered&nbsp;Data&nbsp;Visualization&nbsp;Assignment/Copy&nbsp;of&nbsp;Subjects&nbsp;Considered&nbsp;1907-1908.xlsx <span class="note">148 rows</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="finding">
+      <h3>Two fiscal years have no source spreadsheet at all</h3>
+      <div class="meta">FY1899–1900 (AR&nbsp;#10) and FY1902–1903 (AR&nbsp;#13)</div>
+      <p>
+        The nine transcribed "Subjects Considered" tables cover AR&nbsp;#8 through
+        AR&nbsp;#18, but reports #10 and #13 are missing from the source archive. There
+        are no rows for those years in the proposal corpus. The financial ledger
+        (allotments and appropriations) does cover them.
+      </p>
+      <div class="files">
+        <span class="files-label">Files to create · transcribe from BOF annual reports #10 and #13</span>
+        <ul>
+          <li class="miss">Data/Subjects&nbsp;Considered&nbsp;Data&nbsp;Visualization&nbsp;Assignment/Copy&nbsp;of&nbsp;Subjects&nbsp;Considered&nbsp;1899-1900.xlsx <span class="note">does not exist</span></li>
+          <li class="miss">Data/Subjects&nbsp;Considered&nbsp;Data&nbsp;Visualization&nbsp;Assignment/Copy&nbsp;of&nbsp;Subjects&nbsp;Considered&nbsp;1902-1903.xlsx <span class="note">does not exist</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="finding">
+      <h3>BOF Annual Report number typo in FY1907–08</h3>
+      <div class="meta">should read AR&nbsp;#20, file says AR&nbsp;#10</div>
+      <p>
+        Every row in the 1907–08 source spreadsheet has <code>BOF.AR.10.1907-1908</code>
+        in the report-number column. Annual Report #10 corresponds to FY1899–1900;
+        the correct value for 1907–08 is AR&nbsp;#20. This is a transcription typo in
+        the upstream Excel file, not the pipeline.
+      </p>
+      <div class="files">
+        <span class="files-label">File to fix · column "BOF Annual Report #", replace "AR.10" → "AR.20"</span>
+        <ul>
+          <li>Data/Subjects&nbsp;Considered&nbsp;Data&nbsp;Visualization&nbsp;Assignment/Copy&nbsp;of&nbsp;Subjects&nbsp;Considered&nbsp;1907-1908.xlsx</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="finding">
+      <h3>AR# column missing year suffix in FY1905–06</h3>
+      <div class="meta">column reads "BOF.AR.16 " with no year — broke year extraction</div>
+      <p>
+        Every other year's source file has the form <code>BOF.AR.N.YYYY-YYYY</code>.
+        The 1905–06 file has only <code>BOF.AR.16</code> with a trailing space and no year.
+        The pipeline previously left all 133 rows with <code>year = NaN</code>; it now
+        falls back to extracting the year from the filename. Worth normalizing in the
+        source file for consistency.
+      </p>
+      <div class="files">
+        <span class="files-label">File to normalize · set column to "BOF.AR.16.1905-1906"</span>
+        <ul>
+          <li>Data/Subjects&nbsp;Considered&nbsp;Data&nbsp;Visualization&nbsp;Assignment/Copy&nbsp;of&nbsp;Subjects&nbsp;Considered&nbsp;1905-1906.xlsx</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="finding">
+      <h3>Three proposals have no Subject text</h3>
+      <div class="meta">1 row in FY1897–98 · 2 rows in FY1907–08</div>
+      <p>
+        Their action and reasoning columns are also blank — they appear to be empty
+        rows the transcriber left in. They remain in the corpus for row-count
+        consistency with the source files but are inert in every chart.
+      </p>
+      <div class="files">
+        <span class="files-label">Files to clean · delete blank rows from the source XLSX</span>
+        <ul>
+          <li>Data/Subjects&nbsp;Considered&nbsp;Data&nbsp;Visualization&nbsp;Assignment/Copy&nbsp;of&nbsp;Subjects&nbsp;Considered&nbsp;1897-1898.xlsx <span class="note">1 empty row</span></li>
+          <li>Data/Subjects&nbsp;Considered&nbsp;Data&nbsp;Visualization&nbsp;Assignment/Copy&nbsp;of&nbsp;Subjects&nbsp;Considered&nbsp;1907-1908.xlsx <span class="note">2 empty rows</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Known quirks in the budget ledger</h2>
+
+    <div class="finding">
+      <h3>Appropriations file extends one year past its filename</h3>
+      <div class="meta"><code>master_appropriations_1888_1919.csv</code> ends in 1920</div>
+      <p>
+        The 1920 row records the Board's dissolution: a zero-dollar entry noting that
+        $230,000 of unspent prior appropriations was returned to the Treasury. It's
+        kept as a marker for the Board's wind-down rather than dropped.
+      </p>
+      <div class="files">
+        <span class="files-label">Files involved · decision: rename file to "1888_1920" or drop the 1920 row</span>
+        <ul>
+          <li>output/master_appropriations_1888_1919.csv <span class="note">row 34, year=1920, amount=$0</span></li>
+          <li>Data/Appropriations/Completed&nbsp;Spreadsheets/*.xlsx <span class="note">"Statement of Appropriations Mad" sheet, trailing row</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="finding">
+      <h3>Defense budget series starts at 1866, not 1865</h3>
+      <div class="meta"><code>budget_master_ledger.csv</code></div>
+      <p>
+        Headline copy refers to a 1865–1920 range; the underlying ledger's earliest
+        data point is FY1866 (Army) / FY1866 (Navy). The 1865 fiscal year has no row
+        because the original Statistical Abstract entry for that year is missing.
+      </p>
+      <div class="files">
+        <span class="files-label">File to amend · add a 1865 row or rename to "1866-1920"</span>
+        <ul>
+          <li>Data/Defense&nbsp;Budget&nbsp;Visualization&nbsp;Assignment/Military&nbsp;Budgets,&nbsp;1865-1920.xlsx</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="finding">
+      <h3>Allotments file ends at 1918</h3>
+      <div class="meta"><code>master_allotments_1888_1919.csv</code></div>
+      <p>
+        The Board functionally stopped issuing new project allotments after 1918.
+        Filename retains the 1919 boundary for symmetry with the appropriations file;
+        no rows exist for 1919.
+      </p>
+      <div class="files">
+        <span class="files-label">File · informational only, no action required</span>
+        <ul>
+          <li>output/master_allotments_1888_1919.csv <span class="note">last row year=1918</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+</div>
+
+<footer>
+  <span>Last audited 2026-05-12</span>
+  <a href="https://github.com/Smokeybear10/104-RSCH.BOFARCHIVES" target="_blank" rel="noopener">github ↗</a>
+</footer>
+
+</body>
+</html>

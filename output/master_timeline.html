@@ -1,7 +1,560 @@
-<html>
-<head><meta charset="utf-8" /></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Master Ledger 1888–1918 · Fortify the Ordnance</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path fill-rule='evenodd' clip-rule='evenodd' d='M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z' fill='%23C9A24C'/><circle cx='32' cy='32' r='2.2' fill='%23C9A24C'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #EAE3D8;
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: #1A1A2E;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .bof-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: #FBF6E6;
+    border-bottom: 1px solid #D6CEBF;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: #55556A;
+    flex-shrink: 0;
+  }
+  .bof-bar .bof-brand {
+    display: flex; align-items: center; gap: 10px;
+    color: inherit; text-decoration: none;
+  }
+  .bof-bar .bof-brand svg {
+    width: 18px; height: 18px;
+    color: #C9A24C;
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .bof-bar .bof-brand:hover svg { transform: rotate(45deg); }
+  .bof-bar .bof-brand strong {
+    color: #1A1A2E; font-weight: 700; letter-spacing: 1.4px;
+  }
+  .bof-bar a.bof-back {
+    color: #55556A; text-decoration: none; letter-spacing: 1.2px;
+  }
+  .bof-bar a.bof-back:hover { color: #C9A24C; }
+
+  .chart-frame {
+    flex: 1;
+    width: 100%;
+    padding: 18px 32px 28px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .chart-frame svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 100%;
+    flex: 1;
+  }
+
+  /* Shared SVG element styling */
+  .chart-title {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 700;
+    font-size: 26px;
+    fill: #1A1A2E;
+  }
+  .chart-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    fill: #55556A;
+    line-height: 1.45;
+  }
+  .chart-subtitle b { font-weight: 700; color: #1A1A2E; }
+  .axis-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    fill: #55556A;
+    letter-spacing: 0.4px;
+  }
+  .tick {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    fill: #55556A;
+  }
+  .grid-line {
+    stroke: #D6CEBF;
+    stroke-width: 1;
+  }
+  .legend-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    fill: #1A1A2E;
+  }
+  .annot {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 11px;
+    fill: #55556A;
+  }
+  .y-label-vert {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 13px;
+    fill: #1A1A2E;
+    text-anchor: end;
+  }
+  .bar-value {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    fill: #1A1A2E;
+  }
+  .row-bar { transition: opacity 0.15s; }
+  .row-bar:hover { opacity: 0.78; cursor: pointer; }
+
+  /* Stacked-bar segment labels — hidden until the year column is hovered.
+     Hovering the invisible column hit-rect (or any segment) reveals counts. */
+  .seg-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    fill: white;
+    paint-order: stroke;
+    stroke: rgba(0, 0, 0, 0.35);
+    stroke-width: 0.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-total {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 13px;
+    font-weight: 700;
+    fill: #1A1A2E;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-col:hover .seg-label,
+  .year-col:hover .year-total { opacity: 1; }
+  /* Slight tint on the hovered column for visual feedback */
+  .year-col:hover .seg-rect { filter: brightness(1.08); }
+  .year-col { cursor: pointer; }
+
+  /* Trajectory year-column hover: vertical guide + cluster value labels */
+  .year-col-label,
+  .year-col-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-col-label { fill: #1A1A2E; font-size: 12px; letter-spacing: 0.4px; }
+  .year-col:hover .year-guide,
+  .year-col:hover .year-col-label,
+  .year-col:hover .year-col-val,
+  .year-col:hover .year-col-bg { opacity: 1; }
+  .year-col:hover .year-col-bg { opacity: 0.95; }
+
+  /* Treemap tiles */
+  .tm-tile { cursor: pointer; }
+  .tm-rect { transition: filter 0.12s ease-out; }
+  .tm-tile:hover .tm-rect { filter: brightness(0.82); }
+  .tm-tile:hover .tm-label { opacity: 0; transition: opacity 0.12s; }
+  .tm-tile .tm-card {
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+  }
+  .tm-tile:hover .tm-card { opacity: 1; }
+
+  /* Pareto row hover — rank badge + cumulative pill */
+  .pareto-row { cursor: pointer; }
+  .pareto-bar { transition: filter 0.12s ease-out; }
+  .pareto-row:hover .pareto-bar { filter: brightness(0.88); }
+  .pareto-rank,
+  .pareto-cum {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .pareto-rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    fill: #C9A24C;
+    letter-spacing: 0.4px;
+  }
+  .pareto-row:hover .pareto-rank,
+  .pareto-row:hover .pareto-cum { opacity: 1; }
+
+  /* Master timeline year-column hover card */
+  .mt-col { cursor: pointer; }
+  .mt-card,
+  .mt-guide {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .mt-col:hover .mt-card,
+  .mt-col:hover .mt-guide { opacity: 1; }
+
+  /* Heatmap cell hover: highlight row + col, dim the rest, show badge */
+  .hm-cell { cursor: pointer; }
+  .hm-rect { transition: filter 0.1s ease-out, opacity 0.1s ease-out; }
+  .hm-badge {
+    opacity: 0;
+    transition: opacity 0.12s ease-out;
+  }
+  /* When the SVG has a hovered cell, dim all cells, then re-light the
+     hovered row + col. CSS-only: uses :has() (supported in modern browsers). */
+  svg:has(.hm-cell:hover) .hm-rect { opacity: 0.32; }
+  svg:has(.hm-cell:hover) .hm-num { opacity: 0.35; }
+  /* Re-light the hovered cell itself */
+  .hm-cell:hover .hm-rect { opacity: 1 !important; filter: brightness(1.06); }
+  .hm-cell:hover .hm-num { opacity: 1 !important; }
+  .hm-cell:hover .hm-badge { opacity: 1; }
+  @media (max-width: 720px) {
+    .bof-bar { padding: 10px 14px; font-size: 10px; }
+    .chart-frame { padding: 10px 12px 18px; }
+  }
+</style>
+</head>
 <body>
-    <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>                <div id="66995394-a745-4189-acda-6a943544860c" class="plotly-graph-div" style="height:520px; width:100%;"></div>            <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("66995394-a745-4189-acda-6a943544860c")) {                    Plotly.newPlot(                        "66995394-a745-4189-acda-6a943544860c",                        [{"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eActive allotments: $%{y:,.0f}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#C9A24C","line":{"width":0}},"name":"Allotted (active)","x":[1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920],"y":[57916.82,22040.81,0.0,12650.0,627400.21,323255.84,150056.41,183522.21,197180.62,220446.76,67537.79,27366.87,120510.20999999999,112258.38,147268.98,106573.68000000001,152980.23,40069.74,88239.66,64501.3,68320.16,62830.86,56313.21,30734.73,25349.309999999998,41199.61,21599.71,107162.27,103670.53,187875.0,30950.0,0,0],"type":"bar"},{"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eRevoked allotments: $%{y:,.0f}\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#C5483D","line":{"width":0}},"name":"Allotted (revoked)","opacity":0.85,"x":[1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920],"y":[25240.85,30750.0,984.83,182.19,12470.0,8998.7,9695.26,1200.78,456499.24,15.46,8949.18,40097.79,14088.08,635.0,12069.48,30271.0,65499.03,11759.03,15442.51,11197.62,44344.630000000005,22320.12,8431.3,13592.04,37682.85,10327.0,42526.68,19.61,2228.29,2486.75,653.25,0,0],"type":"bar"},{"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eAppropriated: $%{y:,.0f}\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1A1A2E","width":2.5},"marker":{"color":"#1A1A2E","line":{"color":"#EAE3D8","width":2},"size":7},"mode":"lines+markers","name":"Congressional appropriation","x":[1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920],"y":[595000.0,231000.0,155000.0,150000.0,210000.0,125000.0,150000.0,100000.0,250000.0,150000.0,100000.0,100000.0,140000.0,100000.0,100000.0,140000.0,100000.0,10000.0,5000.0,25000.0,80000.0,100000.0,25000.0,25000.0,25000.0,10000.0,15000.0,15000.0,300000.0,150000.0,50000.0,0.0,0.0],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"title":{"font":{"family":"Georgia, 'Times New Roman', serif","size":20,"color":"#1A1A2E"},"text":"\u003cb\u003eMaster Ledger \u00b7 1888\u20131919\u003c\u002fb\u003e\u003cbr\u003e\u003cspan style='font-size:12px;color:#55556A;'\u003eAnnual congressional appropriation vs. line-item allotments. Bars = allotments; line = appropriations.  1,144 line items \u00b7 $4,398,440 total allotted\u003c\u002fspan\u003e","x":0.04,"xanchor":"left"},"font":{"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","color":"#1A1A2E","size":12},"margin":{"l":70,"r":30,"t":90,"b":60},"hoverlabel":{"font":{"family":"Georgia, 'Times New Roman', serif"},"bgcolor":"#FFF8EC","bordercolor":"#C9A24C"},"xaxis":{"title":{"text":"Fiscal year"},"tickmode":"linear","dtick":2,"gridcolor":"#D6CEBF","zerolinecolor":"#D6CEBF"},"yaxis":{"title":{"text":"USD (nominal)"},"tickformat":"$,.0f","gridcolor":"#D6CEBF","zerolinecolor":"#D6CEBF"},"legend":{"orientation":"h","yanchor":"bottom","y":1.02,"xanchor":"right","x":1,"bgcolor":"rgba(0,0,0,0)"},"paper_bgcolor":"#EAE3D8","plot_bgcolor":"#EAE3D8","height":520,"barmode":"stack"},                        {"responsive": true}                    )                };                            </script>        </div>
+<div class="bof-bar">
+  <a class="bof-brand" href="/" title="Back to dashboard">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+    </svg>
+    <strong>FORTIFY THE ORDNANCE</strong>
+  </a>
+  <a class="bof-back" href="/">← back to dashboard</a>
+</div>
+<div class="chart-frame">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet">
+<text class="chart-title" x="60" y="58">Master Ledger · 1888–1918</text><foreignObject x="60" y="78" width="1480" height="64"><div xmlns="http://www.w3.org/1999/xhtml" class="chart-subtitle">Annual congressional appropriation vs. line-item allotments. Bars = allotments (gold active, vermilion revoked); line = appropriation. <b>1,144</b> line items · <b>$4,398,440</b> total allotted.</div></foreignObject>
+<g class="grid">
+<line class="grid-line" x1="100" y1="790.0" x2="1540" y2="790.0"/>
+<line class="grid-line" x1="100" y1="698.6" x2="1540" y2="698.6"/>
+<line class="grid-line" x1="100" y1="607.1" x2="1540" y2="607.1"/>
+<line class="grid-line" x1="100" y1="515.7" x2="1540" y2="515.7"/>
+<line class="grid-line" x1="100" y1="424.3" x2="1540" y2="424.3"/>
+<line class="grid-line" x1="100" y1="332.9" x2="1540" y2="332.9"/>
+<line class="grid-line" x1="100" y1="241.4" x2="1540" y2="241.4"/>
+<line class="grid-line" x1="100" y1="150.0" x2="1540" y2="150.0"/>
+</g>
+<text class="tick" x="88" y="794.0" text-anchor="end">$0</text>
+<text class="tick" x="88" y="702.6" text-anchor="end">$100k</text>
+<text class="tick" x="88" y="611.1" text-anchor="end">$200k</text>
+<text class="tick" x="88" y="519.7" text-anchor="end">$300k</text>
+<text class="tick" x="88" y="428.3" text-anchor="end">$400k</text>
+<text class="tick" x="88" y="336.9" text-anchor="end">$500k</text>
+<text class="tick" x="88" y="245.4" text-anchor="end">$600k</text>
+<text class="tick" x="88" y="154.0" text-anchor="end">$700k</text>
+<text class="axis-label" x="30" y="470.0" transform="rotate(-90 30 470.0)" text-anchor="middle">USD (nominal)</text>
+<line stroke="#55556A" stroke-width="1" stroke-dasharray="3,3" opacity="0.45" x1="550.0" y1="136" x2="550.0" y2="790"/>
+<text class="annot" x="550.0" y="132" text-anchor="middle">Spanish-American War</text>
+<line stroke="#55556A" stroke-width="1" stroke-dasharray="3,3" opacity="0.45" x1="1405.0" y1="136" x2="1405.0" y2="790"/>
+<text class="annot" x="1405.0" y="132" text-anchor="middle">U.S. enters WWI</text>
+<rect class="mt-active" fill="#C9A24C" x="86.5" y="737.0" width="27.1" height="53.0"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="86.5" y="714.0" width="27.1" height="23.1"/>
+<rect class="mt-active" fill="#C9A24C" x="131.5" y="769.8" width="27.1" height="20.2"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="131.5" y="741.7" width="27.1" height="28.1"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="176.5" y="789.1" width="27.1" height="0.9"/>
+<rect class="mt-active" fill="#C9A24C" x="221.5" y="778.4" width="27.1" height="11.6"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="221.5" y="778.3" width="27.1" height="0.2"/>
+<rect class="mt-active" fill="#C9A24C" x="266.5" y="216.4" width="27.1" height="573.6"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="266.5" y="205.0" width="27.1" height="11.4"/>
+<rect class="mt-active" fill="#C9A24C" x="311.5" y="494.5" width="27.1" height="295.5"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="311.5" y="486.2" width="27.1" height="8.2"/>
+<rect class="mt-active" fill="#C9A24C" x="356.5" y="652.8" width="27.1" height="137.2"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="356.5" y="643.9" width="27.1" height="8.9"/>
+<rect class="mt-active" fill="#C9A24C" x="401.5" y="622.2" width="27.1" height="167.8"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="401.5" y="621.1" width="27.1" height="1.1"/>
+<rect class="mt-active" fill="#C9A24C" x="446.5" y="609.7" width="27.1" height="180.3"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="446.5" y="192.3" width="27.1" height="417.4"/>
+<rect class="mt-active" fill="#C9A24C" x="491.5" y="588.4" width="27.1" height="201.6"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="491.5" y="588.4" width="27.1" height="0.0"/>
+<rect class="mt-active" fill="#C9A24C" x="536.5" y="728.3" width="27.1" height="61.7"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="536.5" y="720.1" width="27.1" height="8.2"/>
+<rect class="mt-active" fill="#C9A24C" x="581.5" y="765.0" width="27.1" height="25.0"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="581.5" y="728.3" width="27.1" height="36.7"/>
+<rect class="mt-active" fill="#C9A24C" x="626.5" y="679.8" width="27.1" height="110.2"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="626.5" y="666.9" width="27.1" height="12.9"/>
+<rect class="mt-active" fill="#C9A24C" x="671.5" y="687.4" width="27.1" height="102.6"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="671.5" y="686.8" width="27.1" height="0.6"/>
+<rect class="mt-active" fill="#C9A24C" x="716.5" y="655.4" width="27.1" height="134.6"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="716.5" y="644.3" width="27.1" height="11.0"/>
+<rect class="mt-active" fill="#C9A24C" x="761.5" y="692.6" width="27.1" height="97.4"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="761.5" y="664.9" width="27.1" height="27.7"/>
+<rect class="mt-active" fill="#C9A24C" x="806.5" y="650.1" width="27.1" height="139.9"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="806.5" y="590.2" width="27.1" height="59.9"/>
+<rect class="mt-active" fill="#C9A24C" x="851.5" y="753.4" width="27.1" height="36.6"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="851.5" y="742.6" width="27.1" height="10.8"/>
+<rect class="mt-active" fill="#C9A24C" x="896.5" y="709.3" width="27.1" height="80.7"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="896.5" y="695.2" width="27.1" height="14.1"/>
+<rect class="mt-active" fill="#C9A24C" x="941.5" y="731.0" width="27.1" height="59.0"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="941.5" y="720.8" width="27.1" height="10.2"/>
+<rect class="mt-active" fill="#C9A24C" x="986.5" y="727.5" width="27.1" height="62.5"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="986.5" y="687.0" width="27.1" height="40.5"/>
+<rect class="mt-active" fill="#C9A24C" x="1031.5" y="732.6" width="27.1" height="57.4"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="1031.5" y="712.1" width="27.1" height="20.4"/>
+<rect class="mt-active" fill="#C9A24C" x="1076.5" y="738.5" width="27.1" height="51.5"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="1076.5" y="730.8" width="27.1" height="7.7"/>
+<rect class="mt-active" fill="#C9A24C" x="1121.5" y="761.9" width="27.1" height="28.1"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="1121.5" y="749.5" width="27.1" height="12.4"/>
+<rect class="mt-active" fill="#C9A24C" x="1166.5" y="766.8" width="27.1" height="23.2"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="1166.5" y="732.4" width="27.1" height="34.5"/>
+<rect class="mt-active" fill="#C9A24C" x="1211.5" y="752.3" width="27.1" height="37.7"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="1211.5" y="742.9" width="27.1" height="9.4"/>
+<rect class="mt-active" fill="#C9A24C" x="1256.5" y="770.3" width="27.1" height="19.7"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="1256.5" y="731.4" width="27.1" height="38.9"/>
+<rect class="mt-active" fill="#C9A24C" x="1301.5" y="692.0" width="27.1" height="98.0"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="1301.5" y="692.0" width="27.1" height="0.0"/>
+<rect class="mt-active" fill="#C9A24C" x="1346.5" y="695.2" width="27.1" height="94.8"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="1346.5" y="693.2" width="27.1" height="2.0"/>
+<rect class="mt-active" fill="#C9A24C" x="1391.5" y="618.2" width="27.1" height="171.8"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="1391.5" y="616.0" width="27.1" height="2.3"/>
+<rect class="mt-active" fill="#C9A24C" x="1436.5" y="761.7" width="27.1" height="28.3"/>
+<rect class="mt-revoked" fill="#C5483D" opacity="0.88" x="1436.5" y="761.1" width="27.1" height="0.6"/>
+<polyline fill="none" stroke="#1A1A2E" stroke-width="2.5" points="100.0,246.0 145.0,578.8 190.0,648.3 235.0,652.9 280.0,598.0 325.0,675.7 370.0,652.9 415.0,698.6 460.0,561.4 505.0,652.9 550.0,698.6 595.0,698.6 640.0,662.0 685.0,698.6 730.0,698.6 775.0,662.0 820.0,698.6 865.0,780.9 910.0,785.4 955.0,767.1 1000.0,716.9 1045.0,698.6 1090.0,767.1 1135.0,767.1 1180.0,767.1 1225.0,780.9 1270.0,776.3 1315.0,776.3 1360.0,515.7 1405.0,652.9 1450.0,744.3 1495.0,790.0 1540.0,790.0"/>
+<circle cx="100.0" cy="246.0" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="145.0" cy="578.8" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="190.0" cy="648.3" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="235.0" cy="652.9" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="280.0" cy="598.0" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="325.0" cy="675.7" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="370.0" cy="652.9" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="415.0" cy="698.6" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="460.0" cy="561.4" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="505.0" cy="652.9" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="550.0" cy="698.6" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="595.0" cy="698.6" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="640.0" cy="662.0" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="685.0" cy="698.6" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="730.0" cy="698.6" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="775.0" cy="662.0" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="820.0" cy="698.6" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="865.0" cy="780.9" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="910.0" cy="785.4" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="955.0" cy="767.1" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1000.0" cy="716.9" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1045.0" cy="698.6" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1090.0" cy="767.1" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1135.0" cy="767.1" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1180.0" cy="767.1" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1225.0" cy="780.9" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1270.0" cy="776.3" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1315.0" cy="776.3" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1360.0" cy="515.7" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1405.0" cy="652.9" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1450.0" cy="744.3" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1495.0" cy="790.0" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<circle cx="1540.0" cy="790.0" r="5" fill="#EAE3D8" stroke="#1A1A2E" stroke-width="2"/>
+<g class="mt-col" data-year="1888">
+<rect class="mt-hit" x="77.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="100.0" y1="150" x2="100.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="100.0" y="146.0" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="112" y="168" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1888</text><circle cx="114" cy="188" r="4" fill="#C9A24C"/><text x="126" y="192" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="256" y="192" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$58k</text><circle cx="114" cy="208" r="4" fill="#C5483D"/><text x="126" y="212" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="256" y="212" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$25k</text><circle cx="114" cy="228" r="4" fill="#1A1A2E"/><text x="126" y="232" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="256" y="232" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$595k</text></g>
+</g>
+<g class="mt-col" data-year="1889">
+<rect class="mt-hit" x="122.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="145.0" y1="150" x2="145.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="100.0" y="470.8" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="112" y="492.79999999999995" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1889</text><circle cx="114" cy="512.8" r="4" fill="#C9A24C"/><text x="126" y="516.8" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="256" y="516.8" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$22k</text><circle cx="114" cy="532.8" r="4" fill="#C5483D"/><text x="126" y="536.8" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="256" y="536.8" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$31k</text><circle cx="114" cy="552.8" r="4" fill="#1A1A2E"/><text x="126" y="556.8" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="256" y="556.8" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$231k</text></g>
+</g>
+<g class="mt-col" data-year="1890">
+<rect class="mt-hit" x="167.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="190.0" y1="150" x2="190.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="106.0" y="540.3" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="118.0" y="562.2857142857142" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1890</text><circle cx="120.0" cy="582.2857142857142" r="4" fill="#C9A24C"/><text x="132.0" y="586.2857142857142" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="262.0" y="586.2857142857142" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">—</text><circle cx="120.0" cy="602.2857142857142" r="4" fill="#C5483D"/><text x="132.0" y="606.2857142857142" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="262.0" y="606.2857142857142" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$985</text><circle cx="120.0" cy="622.2857142857142" r="4" fill="#1A1A2E"/><text x="132.0" y="626.2857142857142" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="262.0" y="626.2857142857142" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$155k</text></g>
+</g>
+<g class="mt-col" data-year="1891">
+<rect class="mt-hit" x="212.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="235.0" y1="150" x2="235.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="151.0" y="544.9" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="163.0" y="566.8571428571429" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1891</text><circle cx="165.0" cy="586.8571428571429" r="4" fill="#C9A24C"/><text x="177.0" y="590.8571428571429" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="307.0" y="590.8571428571429" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$13k</text><circle cx="165.0" cy="606.8571428571429" r="4" fill="#C5483D"/><text x="177.0" y="610.8571428571429" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="307.0" y="610.8571428571429" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$182</text><circle cx="165.0" cy="626.8571428571429" r="4" fill="#1A1A2E"/><text x="177.0" y="630.8571428571429" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="307.0" y="630.8571428571429" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$150k</text></g>
+</g>
+<g class="mt-col" data-year="1892">
+<rect class="mt-hit" x="257.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="280.0" y1="150" x2="280.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="196.0" y="146.0" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="208.0" y="168" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1892</text><circle cx="210.0" cy="188" r="4" fill="#C9A24C"/><text x="222.0" y="192" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="352.0" y="192" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$627k</text><circle cx="210.0" cy="208" r="4" fill="#C5483D"/><text x="222.0" y="212" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="352.0" y="212" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$12k</text><circle cx="210.0" cy="228" r="4" fill="#1A1A2E"/><text x="222.0" y="232" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="352.0" y="232" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$210k</text></g>
+</g>
+<g class="mt-col" data-year="1893">
+<rect class="mt-hit" x="302.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="325.0" y1="150" x2="325.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="241.0" y="378.2" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="253.0" y="400.22442057142854" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1893</text><circle cx="255.0" cy="420.22442057142854" r="4" fill="#C9A24C"/><text x="267.0" y="424.22442057142854" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="397.0" y="424.22442057142854" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$323k</text><circle cx="255.0" cy="440.22442057142854" r="4" fill="#C5483D"/><text x="267.0" y="444.22442057142854" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="397.0" y="444.22442057142854" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$9k</text><circle cx="255.0" cy="460.22442057142854" r="4" fill="#1A1A2E"/><text x="267.0" y="464.22442057142854" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="397.0" y="464.22442057142854" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$125k</text></g>
+</g>
+<g class="mt-col" data-year="1894">
+<rect class="mt-hit" x="347.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="370.0" y1="150" x2="370.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="286.0" y="535.9" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="298.0" y="557.9413302857142" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1894</text><circle cx="300.0" cy="577.9413302857142" r="4" fill="#C9A24C"/><text x="312.0" y="581.9413302857142" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="442.0" y="581.9413302857142" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$150k</text><circle cx="300.0" cy="597.9413302857142" r="4" fill="#C5483D"/><text x="312.0" y="601.9413302857142" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="442.0" y="601.9413302857142" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$10k</text><circle cx="300.0" cy="617.9413302857142" r="4" fill="#1A1A2E"/><text x="312.0" y="621.9413302857142" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="442.0" y="621.9413302857142" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$150k</text></g>
+</g>
+<g class="mt-col" data-year="1895">
+<rect class="mt-hit" x="392.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="415.0" y1="150" x2="415.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="331.0" y="513.1" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="343.0" y="535.1104091428572" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1895</text><circle cx="345.0" cy="555.1104091428572" r="4" fill="#C9A24C"/><text x="357.0" y="559.1104091428572" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="487.0" y="559.1104091428572" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$184k</text><circle cx="345.0" cy="575.1104091428572" r="4" fill="#C5483D"/><text x="357.0" y="579.1104091428572" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="487.0" y="579.1104091428572" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$1k</text><circle cx="345.0" cy="595.1104091428572" r="4" fill="#1A1A2E"/><text x="357.0" y="599.1104091428572" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="487.0" y="599.1104091428572" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$100k</text></g>
+</g>
+<g class="mt-col" data-year="1896">
+<rect class="mt-hit" x="437.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="460.0" y1="150" x2="460.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="376.0" y="146.0" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="388.0" y="168" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1896</text><circle cx="390.0" cy="188" r="4" fill="#C9A24C"/><text x="402.0" y="192" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="532.0" y="192" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$197k</text><circle cx="390.0" cy="208" r="4" fill="#C5483D"/><text x="402.0" y="212" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="532.0" y="212" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$456k</text><circle cx="390.0" cy="228" r="4" fill="#1A1A2E"/><text x="402.0" y="232" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="532.0" y="232" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$250k</text></g>
+</g>
+<g class="mt-col" data-year="1897">
+<rect class="mt-hit" x="482.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="505.0" y1="150" x2="505.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="421.0" y="480.4" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="433.0" y="502.43454171428573" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1897</text><circle cx="435.0" cy="522.4345417142857" r="4" fill="#C9A24C"/><text x="447.0" y="526.4345417142857" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="577.0" y="526.4345417142857" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$220k</text><circle cx="435.0" cy="542.4345417142857" r="4" fill="#C5483D"/><text x="447.0" y="546.4345417142857" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="577.0" y="546.4345417142857" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$15</text><circle cx="435.0" cy="562.4345417142857" r="4" fill="#1A1A2E"/><text x="447.0" y="566.4345417142857" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="577.0" y="566.4345417142857" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$150k</text></g>
+</g>
+<g class="mt-col" data-year="1898">
+<rect class="mt-hit" x="527.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="550.0" y1="150" x2="550.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="466.0" y="590.6" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="478.0" y="612.5714285714286" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1898</text><circle cx="480.0" cy="632.5714285714286" r="4" fill="#C9A24C"/><text x="492.0" y="636.5714285714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="622.0" y="636.5714285714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$68k</text><circle cx="480.0" cy="652.5714285714286" r="4" fill="#C5483D"/><text x="492.0" y="656.5714285714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="622.0" y="656.5714285714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$9k</text><circle cx="480.0" cy="672.5714285714286" r="4" fill="#1A1A2E"/><text x="492.0" y="676.5714285714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="622.0" y="676.5714285714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$100k</text></g>
+</g>
+<g class="mt-col" data-year="1899">
+<rect class="mt-hit" x="572.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="595.0" y1="150" x2="595.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="511.0" y="590.6" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="523.0" y="612.5714285714286" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1899</text><circle cx="525.0" cy="632.5714285714286" r="4" fill="#C9A24C"/><text x="537.0" y="636.5714285714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="667.0" y="636.5714285714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$27k</text><circle cx="525.0" cy="652.5714285714286" r="4" fill="#C5483D"/><text x="537.0" y="656.5714285714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="667.0" y="656.5714285714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$40k</text><circle cx="525.0" cy="672.5714285714286" r="4" fill="#1A1A2E"/><text x="537.0" y="676.5714285714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="667.0" y="676.5714285714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$100k</text></g>
+</g>
+<g class="mt-col" data-year="1900">
+<rect class="mt-hit" x="617.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="640.0" y1="150" x2="640.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="556.0" y="554.0" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="568.0" y="576.0" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1900</text><circle cx="570.0" cy="596.0" r="4" fill="#C9A24C"/><text x="582.0" y="600.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="712.0" y="600.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$121k</text><circle cx="570.0" cy="616.0" r="4" fill="#C5483D"/><text x="582.0" y="620.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="712.0" y="620.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$14k</text><circle cx="570.0" cy="636.0" r="4" fill="#1A1A2E"/><text x="582.0" y="640.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="712.0" y="640.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$140k</text></g>
+</g>
+<g class="mt-col" data-year="1901">
+<rect class="mt-hit" x="662.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="685.0" y1="150" x2="685.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="601.0" y="578.8" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="613.0" y="600.7831954285714" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1901</text><circle cx="615.0" cy="620.7831954285714" r="4" fill="#C9A24C"/><text x="627.0" y="624.7831954285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="757.0" y="624.7831954285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$112k</text><circle cx="615.0" cy="640.7831954285714" r="4" fill="#C5483D"/><text x="627.0" y="644.7831954285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="757.0" y="644.7831954285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$635</text><circle cx="615.0" cy="660.7831954285714" r="4" fill="#1A1A2E"/><text x="627.0" y="664.7831954285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="757.0" y="664.7831954285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$100k</text></g>
+</g>
+<g class="mt-col" data-year="1902">
+<rect class="mt-hit" x="707.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="730.0" y1="150" x2="730.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="646.0" y="536.3" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="658.0" y="558.3191222857142" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1902</text><circle cx="660.0" cy="578.3191222857142" r="4" fill="#C9A24C"/><text x="672.0" y="582.3191222857142" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="802.0" y="582.3191222857142" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$147k</text><circle cx="660.0" cy="598.3191222857142" r="4" fill="#C5483D"/><text x="672.0" y="602.3191222857142" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="802.0" y="602.3191222857142" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$12k</text><circle cx="660.0" cy="618.3191222857142" r="4" fill="#1A1A2E"/><text x="672.0" y="622.3191222857142" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="802.0" y="622.3191222857142" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$100k</text></g>
+</g>
+<g class="mt-col" data-year="1903">
+<rect class="mt-hit" x="752.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="775.0" y1="150" x2="775.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="691.0" y="554.0" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="703.0" y="576.0" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1903</text><circle cx="705.0" cy="596.0" r="4" fill="#C9A24C"/><text x="717.0" y="600.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="847.0" y="600.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$107k</text><circle cx="705.0" cy="616.0" r="4" fill="#C5483D"/><text x="717.0" y="620.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="847.0" y="620.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$30k</text><circle cx="705.0" cy="636.0" r="4" fill="#1A1A2E"/><text x="717.0" y="640.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="847.0" y="640.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$140k</text></g>
+</g>
+<g class="mt-col" data-year="1904">
+<rect class="mt-hit" x="797.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="820.0" y1="150" x2="820.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="736.0" y="482.2" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="748.0" y="504.24753371428574" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1904</text><circle cx="750.0" cy="524.2475337142857" r="4" fill="#C9A24C"/><text x="762.0" y="528.2475337142857" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="892.0" y="528.2475337142857" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$153k</text><circle cx="750.0" cy="544.2475337142857" r="4" fill="#C5483D"/><text x="762.0" y="548.2475337142857" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="892.0" y="548.2475337142857" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$65k</text><circle cx="750.0" cy="564.2475337142857" r="4" fill="#1A1A2E"/><text x="762.0" y="568.2475337142857" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="892.0" y="568.2475337142857" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$100k</text></g>
+</g>
+<g class="mt-col" data-year="1905">
+<rect class="mt-hit" x="842.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="865.0" y1="150" x2="865.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="781.0" y="634.6" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="793.0" y="656.613696" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1905</text><circle cx="795.0" cy="676.613696" r="4" fill="#C9A24C"/><text x="807.0" y="680.613696" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="937.0" y="680.613696" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$40k</text><circle cx="795.0" cy="696.613696" r="4" fill="#C5483D"/><text x="807.0" y="700.613696" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="937.0" y="700.613696" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$12k</text><circle cx="795.0" cy="716.613696" r="4" fill="#1A1A2E"/><text x="807.0" y="720.613696" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="937.0" y="720.613696" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$10k</text></g>
+</g>
+<g class="mt-col" data-year="1906">
+<rect class="mt-hit" x="887.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="910.0" y1="150" x2="910.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="826.0" y="587.2" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="838.0" y="609.2048731428572" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1906</text><circle cx="840.0" cy="629.2048731428572" r="4" fill="#C9A24C"/><text x="852.0" y="633.2048731428572" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="982.0" y="633.2048731428572" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$88k</text><circle cx="840.0" cy="649.2048731428572" r="4" fill="#C5483D"/><text x="852.0" y="653.2048731428572" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="982.0" y="653.2048731428572" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$15k</text><circle cx="840.0" cy="669.2048731428572" r="4" fill="#1A1A2E"/><text x="852.0" y="673.2048731428572" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="982.0" y="673.2048731428572" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$5k</text></g>
+</g>
+<g class="mt-col" data-year="1907">
+<rect class="mt-hit" x="932.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="955.0" y1="150" x2="955.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="871.0" y="612.8" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="883.0" y="634.7895588571429" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1907</text><circle cx="885.0" cy="654.7895588571429" r="4" fill="#C9A24C"/><text x="897.0" y="658.7895588571429" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1027.0" y="658.7895588571429" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$65k</text><circle cx="885.0" cy="674.7895588571429" r="4" fill="#C5483D"/><text x="897.0" y="678.7895588571429" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1027.0" y="678.7895588571429" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$11k</text><circle cx="885.0" cy="694.7895588571429" r="4" fill="#1A1A2E"/><text x="897.0" y="698.7895588571429" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1027.0" y="698.7895588571429" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$25k</text></g>
+</g>
+<g class="mt-col" data-year="1908">
+<rect class="mt-hit" x="977.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1000.0" y1="150" x2="1000.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="916.0" y="579.0" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="928.0" y="600.992192" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1908</text><circle cx="930.0" cy="620.992192" r="4" fill="#C9A24C"/><text x="942.0" y="624.992192" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1072.0" y="624.992192" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$68k</text><circle cx="930.0" cy="640.992192" r="4" fill="#C5483D"/><text x="942.0" y="644.992192" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1072.0" y="644.992192" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$44k</text><circle cx="930.0" cy="660.992192" r="4" fill="#1A1A2E"/><text x="942.0" y="664.992192" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1072.0" y="664.992192" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$80k</text></g>
+</g>
+<g class="mt-col" data-year="1909">
+<rect class="mt-hit" x="1022.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1045.0" y1="150" x2="1045.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="961.0" y="590.6" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="973.0" y="612.5714285714286" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1909</text><circle cx="975.0" cy="632.5714285714286" r="4" fill="#C9A24C"/><text x="987.0" y="636.5714285714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1117.0" y="636.5714285714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$63k</text><circle cx="975.0" cy="652.5714285714286" r="4" fill="#C5483D"/><text x="987.0" y="656.5714285714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1117.0" y="656.5714285714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$22k</text><circle cx="975.0" cy="672.5714285714286" r="4" fill="#1A1A2E"/><text x="987.0" y="676.5714285714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1117.0" y="676.5714285714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$100k</text></g>
+</g>
+<g class="mt-col" data-year="1910">
+<rect class="mt-hit" x="1067.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1090.0" y1="150" x2="1090.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="1006.0" y="622.8" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="1018.0" y="644.8050194285714" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1910</text><circle cx="1020.0" cy="664.8050194285714" r="4" fill="#C9A24C"/><text x="1032.0" y="668.8050194285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1162.0" y="668.8050194285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$56k</text><circle cx="1020.0" cy="684.8050194285714" r="4" fill="#C5483D"/><text x="1032.0" y="688.8050194285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1162.0" y="688.8050194285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$8k</text><circle cx="1020.0" cy="704.8050194285714" r="4" fill="#1A1A2E"/><text x="1032.0" y="708.8050194285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1162.0" y="708.8050194285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$25k</text></g>
+</g>
+<g class="mt-col" data-year="1911">
+<rect class="mt-hit" x="1112.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1135.0" y1="150" x2="1135.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="1051.0" y="641.5" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="1063.0" y="663.4726674285714" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1911</text><circle cx="1065.0" cy="683.4726674285714" r="4" fill="#C9A24C"/><text x="1077.0" y="687.4726674285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1207.0" y="687.4726674285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$31k</text><circle cx="1065.0" cy="703.4726674285714" r="4" fill="#C5483D"/><text x="1077.0" y="707.4726674285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1207.0" y="707.4726674285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$14k</text><circle cx="1065.0" cy="723.4726674285714" r="4" fill="#1A1A2E"/><text x="1077.0" y="727.4726674285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1207.0" y="727.4726674285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$25k</text></g>
+</g>
+<g class="mt-col" data-year="1912">
+<rect class="mt-hit" x="1157.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1180.0" y1="150" x2="1180.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="1096.0" y="624.4" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="1108.0" y="646.3705965714286" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1912</text><circle cx="1110.0" cy="666.3705965714286" r="4" fill="#C9A24C"/><text x="1122.0" y="670.3705965714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1252.0" y="670.3705965714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$25k</text><circle cx="1110.0" cy="686.3705965714286" r="4" fill="#C5483D"/><text x="1122.0" y="690.3705965714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1252.0" y="690.3705965714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$38k</text><circle cx="1110.0" cy="706.3705965714286" r="4" fill="#1A1A2E"/><text x="1122.0" y="710.3705965714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1252.0" y="710.3705965714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$25k</text></g>
+</g>
+<g class="mt-col" data-year="1913">
+<rect class="mt-hit" x="1202.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1225.0" y1="150" x2="1225.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="1141.0" y="634.9" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="1153.0" y="656.8899565714286" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1913</text><circle cx="1155.0" cy="676.8899565714286" r="4" fill="#C9A24C"/><text x="1167.0" y="680.8899565714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1297.0" y="680.8899565714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$41k</text><circle cx="1155.0" cy="696.8899565714286" r="4" fill="#C5483D"/><text x="1167.0" y="700.8899565714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1297.0" y="700.8899565714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$10k</text><circle cx="1155.0" cy="716.8899565714286" r="4" fill="#1A1A2E"/><text x="1167.0" y="720.8899565714286" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1297.0" y="720.8899565714286" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$10k</text></g>
+</g>
+<g class="mt-col" data-year="1914">
+<rect class="mt-hit" x="1247.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1270.0" y1="150" x2="1270.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="1186.0" y="623.4" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="1198.0" y="645.3701577142857" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1914</text><circle cx="1200.0" cy="665.3701577142857" r="4" fill="#C9A24C"/><text x="1212.0" y="669.3701577142857" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1342.0" y="669.3701577142857" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$22k</text><circle cx="1200.0" cy="685.3701577142857" r="4" fill="#C5483D"/><text x="1212.0" y="689.3701577142857" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1342.0" y="689.3701577142857" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$43k</text><circle cx="1200.0" cy="705.3701577142857" r="4" fill="#1A1A2E"/><text x="1212.0" y="709.3701577142857" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1342.0" y="709.3701577142857" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$15k</text></g>
+</g>
+<g class="mt-col" data-year="1915">
+<rect class="mt-hit" x="1292.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1315.0" y1="150" x2="1315.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="1231.0" y="584.0" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="1243.0" y="606.0051382857143" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1915</text><circle cx="1245.0" cy="626.0051382857143" r="4" fill="#C9A24C"/><text x="1257.0" y="630.0051382857143" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1387.0" y="630.0051382857143" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$107k</text><circle cx="1245.0" cy="646.0051382857143" r="4" fill="#C5483D"/><text x="1257.0" y="650.0051382857143" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1387.0" y="650.0051382857143" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$20</text><circle cx="1245.0" cy="666.0051382857143" r="4" fill="#1A1A2E"/><text x="1257.0" y="670.0051382857143" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1387.0" y="670.0051382857143" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$15k</text></g>
+</g>
+<g class="mt-col" data-year="1916">
+<rect class="mt-hit" x="1337.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1360.0" y1="150" x2="1360.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="1276.0" y="407.7" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="1288.0" y="429.7142857142858" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1916</text><circle cx="1290.0" cy="449.7142857142858" r="4" fill="#C9A24C"/><text x="1302.0" y="453.7142857142858" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1432.0" y="453.7142857142858" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$104k</text><circle cx="1290.0" cy="469.7142857142858" r="4" fill="#C5483D"/><text x="1302.0" y="473.7142857142858" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1432.0" y="473.7142857142858" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$2k</text><circle cx="1290.0" cy="489.7142857142858" r="4" fill="#1A1A2E"/><text x="1302.0" y="493.7142857142858" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1432.0" y="493.7142857142858" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$300k</text></g>
+</g>
+<g class="mt-col" data-year="1917">
+<rect class="mt-hit" x="1382.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1405.0" y1="150" x2="1405.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="1321.0" y="508.0" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="1333.0" y="529.9549714285714" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1917</text><circle cx="1335.0" cy="549.9549714285714" r="4" fill="#C9A24C"/><text x="1347.0" y="553.9549714285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1477.0" y="553.9549714285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$188k</text><circle cx="1335.0" cy="569.9549714285714" r="4" fill="#C5483D"/><text x="1347.0" y="573.9549714285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1477.0" y="573.9549714285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$2k</text><circle cx="1335.0" cy="589.9549714285714" r="4" fill="#1A1A2E"/><text x="1347.0" y="593.9549714285714" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1477.0" y="593.9549714285714" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$150k</text></g>
+</g>
+<g class="mt-col" data-year="1918">
+<rect class="mt-hit" x="1427.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1450.0" y1="150" x2="1450.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="1366.0" y="636.3" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="1378.0" y="658.2857142857143" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1918</text><circle cx="1380.0" cy="678.2857142857143" r="4" fill="#C9A24C"/><text x="1392.0" y="682.2857142857143" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1522.0" y="682.2857142857143" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$31k</text><circle cx="1380.0" cy="698.2857142857143" r="4" fill="#C5483D"/><text x="1392.0" y="702.2857142857143" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1522.0" y="702.2857142857143" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$653</text><circle cx="1380.0" cy="718.2857142857143" r="4" fill="#1A1A2E"/><text x="1392.0" y="722.2857142857143" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1522.0" y="722.2857142857143" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">$50k</text></g>
+</g>
+<g class="mt-col" data-year="1919">
+<rect class="mt-hit" x="1472.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1495.0" y1="150" x2="1495.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="1372.0" y="682.0" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="1384" y="704.0" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1919</text><circle cx="1386" cy="724.0" r="4" fill="#C9A24C"/><text x="1398" y="728.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1528" y="728.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">—</text><circle cx="1386" cy="744.0" r="4" fill="#C5483D"/><text x="1398" y="748.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1528" y="748.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">—</text><circle cx="1386" cy="764.0" r="4" fill="#1A1A2E"/><text x="1398" y="768.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1528" y="768.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">—</text></g>
+</g>
+<g class="mt-col" data-year="1920">
+<rect class="mt-hit" x="1517.5" y="150" width="45.0" height="640.0" fill="transparent"/>
+<line class="mt-guide" x1="1540.0" y1="150" x2="1540.0" y2="790" stroke="#55556A" stroke-width="1" stroke-dasharray="2,3" opacity="0"/>
+<g class="mt-card" pointer-events="none"><rect x="1372.0" y="682.0" width="168" height="96" rx="4" fill="#FBF6E6" stroke="#D6CEBF"/><text x="1384" y="704.0" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#1A1A2E">1920</text><circle cx="1386" cy="724.0" r="4" fill="#C9A24C"/><text x="1398" y="728.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Active</text><text x="1528" y="728.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">—</text><circle cx="1386" cy="744.0" r="4" fill="#C5483D"/><text x="1398" y="748.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Revoked</text><text x="1528" y="748.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">—</text><circle cx="1386" cy="764.0" r="4" fill="#1A1A2E"/><text x="1398" y="768.0" font-family="Inter, sans-serif" font-size="11" fill="#55556A">Appropriated</text><text x="1528" y="768.0" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="#1A1A2E">—</text></g>
+</g>
+<line class="grid-line" x1="100" y1="790" x2="1540" y2="790" stroke-width="1.2"/>
+<text class="tick" x="100.0" y="812" text-anchor="middle">1888</text>
+<text class="tick" x="190.0" y="812" text-anchor="middle">1890</text>
+<text class="tick" x="280.0" y="812" text-anchor="middle">1892</text>
+<text class="tick" x="370.0" y="812" text-anchor="middle">1894</text>
+<text class="tick" x="460.0" y="812" text-anchor="middle">1896</text>
+<text class="tick" x="550.0" y="812" text-anchor="middle">1898</text>
+<text class="tick" x="640.0" y="812" text-anchor="middle">1900</text>
+<text class="tick" x="730.0" y="812" text-anchor="middle">1902</text>
+<text class="tick" x="820.0" y="812" text-anchor="middle">1904</text>
+<text class="tick" x="910.0" y="812" text-anchor="middle">1906</text>
+<text class="tick" x="1000.0" y="812" text-anchor="middle">1908</text>
+<text class="tick" x="1090.0" y="812" text-anchor="middle">1910</text>
+<text class="tick" x="1180.0" y="812" text-anchor="middle">1912</text>
+<text class="tick" x="1270.0" y="812" text-anchor="middle">1914</text>
+<text class="tick" x="1360.0" y="812" text-anchor="middle">1916</text>
+<text class="tick" x="1450.0" y="812" text-anchor="middle">1918</text>
+<text class="tick" x="1540.0" y="812" text-anchor="middle">1920</text>
+<text class="axis-label" x="820.0" y="844" text-anchor="middle">Fiscal year</text>
+<rect fill="#C9A24C" x="100" y="862" width="16" height="12" rx="1"/>
+<text class="legend-text" x="122" y="872">Allotted (active)</text>
+<rect fill="#C5483D" x="288" y="862" width="16" height="12" rx="1"/>
+<text class="legend-text" x="310" y="872">Allotted (revoked)</text>
+<rect fill="#1A1A2E" x="484" y="862" width="16" height="12" rx="1"/>
+<text class="legend-text" x="506" y="872">Congressional appropriation</text>
+</svg>
+</div>
 </body>
 </html>

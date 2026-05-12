@@ -1,7 +1,1041 @@
-<html>
-<head><meta charset="utf-8" /></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prevalence Heatmap · Fortify the Ordnance</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path fill-rule='evenodd' clip-rule='evenodd' d='M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z' fill='%23C9A24C'/><circle cx='32' cy='32' r='2.2' fill='%23C9A24C'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #EAE3D8;
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: #1A1A2E;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .bof-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: #FBF6E6;
+    border-bottom: 1px solid #D6CEBF;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: #55556A;
+    flex-shrink: 0;
+  }
+  .bof-bar .bof-brand {
+    display: flex; align-items: center; gap: 10px;
+    color: inherit; text-decoration: none;
+  }
+  .bof-bar .bof-brand svg {
+    width: 18px; height: 18px;
+    color: #C9A24C;
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .bof-bar .bof-brand:hover svg { transform: rotate(45deg); }
+  .bof-bar .bof-brand strong {
+    color: #1A1A2E; font-weight: 700; letter-spacing: 1.4px;
+  }
+  .bof-bar a.bof-back {
+    color: #55556A; text-decoration: none; letter-spacing: 1.2px;
+  }
+  .bof-bar a.bof-back:hover { color: #C9A24C; }
+
+  .chart-frame {
+    flex: 1;
+    width: 100%;
+    padding: 18px 32px 28px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .chart-frame svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 100%;
+    flex: 1;
+  }
+
+  /* Shared SVG element styling */
+  .chart-title {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 700;
+    font-size: 26px;
+    fill: #1A1A2E;
+  }
+  .chart-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    fill: #55556A;
+    line-height: 1.45;
+  }
+  .chart-subtitle b { font-weight: 700; color: #1A1A2E; }
+  .axis-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    fill: #55556A;
+    letter-spacing: 0.4px;
+  }
+  .tick {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    fill: #55556A;
+  }
+  .grid-line {
+    stroke: #D6CEBF;
+    stroke-width: 1;
+  }
+  .legend-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    fill: #1A1A2E;
+  }
+  .annot {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 11px;
+    fill: #55556A;
+  }
+  .y-label-vert {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 13px;
+    fill: #1A1A2E;
+    text-anchor: end;
+  }
+  .bar-value {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    fill: #1A1A2E;
+  }
+  .row-bar { transition: opacity 0.15s; }
+  .row-bar:hover { opacity: 0.78; cursor: pointer; }
+
+  /* Stacked-bar segment labels — hidden until the year column is hovered.
+     Hovering the invisible column hit-rect (or any segment) reveals counts. */
+  .seg-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    fill: white;
+    paint-order: stroke;
+    stroke: rgba(0, 0, 0, 0.35);
+    stroke-width: 0.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-total {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 13px;
+    font-weight: 700;
+    fill: #1A1A2E;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-col:hover .seg-label,
+  .year-col:hover .year-total { opacity: 1; }
+  /* Slight tint on the hovered column for visual feedback */
+  .year-col:hover .seg-rect { filter: brightness(1.08); }
+  .year-col { cursor: pointer; }
+
+  /* Trajectory year-column hover: vertical guide + cluster value labels */
+  .year-col-label,
+  .year-col-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .year-col-label { fill: #1A1A2E; font-size: 12px; letter-spacing: 0.4px; }
+  .year-col:hover .year-guide,
+  .year-col:hover .year-col-label,
+  .year-col:hover .year-col-val,
+  .year-col:hover .year-col-bg { opacity: 1; }
+  .year-col:hover .year-col-bg { opacity: 0.95; }
+
+  /* Treemap tiles */
+  .tm-tile { cursor: pointer; }
+  .tm-rect { transition: filter 0.12s ease-out; }
+  .tm-tile:hover .tm-rect { filter: brightness(0.82); }
+  .tm-tile:hover .tm-label { opacity: 0; transition: opacity 0.12s; }
+  .tm-tile .tm-card {
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+  }
+  .tm-tile:hover .tm-card { opacity: 1; }
+
+  /* Pareto row hover — rank badge + cumulative pill */
+  .pareto-row { cursor: pointer; }
+  .pareto-bar { transition: filter 0.12s ease-out; }
+  .pareto-row:hover .pareto-bar { filter: brightness(0.88); }
+  .pareto-rank,
+  .pareto-cum {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .pareto-rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    fill: #C9A24C;
+    letter-spacing: 0.4px;
+  }
+  .pareto-row:hover .pareto-rank,
+  .pareto-row:hover .pareto-cum { opacity: 1; }
+
+  /* Master timeline year-column hover card */
+  .mt-col { cursor: pointer; }
+  .mt-card,
+  .mt-guide {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease-out;
+  }
+  .mt-col:hover .mt-card,
+  .mt-col:hover .mt-guide { opacity: 1; }
+
+  /* Heatmap cell hover: highlight row + col, dim the rest, show badge */
+  .hm-cell { cursor: pointer; }
+  .hm-rect { transition: filter 0.1s ease-out, opacity 0.1s ease-out; }
+  .hm-badge {
+    opacity: 0;
+    transition: opacity 0.12s ease-out;
+  }
+  /* When the SVG has a hovered cell, dim all cells, then re-light the
+     hovered row + col. CSS-only: uses :has() (supported in modern browsers). */
+  svg:has(.hm-cell:hover) .hm-rect { opacity: 0.32; }
+  svg:has(.hm-cell:hover) .hm-num { opacity: 0.35; }
+  /* Re-light the hovered cell itself */
+  .hm-cell:hover .hm-rect { opacity: 1 !important; filter: brightness(1.06); }
+  .hm-cell:hover .hm-num { opacity: 1 !important; }
+  .hm-cell:hover .hm-badge { opacity: 1; }
+  @media (max-width: 720px) {
+    .bof-bar { padding: 10px 14px; font-size: 10px; }
+    .chart-frame { padding: 10px 12px 18px; }
+  }
+</style>
+</head>
 <body>
-    <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>                <div id="646d2b94-d66d-4326-8a67-d2c2308c4d06" class="plotly-graph-div" style="height:600px; width:100%;"></div>            <script type="text/javascript">                                    window.PLOTLYENV=window.PLOTLYENV || {};                                    if (document.getElementById("646d2b94-d66d-4326-8a67-d2c2308c4d06")) {                    Plotly.newPlot(                        "646d2b94-d66d-4326-8a67-d2c2308c4d06",                        [{"colorbar":{"len":0.7,"outlinewidth":0,"thickness":16,"tickfont":{"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","size":10},"title":{"font":{"family":"Georgia, 'Times New Roman', serif","size":11},"text":"Subjects"}},"colorscale":[[0.0,"#E6F1FB"],[0.17,"#B5D4F4"],[0.33,"#85B7EB"],[0.5,"#378ADD"],[0.67,"#185FA5"],[0.83,"#0C447C"],[1.0,"#042C53"]],"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003e%{x}: %{z} subjects\u003cextra\u003e\u003c\u002fextra\u003e","text":[["130","22","27","28","22","18","20","23","22"],["68","39","38","53","52","38","31","32","25"],["48","20","13","52","41","17","23","25","34"],["42","6","3","3","9","12","8","5","8"],["29","51","1","5","18","4","7","8","13"],["23","4","3","9","17","11","6","9","7"],["23","9","9","7","8","5","1","3","4"],["17","12","9","13","17","14","18","10","15"],["9","4","4","14","9","5","7","4","3"],["2","2","3","3","10","7","5","22","10"],["0","3","10","10","8","7","3","1","0"],["2","2","3","5","5","0","4","0","4"],["4","5","2","8","2","1","0","0","3"]],"textfont":{"family":"Georgia, 'Times New Roman', serif","size":11},"texttemplate":"","x":["1897-98","1898-99","1900-01","1901-02","1903-04","1904-05","1905-06","1906-07","1907-08"],"xgap":2,"y":["Projectiles & Ammunition","Artillery & Guns","Other","Torpedoes & Mines","Aerial \u002f Aviation","Armor & Fortification","Explosives & Propellants","Range Finding & Fire Control","Small Arms","Searchlights & Optics","Entrenching & Field Equip.","Transportation & Vehicles","Wireless & Electrical"],"ygap":2,"z":[[130,22,27,28,22,18,20,23,22],[68,39,38,53,52,38,31,32,25],[48,20,13,52,41,17,23,25,34],[42,6,3,3,9,12,8,5,8],[29,51,1,5,18,4,7,8,13],[23,4,3,9,17,11,6,9,7],[23,9,9,7,8,5,1,3,4],[17,12,9,13,17,14,18,10,15],[9,4,4,14,9,5,7,4,3],[2,2,3,3,10,7,5,22,10],[0,3,10,10,8,7,3,1,0],[2,2,3,5,5,0,4,0,4],[4,5,2,8,2,1,0,0,3]],"type":"heatmap"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"title":{"font":{"family":"Georgia, 'Times New Roman', serif","size":18,"color":"#2C2C2A"},"text":"\u003cb\u003eTechnology Prevalence Heatmap by Period\u003c\u002fb\u003e\u003cbr\u003e\u003cspan style='font-size:11px;color:#5F5E5A;'\u003eBoard of Ordnance &amp; Fortification Annual Reports, 1897\u20131908 \u00b7 shade = subject count, capped at 130\u003c\u002fspan\u003e\u003cbr\u003e\u003cspan style='font-size:10px;color:#5F5E5A;'\u003eOriginal analysis by \u003cb\u003eTanisha\u003c\u002fb\u003e \u00b7 \u003ca href='team\u002ftanisha\u002ftechnology_prevalence.R' style='color:#5F5E5A;'\u003eR\u002fggplot2 source\u003c\u002fa\u003e\u003c\u002fspan\u003e","x":0.04,"xanchor":"left"},"font":{"family":"-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif","color":"#2C2C2A","size":12},"margin":{"l":70,"r":30,"t":120,"b":80},"hoverlabel":{"font":{"family":"Georgia, 'Times New Roman', serif"},"bgcolor":"#FFFFFF","bordercolor":"#888780"},"xaxis":{"tickangle":-45,"gridcolor":"#E5E0D5","showgrid":false,"side":"bottom"},"yaxis":{"autorange":"reversed","gridcolor":"#E5E0D5","showgrid":false},"paper_bgcolor":"#FAF9F6","plot_bgcolor":"#FAF9F6","height":600,"annotations":[{"font":{"color":"white","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"130","x":"1897-98","y":"Projectiles & Ammunition"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"22","x":"1898-99","y":"Projectiles & Ammunition"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"27","x":"1900-01","y":"Projectiles & Ammunition"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"28","x":"1901-02","y":"Projectiles & Ammunition"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"22","x":"1903-04","y":"Projectiles & Ammunition"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"18","x":"1904-05","y":"Projectiles & Ammunition"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"20","x":"1905-06","y":"Projectiles & Ammunition"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"23","x":"1906-07","y":"Projectiles & Ammunition"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"22","x":"1907-08","y":"Projectiles & Ammunition"},{"font":{"color":"white","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"68","x":"1897-98","y":"Artillery & Guns"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"39","x":"1898-99","y":"Artillery & Guns"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"38","x":"1900-01","y":"Artillery & Guns"},{"font":{"color":"white","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"53","x":"1901-02","y":"Artillery & Guns"},{"font":{"color":"white","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"52","x":"1903-04","y":"Artillery & Guns"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"38","x":"1904-05","y":"Artillery & Guns"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"31","x":"1905-06","y":"Artillery & Guns"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"32","x":"1906-07","y":"Artillery & Guns"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"25","x":"1907-08","y":"Artillery & Guns"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"48","x":"1897-98","y":"Other"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"20","x":"1898-99","y":"Other"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"13","x":"1900-01","y":"Other"},{"font":{"color":"white","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"52","x":"1901-02","y":"Other"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"41","x":"1903-04","y":"Other"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"17","x":"1904-05","y":"Other"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"23","x":"1905-06","y":"Other"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"25","x":"1906-07","y":"Other"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"34","x":"1907-08","y":"Other"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"42","x":"1897-98","y":"Torpedoes & Mines"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"6","x":"1898-99","y":"Torpedoes & Mines"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"3","x":"1900-01","y":"Torpedoes & Mines"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"3","x":"1901-02","y":"Torpedoes & Mines"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"9","x":"1903-04","y":"Torpedoes & Mines"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"12","x":"1904-05","y":"Torpedoes & Mines"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"8","x":"1905-06","y":"Torpedoes & Mines"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"5","x":"1906-07","y":"Torpedoes & Mines"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"8","x":"1907-08","y":"Torpedoes & Mines"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"29","x":"1897-98","y":"Aerial \u002f Aviation"},{"font":{"color":"white","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"51","x":"1898-99","y":"Aerial \u002f Aviation"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"1","x":"1900-01","y":"Aerial \u002f Aviation"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"5","x":"1901-02","y":"Aerial \u002f Aviation"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"18","x":"1903-04","y":"Aerial \u002f Aviation"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"4","x":"1904-05","y":"Aerial \u002f Aviation"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"7","x":"1905-06","y":"Aerial \u002f Aviation"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"8","x":"1906-07","y":"Aerial \u002f Aviation"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"13","x":"1907-08","y":"Aerial \u002f Aviation"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"23","x":"1897-98","y":"Armor & Fortification"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"4","x":"1898-99","y":"Armor & Fortification"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"3","x":"1900-01","y":"Armor & Fortification"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"9","x":"1901-02","y":"Armor & Fortification"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"17","x":"1903-04","y":"Armor & Fortification"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"11","x":"1904-05","y":"Armor & Fortification"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"6","x":"1905-06","y":"Armor & Fortification"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"9","x":"1906-07","y":"Armor & Fortification"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"7","x":"1907-08","y":"Armor & Fortification"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"23","x":"1897-98","y":"Explosives & Propellants"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"9","x":"1898-99","y":"Explosives & Propellants"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"9","x":"1900-01","y":"Explosives & Propellants"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"7","x":"1901-02","y":"Explosives & Propellants"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"8","x":"1903-04","y":"Explosives & Propellants"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"5","x":"1904-05","y":"Explosives & Propellants"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"1","x":"1905-06","y":"Explosives & Propellants"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"3","x":"1906-07","y":"Explosives & Propellants"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"4","x":"1907-08","y":"Explosives & Propellants"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"17","x":"1897-98","y":"Range Finding & Fire Control"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"12","x":"1898-99","y":"Range Finding & Fire Control"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"9","x":"1900-01","y":"Range Finding & Fire Control"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"13","x":"1901-02","y":"Range Finding & Fire Control"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"17","x":"1903-04","y":"Range Finding & Fire Control"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"14","x":"1904-05","y":"Range Finding & Fire Control"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"18","x":"1905-06","y":"Range Finding & Fire Control"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"10","x":"1906-07","y":"Range Finding & Fire Control"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"15","x":"1907-08","y":"Range Finding & Fire Control"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"9","x":"1897-98","y":"Small Arms"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"4","x":"1898-99","y":"Small Arms"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"4","x":"1900-01","y":"Small Arms"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"14","x":"1901-02","y":"Small Arms"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"9","x":"1903-04","y":"Small Arms"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"5","x":"1904-05","y":"Small Arms"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"7","x":"1905-06","y":"Small Arms"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"4","x":"1906-07","y":"Small Arms"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"3","x":"1907-08","y":"Small Arms"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"2","x":"1897-98","y":"Searchlights & Optics"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"2","x":"1898-99","y":"Searchlights & Optics"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"3","x":"1900-01","y":"Searchlights & Optics"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"3","x":"1901-02","y":"Searchlights & Optics"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"10","x":"1903-04","y":"Searchlights & Optics"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"7","x":"1904-05","y":"Searchlights & Optics"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"5","x":"1905-06","y":"Searchlights & Optics"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"22","x":"1906-07","y":"Searchlights & Optics"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"10","x":"1907-08","y":"Searchlights & Optics"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"0","x":"1897-98","y":"Entrenching & Field Equip."},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"3","x":"1898-99","y":"Entrenching & Field Equip."},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"10","x":"1900-01","y":"Entrenching & Field Equip."},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"10","x":"1901-02","y":"Entrenching & Field Equip."},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"8","x":"1903-04","y":"Entrenching & Field Equip."},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"7","x":"1904-05","y":"Entrenching & Field Equip."},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"3","x":"1905-06","y":"Entrenching & Field Equip."},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"1","x":"1906-07","y":"Entrenching & Field Equip."},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"0","x":"1907-08","y":"Entrenching & Field Equip."},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"2","x":"1897-98","y":"Transportation & Vehicles"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"2","x":"1898-99","y":"Transportation & Vehicles"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"3","x":"1900-01","y":"Transportation & Vehicles"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"5","x":"1901-02","y":"Transportation & Vehicles"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"5","x":"1903-04","y":"Transportation & Vehicles"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"0","x":"1904-05","y":"Transportation & Vehicles"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"4","x":"1905-06","y":"Transportation & Vehicles"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"0","x":"1906-07","y":"Transportation & Vehicles"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"4","x":"1907-08","y":"Transportation & Vehicles"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"4","x":"1897-98","y":"Wireless & Electrical"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"5","x":"1898-99","y":"Wireless & Electrical"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"2","x":"1900-01","y":"Wireless & Electrical"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"8","x":"1901-02","y":"Wireless & Electrical"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"2","x":"1903-04","y":"Wireless & Electrical"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"1","x":"1904-05","y":"Wireless & Electrical"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"0","x":"1905-06","y":"Wireless & Electrical"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"0","x":"1906-07","y":"Wireless & Electrical"},{"font":{"color":"#0C447C","family":"Georgia, 'Times New Roman', serif","size":11},"showarrow":false,"text":"3","x":"1907-08","y":"Wireless & Electrical"}]},                        {"responsive": true}                    )                };                            </script>        </div>
+<div class="bof-bar">
+  <a class="bof-brand" href="/" title="Back to dashboard">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M32 3 L42 22 L61 32 L42 42 L32 61 L22 42 L3 32 L22 22 Z M32 26 A6 6 0 1 0 32 38 A6 6 0 1 0 32 26 Z" fill="currentColor"/>
+      <circle cx="32" cy="32" r="2.2" fill="currentColor"/>
+    </svg>
+    <strong>FORTIFY THE ORDNANCE</strong>
+  </a>
+  <a class="bof-back" href="/">← back to dashboard</a>
+</div>
+<div class="chart-frame">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet">
+<style>svg:has(.hm-r0:hover) .hm-r0 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r0:hover) .hm-r0 .hm-num { opacity: 1 !important; }svg:has(.hm-r1:hover) .hm-r1 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r1:hover) .hm-r1 .hm-num { opacity: 1 !important; }svg:has(.hm-r2:hover) .hm-r2 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r2:hover) .hm-r2 .hm-num { opacity: 1 !important; }svg:has(.hm-r3:hover) .hm-r3 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r3:hover) .hm-r3 .hm-num { opacity: 1 !important; }svg:has(.hm-r4:hover) .hm-r4 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r4:hover) .hm-r4 .hm-num { opacity: 1 !important; }svg:has(.hm-r5:hover) .hm-r5 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r5:hover) .hm-r5 .hm-num { opacity: 1 !important; }svg:has(.hm-r6:hover) .hm-r6 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r6:hover) .hm-r6 .hm-num { opacity: 1 !important; }svg:has(.hm-r7:hover) .hm-r7 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r7:hover) .hm-r7 .hm-num { opacity: 1 !important; }svg:has(.hm-r8:hover) .hm-r8 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r8:hover) .hm-r8 .hm-num { opacity: 1 !important; }svg:has(.hm-r9:hover) .hm-r9 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r9:hover) .hm-r9 .hm-num { opacity: 1 !important; }svg:has(.hm-r10:hover) .hm-r10 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r10:hover) .hm-r10 .hm-num { opacity: 1 !important; }svg:has(.hm-r11:hover) .hm-r11 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r11:hover) .hm-r11 .hm-num { opacity: 1 !important; }svg:has(.hm-r12:hover) .hm-r12 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-r12:hover) .hm-r12 .hm-num { opacity: 1 !important; }svg:has(.hm-c0:hover) .hm-c0 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-c0:hover) .hm-c0 .hm-num { opacity: 1 !important; }svg:has(.hm-c1:hover) .hm-c1 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-c1:hover) .hm-c1 .hm-num { opacity: 1 !important; }svg:has(.hm-c2:hover) .hm-c2 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-c2:hover) .hm-c2 .hm-num { opacity: 1 !important; }svg:has(.hm-c3:hover) .hm-c3 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-c3:hover) .hm-c3 .hm-num { opacity: 1 !important; }svg:has(.hm-c4:hover) .hm-c4 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-c4:hover) .hm-c4 .hm-num { opacity: 1 !important; }svg:has(.hm-c5:hover) .hm-c5 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-c5:hover) .hm-c5 .hm-num { opacity: 1 !important; }svg:has(.hm-c6:hover) .hm-c6 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-c6:hover) .hm-c6 .hm-num { opacity: 1 !important; }svg:has(.hm-c7:hover) .hm-c7 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-c7:hover) .hm-c7 .hm-num { opacity: 1 !important; }svg:has(.hm-c8:hover) .hm-c8 .hm-rect { opacity: 1 !important; filter: brightness(1.06); }svg:has(.hm-c8:hover) .hm-c8 .hm-num { opacity: 1 !important; }</style>
+<text class="chart-title" x="60" y="58">Technology Prevalence Heatmap by Period</text><foreignObject x="60" y="78" width="1480" height="64"><div xmlns="http://www.w3.org/1999/xhtml" class="chart-subtitle">BOF Annual Reports, 1897–1908 · cell shade = subject count (capped at 130). <b>Hover a cell to spotlight its row and column.</b> Original analysis by <b>Tanisha</b>.</div></foreignObject>
+<g class="hm-cell hm-r0 hm-c0">
+<title>Projectiles & Ammunition · 1897-98: 130 subjects</title>
+<rect class="hm-rect" fill="#042c53" x="281.0" y="161.0" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="189.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="white" text-anchor="middle">130</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="160.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#042c53" stroke-width="1.5"/><text x="350.0" y="178.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Projectiles &amp; Ammunition</text><text x="350.0" y="196.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="212.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#042c53">130 subjects</text></g>
+</g>
+<g class="hm-cell hm-r0 hm-c1">
+<title>Projectiles & Ammunition · 1898-99: 22 subjects</title>
+<rect class="hm-rect" fill="#b5d4f4" x="421.0" y="161.0" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="189.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">22</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="160.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#b5d4f4" stroke-width="1.5"/><text x="490.0" y="178.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Projectiles &amp; Ammunition</text><text x="490.0" y="196.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="212.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#b5d4f4">22 subjects</text></g>
+</g>
+<g class="hm-cell hm-r0 hm-c2">
+<title>Projectiles & Ammunition · 1900-01: 27 subjects</title>
+<rect class="hm-rect" fill="#a9cdf1" x="561.0" y="161.0" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="189.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">27</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="160.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#a9cdf1" stroke-width="1.5"/><text x="630.0" y="178.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Projectiles &amp; Ammunition</text><text x="630.0" y="196.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="212.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#a9cdf1">27 subjects</text></g>
+</g>
+<g class="hm-cell hm-r0 hm-c3">
+<title>Projectiles & Ammunition · 1901-02: 28 subjects</title>
+<rect class="hm-rect" fill="#a7cbf1" x="701.0" y="161.0" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="189.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">28</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="160.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#a7cbf1" stroke-width="1.5"/><text x="770.0" y="178.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Projectiles &amp; Ammunition</text><text x="770.0" y="196.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="212.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#a7cbf1">28 subjects</text></g>
+</g>
+<g class="hm-cell hm-r0 hm-c4">
+<title>Projectiles & Ammunition · 1903-04: 22 subjects</title>
+<rect class="hm-rect" fill="#b5d4f4" x="841.0" y="161.0" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="189.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">22</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="160.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#b5d4f4" stroke-width="1.5"/><text x="910.0" y="178.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Projectiles &amp; Ammunition</text><text x="910.0" y="196.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="212.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#b5d4f4">22 subjects</text></g>
+</g>
+<g class="hm-cell hm-r0 hm-c5">
+<title>Projectiles & Ammunition · 1904-05: 18 subjects</title>
+<rect class="hm-rect" fill="#bed9f5" x="981.0" y="161.0" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="189.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">18</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="160.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#bed9f5" stroke-width="1.5"/><text x="1050.0" y="178.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Projectiles &amp; Ammunition</text><text x="1050.0" y="196.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="212.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#bed9f5">18 subjects</text></g>
+</g>
+<g class="hm-cell hm-r0 hm-c6">
+<title>Projectiles & Ammunition · 1905-06: 20 subjects</title>
+<rect class="hm-rect" fill="#b9d6f4" x="1121.0" y="161.0" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="189.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">20</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="160.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#b9d6f4" stroke-width="1.5"/><text x="1190.0" y="178.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Projectiles &amp; Ammunition</text><text x="1190.0" y="196.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="212.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#b9d6f4">20 subjects</text></g>
+</g>
+<g class="hm-cell hm-r0 hm-c7">
+<title>Projectiles & Ammunition · 1906-07: 23 subjects</title>
+<rect class="hm-rect" fill="#b2d2f3" x="1261.0" y="161.0" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="189.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">23</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="160.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#b2d2f3" stroke-width="1.5"/><text x="1330.0" y="178.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Projectiles &amp; Ammunition</text><text x="1330.0" y="196.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="212.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#b2d2f3">23 subjects</text></g>
+</g>
+<g class="hm-cell hm-r0 hm-c8">
+<title>Projectiles & Ammunition · 1907-08: 22 subjects</title>
+<rect class="hm-rect" fill="#b5d4f4" x="1401.0" y="161.0" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="189.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">22</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="160.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#b5d4f4" stroke-width="1.5"/><text x="1470.0" y="178.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Projectiles &amp; Ammunition</text><text x="1470.0" y="196.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="212.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#b5d4f4">22 subjects</text></g>
+</g>
+<g class="hm-cell hm-r1 hm-c0">
+<title>Artillery & Guns · 1897-98: 68 subjects</title>
+<rect class="hm-rect" fill="#3284d5" x="281.0" y="209.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="237.7" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="white" text-anchor="middle">68</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="203.7" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#3284d5" stroke-width="1.5"/><text x="350.0" y="221.7" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Artillery &amp; Guns</text><text x="350.0" y="239.7" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="255.7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#3284d5">68 subjects</text></g>
+</g>
+<g class="hm-cell hm-r1 hm-c1">
+<title>Artillery & Guns · 1898-99: 39 subjects</title>
+<rect class="hm-rect" fill="#8ebcec" x="421.0" y="209.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="237.7" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">39</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="203.7" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#8ebcec" stroke-width="1.5"/><text x="490.0" y="221.7" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Artillery &amp; Guns</text><text x="490.0" y="239.7" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="255.7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#8ebcec">39 subjects</text></g>
+</g>
+<g class="hm-cell hm-r1 hm-c2">
+<title>Artillery & Guns · 1900-01: 38 subjects</title>
+<rect class="hm-rect" fill="#90bded" x="561.0" y="209.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="237.7" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">38</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="203.7" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#90bded" stroke-width="1.5"/><text x="630.0" y="221.7" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Artillery &amp; Guns</text><text x="630.0" y="239.7" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="255.7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#90bded">38 subjects</text></g>
+</g>
+<g class="hm-cell hm-r1 hm-c3">
+<title>Artillery & Guns · 1901-02: 53 subjects</title>
+<rect class="hm-rect" fill="#61a2e4" x="701.0" y="209.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="237.7" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="white" text-anchor="middle">53</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="203.7" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#61a2e4" stroke-width="1.5"/><text x="770.0" y="221.7" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Artillery &amp; Guns</text><text x="770.0" y="239.7" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="255.7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#61a2e4">53 subjects</text></g>
+</g>
+<g class="hm-cell hm-r1 hm-c4">
+<title>Artillery & Guns · 1903-04: 52 subjects</title>
+<rect class="hm-rect" fill="#64a4e5" x="841.0" y="209.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="237.7" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="white" text-anchor="middle">52</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="203.7" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#64a4e5" stroke-width="1.5"/><text x="910.0" y="221.7" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Artillery &amp; Guns</text><text x="910.0" y="239.7" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="255.7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#64a4e5">52 subjects</text></g>
+</g>
+<g class="hm-cell hm-r1 hm-c5">
+<title>Artillery & Guns · 1904-05: 38 subjects</title>
+<rect class="hm-rect" fill="#90bded" x="981.0" y="209.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="237.7" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">38</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="203.7" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#90bded" stroke-width="1.5"/><text x="1050.0" y="221.7" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Artillery &amp; Guns</text><text x="1050.0" y="239.7" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="255.7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#90bded">38 subjects</text></g>
+</g>
+<g class="hm-cell hm-r1 hm-c6">
+<title>Artillery & Guns · 1905-06: 31 subjects</title>
+<rect class="hm-rect" fill="#a0c7f0" x="1121.0" y="209.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="237.7" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">31</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="203.7" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#a0c7f0" stroke-width="1.5"/><text x="1190.0" y="221.7" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Artillery &amp; Guns</text><text x="1190.0" y="239.7" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="255.7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#a0c7f0">31 subjects</text></g>
+</g>
+<g class="hm-cell hm-r1 hm-c7">
+<title>Artillery & Guns · 1906-07: 32 subjects</title>
+<rect class="hm-rect" fill="#9ec6ef" x="1261.0" y="209.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="237.7" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">32</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="203.7" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#9ec6ef" stroke-width="1.5"/><text x="1330.0" y="221.7" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Artillery &amp; Guns</text><text x="1330.0" y="239.7" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="255.7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#9ec6ef">32 subjects</text></g>
+</g>
+<g class="hm-cell hm-r1 hm-c8">
+<title>Artillery & Guns · 1907-08: 25 subjects</title>
+<rect class="hm-rect" fill="#aecff2" x="1401.0" y="209.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="237.7" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">25</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="203.7" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#aecff2" stroke-width="1.5"/><text x="1470.0" y="221.7" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Artillery &amp; Guns</text><text x="1470.0" y="239.7" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="255.7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#aecff2">25 subjects</text></g>
+</g>
+<g class="hm-cell hm-r2 hm-c0">
+<title>Other · 1897-98: 48 subjects</title>
+<rect class="hm-rect" fill="#73ace7" x="281.0" y="257.9" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="286.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">48</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="252.2" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#73ace7" stroke-width="1.5"/><text x="350.0" y="270.2" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Other</text><text x="350.0" y="288.2" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="304.2" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#73ace7">48 subjects</text></g>
+</g>
+<g class="hm-cell hm-r2 hm-c1">
+<title>Other · 1898-99: 20 subjects</title>
+<rect class="hm-rect" fill="#b9d6f4" x="421.0" y="257.9" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="286.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">20</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="252.2" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#b9d6f4" stroke-width="1.5"/><text x="490.0" y="270.2" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Other</text><text x="490.0" y="288.2" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="304.2" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#b9d6f4">20 subjects</text></g>
+</g>
+<g class="hm-cell hm-r2 hm-c2">
+<title>Other · 1900-01: 13 subjects</title>
+<rect class="hm-rect" fill="#c9dff6" x="561.0" y="257.9" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="286.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">13</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="252.2" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#c9dff6" stroke-width="1.5"/><text x="630.0" y="270.2" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Other</text><text x="630.0" y="288.2" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="304.2" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#c9dff6">13 subjects</text></g>
+</g>
+<g class="hm-cell hm-r2 hm-c3">
+<title>Other · 1901-02: 52 subjects</title>
+<rect class="hm-rect" fill="#64a4e5" x="701.0" y="257.9" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="286.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="white" text-anchor="middle">52</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="252.2" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#64a4e5" stroke-width="1.5"/><text x="770.0" y="270.2" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Other</text><text x="770.0" y="288.2" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="304.2" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#64a4e5">52 subjects</text></g>
+</g>
+<g class="hm-cell hm-r2 hm-c4">
+<title>Other · 1903-04: 41 subjects</title>
+<rect class="hm-rect" fill="#89b9eb" x="841.0" y="257.9" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="286.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">41</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="252.2" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#89b9eb" stroke-width="1.5"/><text x="910.0" y="270.2" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Other</text><text x="910.0" y="288.2" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="304.2" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#89b9eb">41 subjects</text></g>
+</g>
+<g class="hm-cell hm-r2 hm-c5">
+<title>Other · 1904-05: 17 subjects</title>
+<rect class="hm-rect" fill="#c0daf5" x="981.0" y="257.9" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="286.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">17</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="252.2" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#c0daf5" stroke-width="1.5"/><text x="1050.0" y="270.2" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Other</text><text x="1050.0" y="288.2" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="304.2" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#c0daf5">17 subjects</text></g>
+</g>
+<g class="hm-cell hm-r2 hm-c6">
+<title>Other · 1905-06: 23 subjects</title>
+<rect class="hm-rect" fill="#b2d2f3" x="1121.0" y="257.9" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="286.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">23</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="252.2" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#b2d2f3" stroke-width="1.5"/><text x="1190.0" y="270.2" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Other</text><text x="1190.0" y="288.2" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="304.2" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#b2d2f3">23 subjects</text></g>
+</g>
+<g class="hm-cell hm-r2 hm-c7">
+<title>Other · 1906-07: 25 subjects</title>
+<rect class="hm-rect" fill="#aecff2" x="1261.0" y="257.9" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="286.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">25</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="252.2" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#aecff2" stroke-width="1.5"/><text x="1330.0" y="270.2" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Other</text><text x="1330.0" y="288.2" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="304.2" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#aecff2">25 subjects</text></g>
+</g>
+<g class="hm-cell hm-r2 hm-c8">
+<title>Other · 1907-08: 34 subjects</title>
+<rect class="hm-rect" fill="#99c3ee" x="1401.0" y="257.9" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="286.2" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">34</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="252.2" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#99c3ee" stroke-width="1.5"/><text x="1470.0" y="270.2" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Other</text><text x="1470.0" y="288.2" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="304.2" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#99c3ee">34 subjects</text></g>
+</g>
+<g class="hm-cell hm-r3 hm-c0">
+<title>Torpedoes & Mines · 1897-98: 42 subjects</title>
+<rect class="hm-rect" fill="#87b8eb" x="281.0" y="306.4" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="334.6" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">42</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="300.6" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#87b8eb" stroke-width="1.5"/><text x="350.0" y="318.6" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Torpedoes &amp; Mines</text><text x="350.0" y="336.6" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="352.6" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#87b8eb">42 subjects</text></g>
+</g>
+<g class="hm-cell hm-r3 hm-c1">
+<title>Torpedoes & Mines · 1898-99: 6 subjects</title>
+<rect class="hm-rect" fill="#d8e9f9" x="421.0" y="306.4" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="334.6" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">6</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="300.6" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d8e9f9" stroke-width="1.5"/><text x="490.0" y="318.6" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Torpedoes &amp; Mines</text><text x="490.0" y="336.6" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="352.6" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d8e9f9">6 subjects</text></g>
+</g>
+<g class="hm-cell hm-r3 hm-c2">
+<title>Torpedoes & Mines · 1900-01: 3 subjects</title>
+<rect class="hm-rect" fill="#dfedfa" x="561.0" y="306.4" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="334.6" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">3</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="300.6" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#dfedfa" stroke-width="1.5"/><text x="630.0" y="318.6" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Torpedoes &amp; Mines</text><text x="630.0" y="336.6" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="352.6" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#dfedfa">3 subjects</text></g>
+</g>
+<g class="hm-cell hm-r3 hm-c3">
+<title>Torpedoes & Mines · 1901-02: 3 subjects</title>
+<rect class="hm-rect" fill="#dfedfa" x="701.0" y="306.4" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="334.6" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">3</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="300.6" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#dfedfa" stroke-width="1.5"/><text x="770.0" y="318.6" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Torpedoes &amp; Mines</text><text x="770.0" y="336.6" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="352.6" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#dfedfa">3 subjects</text></g>
+</g>
+<g class="hm-cell hm-r3 hm-c4">
+<title>Torpedoes & Mines · 1903-04: 9 subjects</title>
+<rect class="hm-rect" fill="#d2e5f8" x="841.0" y="306.4" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="334.6" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">9</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="300.6" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d2e5f8" stroke-width="1.5"/><text x="910.0" y="318.6" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Torpedoes &amp; Mines</text><text x="910.0" y="336.6" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="352.6" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d2e5f8">9 subjects</text></g>
+</g>
+<g class="hm-cell hm-r3 hm-c5">
+<title>Torpedoes & Mines · 1904-05: 12 subjects</title>
+<rect class="hm-rect" fill="#cbe1f7" x="981.0" y="306.4" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="334.6" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">12</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="300.6" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#cbe1f7" stroke-width="1.5"/><text x="1050.0" y="318.6" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Torpedoes &amp; Mines</text><text x="1050.0" y="336.6" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="352.6" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#cbe1f7">12 subjects</text></g>
+</g>
+<g class="hm-cell hm-r3 hm-c6">
+<title>Torpedoes & Mines · 1905-06: 8 subjects</title>
+<rect class="hm-rect" fill="#d4e6f8" x="1121.0" y="306.4" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="334.6" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">8</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="300.6" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d4e6f8" stroke-width="1.5"/><text x="1190.0" y="318.6" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Torpedoes &amp; Mines</text><text x="1190.0" y="336.6" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="352.6" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d4e6f8">8 subjects</text></g>
+</g>
+<g class="hm-cell hm-r3 hm-c7">
+<title>Torpedoes & Mines · 1906-07: 5 subjects</title>
+<rect class="hm-rect" fill="#daeaf9" x="1261.0" y="306.4" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="334.6" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">5</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="300.6" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#daeaf9" stroke-width="1.5"/><text x="1330.0" y="318.6" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Torpedoes &amp; Mines</text><text x="1330.0" y="336.6" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="352.6" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#daeaf9">5 subjects</text></g>
+</g>
+<g class="hm-cell hm-r3 hm-c8">
+<title>Torpedoes & Mines · 1907-08: 8 subjects</title>
+<rect class="hm-rect" fill="#d4e6f8" x="1401.0" y="306.4" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="334.6" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">8</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="300.6" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d4e6f8" stroke-width="1.5"/><text x="1470.0" y="318.6" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Torpedoes &amp; Mines</text><text x="1470.0" y="336.6" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="352.6" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d4e6f8">8 subjects</text></g>
+</g>
+<g class="hm-cell hm-r4 hm-c0">
+<title>Aerial / Aviation · 1897-98: 29 subjects</title>
+<rect class="hm-rect" fill="#a5caf1" x="281.0" y="354.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="383.1" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">29</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="349.1" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#a5caf1" stroke-width="1.5"/><text x="350.0" y="367.1" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Aerial / Aviation</text><text x="350.0" y="385.1" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="401.1" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#a5caf1">29 subjects</text></g>
+</g>
+<g class="hm-cell hm-r4 hm-c1">
+<title>Aerial / Aviation · 1898-99: 51 subjects</title>
+<rect class="hm-rect" fill="#68a6e5" x="421.0" y="354.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="383.1" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="white" text-anchor="middle">51</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="349.1" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#68a6e5" stroke-width="1.5"/><text x="490.0" y="367.1" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Aerial / Aviation</text><text x="490.0" y="385.1" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="401.1" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#68a6e5">51 subjects</text></g>
+</g>
+<g class="hm-cell hm-r4 hm-c2">
+<title>Aerial / Aviation · 1900-01: 1 subjects</title>
+<rect class="hm-rect" fill="#e3effa" x="561.0" y="354.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="383.1" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">1</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="349.1" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e3effa" stroke-width="1.5"/><text x="630.0" y="367.1" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Aerial / Aviation</text><text x="630.0" y="385.1" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="401.1" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e3effa">1 subjects</text></g>
+</g>
+<g class="hm-cell hm-r4 hm-c3">
+<title>Aerial / Aviation · 1901-02: 5 subjects</title>
+<rect class="hm-rect" fill="#daeaf9" x="701.0" y="354.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="383.1" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">5</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="349.1" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#daeaf9" stroke-width="1.5"/><text x="770.0" y="367.1" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Aerial / Aviation</text><text x="770.0" y="385.1" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="401.1" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#daeaf9">5 subjects</text></g>
+</g>
+<g class="hm-cell hm-r4 hm-c4">
+<title>Aerial / Aviation · 1903-04: 18 subjects</title>
+<rect class="hm-rect" fill="#bed9f5" x="841.0" y="354.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="383.1" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">18</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="349.1" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#bed9f5" stroke-width="1.5"/><text x="910.0" y="367.1" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Aerial / Aviation</text><text x="910.0" y="385.1" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="401.1" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#bed9f5">18 subjects</text></g>
+</g>
+<g class="hm-cell hm-r4 hm-c5">
+<title>Aerial / Aviation · 1904-05: 4 subjects</title>
+<rect class="hm-rect" fill="#ddebf9" x="981.0" y="354.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="383.1" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">4</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="349.1" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#ddebf9" stroke-width="1.5"/><text x="1050.0" y="367.1" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Aerial / Aviation</text><text x="1050.0" y="385.1" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="401.1" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#ddebf9">4 subjects</text></g>
+</g>
+<g class="hm-cell hm-r4 hm-c6">
+<title>Aerial / Aviation · 1905-06: 7 subjects</title>
+<rect class="hm-rect" fill="#d6e7f8" x="1121.0" y="354.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="383.1" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">7</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="349.1" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d6e7f8" stroke-width="1.5"/><text x="1190.0" y="367.1" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Aerial / Aviation</text><text x="1190.0" y="385.1" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="401.1" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d6e7f8">7 subjects</text></g>
+</g>
+<g class="hm-cell hm-r4 hm-c7">
+<title>Aerial / Aviation · 1906-07: 8 subjects</title>
+<rect class="hm-rect" fill="#d4e6f8" x="1261.0" y="354.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="383.1" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">8</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="349.1" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d4e6f8" stroke-width="1.5"/><text x="1330.0" y="367.1" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Aerial / Aviation</text><text x="1330.0" y="385.1" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="401.1" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d4e6f8">8 subjects</text></g>
+</g>
+<g class="hm-cell hm-r4 hm-c8">
+<title>Aerial / Aviation · 1907-08: 13 subjects</title>
+<rect class="hm-rect" fill="#c9dff6" x="1401.0" y="354.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="383.1" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">13</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="349.1" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#c9dff6" stroke-width="1.5"/><text x="1470.0" y="367.1" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Aerial / Aviation</text><text x="1470.0" y="385.1" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="401.1" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#c9dff6">13 subjects</text></g>
+</g>
+<g class="hm-cell hm-r5 hm-c0">
+<title>Armor & Fortification · 1897-98: 23 subjects</title>
+<rect class="hm-rect" fill="#b2d2f3" x="281.0" y="403.3" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="431.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">23</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="397.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#b2d2f3" stroke-width="1.5"/><text x="350.0" y="415.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Armor &amp; Fortification</text><text x="350.0" y="433.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="449.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#b2d2f3">23 subjects</text></g>
+</g>
+<g class="hm-cell hm-r5 hm-c1">
+<title>Armor & Fortification · 1898-99: 4 subjects</title>
+<rect class="hm-rect" fill="#ddebf9" x="421.0" y="403.3" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="431.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">4</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="397.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#ddebf9" stroke-width="1.5"/><text x="490.0" y="415.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Armor &amp; Fortification</text><text x="490.0" y="433.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="449.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#ddebf9">4 subjects</text></g>
+</g>
+<g class="hm-cell hm-r5 hm-c2">
+<title>Armor & Fortification · 1900-01: 3 subjects</title>
+<rect class="hm-rect" fill="#dfedfa" x="561.0" y="403.3" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="431.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">3</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="397.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#dfedfa" stroke-width="1.5"/><text x="630.0" y="415.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Armor &amp; Fortification</text><text x="630.0" y="433.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="449.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#dfedfa">3 subjects</text></g>
+</g>
+<g class="hm-cell hm-r5 hm-c3">
+<title>Armor & Fortification · 1901-02: 9 subjects</title>
+<rect class="hm-rect" fill="#d2e5f8" x="701.0" y="403.3" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="431.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">9</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="397.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d2e5f8" stroke-width="1.5"/><text x="770.0" y="415.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Armor &amp; Fortification</text><text x="770.0" y="433.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="449.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d2e5f8">9 subjects</text></g>
+</g>
+<g class="hm-cell hm-r5 hm-c4">
+<title>Armor & Fortification · 1903-04: 17 subjects</title>
+<rect class="hm-rect" fill="#c0daf5" x="841.0" y="403.3" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="431.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">17</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="397.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#c0daf5" stroke-width="1.5"/><text x="910.0" y="415.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Armor &amp; Fortification</text><text x="910.0" y="433.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="449.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#c0daf5">17 subjects</text></g>
+</g>
+<g class="hm-cell hm-r5 hm-c5">
+<title>Armor & Fortification · 1904-05: 11 subjects</title>
+<rect class="hm-rect" fill="#cde2f7" x="981.0" y="403.3" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="431.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">11</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="397.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#cde2f7" stroke-width="1.5"/><text x="1050.0" y="415.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Armor &amp; Fortification</text><text x="1050.0" y="433.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="449.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#cde2f7">11 subjects</text></g>
+</g>
+<g class="hm-cell hm-r5 hm-c6">
+<title>Armor & Fortification · 1905-06: 6 subjects</title>
+<rect class="hm-rect" fill="#d8e9f9" x="1121.0" y="403.3" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="431.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">6</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="397.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d8e9f9" stroke-width="1.5"/><text x="1190.0" y="415.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Armor &amp; Fortification</text><text x="1190.0" y="433.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="449.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d8e9f9">6 subjects</text></g>
+</g>
+<g class="hm-cell hm-r5 hm-c7">
+<title>Armor & Fortification · 1906-07: 9 subjects</title>
+<rect class="hm-rect" fill="#d2e5f8" x="1261.0" y="403.3" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="431.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">9</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="397.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d2e5f8" stroke-width="1.5"/><text x="1330.0" y="415.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Armor &amp; Fortification</text><text x="1330.0" y="433.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="449.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d2e5f8">9 subjects</text></g>
+</g>
+<g class="hm-cell hm-r5 hm-c8">
+<title>Armor & Fortification · 1907-08: 7 subjects</title>
+<rect class="hm-rect" fill="#d6e7f8" x="1401.0" y="403.3" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="431.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">7</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="397.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d6e7f8" stroke-width="1.5"/><text x="1470.0" y="415.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Armor &amp; Fortification</text><text x="1470.0" y="433.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="449.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d6e7f8">7 subjects</text></g>
+</g>
+<g class="hm-cell hm-r6 hm-c0">
+<title>Explosives & Propellants · 1897-98: 23 subjects</title>
+<rect class="hm-rect" fill="#b2d2f3" x="281.0" y="451.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="480.0" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">23</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="446.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#b2d2f3" stroke-width="1.5"/><text x="350.0" y="464.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Explosives &amp; Propellants</text><text x="350.0" y="482.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="498.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#b2d2f3">23 subjects</text></g>
+</g>
+<g class="hm-cell hm-r6 hm-c1">
+<title>Explosives & Propellants · 1898-99: 9 subjects</title>
+<rect class="hm-rect" fill="#d2e5f8" x="421.0" y="451.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="480.0" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">9</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="446.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d2e5f8" stroke-width="1.5"/><text x="490.0" y="464.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Explosives &amp; Propellants</text><text x="490.0" y="482.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="498.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d2e5f8">9 subjects</text></g>
+</g>
+<g class="hm-cell hm-r6 hm-c2">
+<title>Explosives & Propellants · 1900-01: 9 subjects</title>
+<rect class="hm-rect" fill="#d2e5f8" x="561.0" y="451.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="480.0" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">9</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="446.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d2e5f8" stroke-width="1.5"/><text x="630.0" y="464.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Explosives &amp; Propellants</text><text x="630.0" y="482.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="498.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d2e5f8">9 subjects</text></g>
+</g>
+<g class="hm-cell hm-r6 hm-c3">
+<title>Explosives & Propellants · 1901-02: 7 subjects</title>
+<rect class="hm-rect" fill="#d6e7f8" x="701.0" y="451.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="480.0" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">7</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="446.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d6e7f8" stroke-width="1.5"/><text x="770.0" y="464.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Explosives &amp; Propellants</text><text x="770.0" y="482.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="498.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d6e7f8">7 subjects</text></g>
+</g>
+<g class="hm-cell hm-r6 hm-c4">
+<title>Explosives & Propellants · 1903-04: 8 subjects</title>
+<rect class="hm-rect" fill="#d4e6f8" x="841.0" y="451.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="480.0" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">8</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="446.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d4e6f8" stroke-width="1.5"/><text x="910.0" y="464.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Explosives &amp; Propellants</text><text x="910.0" y="482.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="498.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d4e6f8">8 subjects</text></g>
+</g>
+<g class="hm-cell hm-r6 hm-c5">
+<title>Explosives & Propellants · 1904-05: 5 subjects</title>
+<rect class="hm-rect" fill="#daeaf9" x="981.0" y="451.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="480.0" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">5</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="446.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#daeaf9" stroke-width="1.5"/><text x="1050.0" y="464.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Explosives &amp; Propellants</text><text x="1050.0" y="482.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="498.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#daeaf9">5 subjects</text></g>
+</g>
+<g class="hm-cell hm-r6 hm-c6">
+<title>Explosives & Propellants · 1905-06: 1 subjects</title>
+<rect class="hm-rect" fill="#e3effa" x="1121.0" y="451.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="480.0" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">1</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="446.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e3effa" stroke-width="1.5"/><text x="1190.0" y="464.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Explosives &amp; Propellants</text><text x="1190.0" y="482.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="498.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e3effa">1 subjects</text></g>
+</g>
+<g class="hm-cell hm-r6 hm-c7">
+<title>Explosives & Propellants · 1906-07: 3 subjects</title>
+<rect class="hm-rect" fill="#dfedfa" x="1261.0" y="451.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="480.0" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">3</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="446.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#dfedfa" stroke-width="1.5"/><text x="1330.0" y="464.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Explosives &amp; Propellants</text><text x="1330.0" y="482.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="498.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#dfedfa">3 subjects</text></g>
+</g>
+<g class="hm-cell hm-r6 hm-c8">
+<title>Explosives & Propellants · 1907-08: 4 subjects</title>
+<rect class="hm-rect" fill="#ddebf9" x="1401.0" y="451.8" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="480.0" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">4</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="446.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#ddebf9" stroke-width="1.5"/><text x="1470.0" y="464.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Explosives &amp; Propellants</text><text x="1470.0" y="482.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="498.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#ddebf9">4 subjects</text></g>
+</g>
+<g class="hm-cell hm-r7 hm-c0">
+<title>Range Finding & Fire Control · 1897-98: 17 subjects</title>
+<rect class="hm-rect" fill="#c0daf5" x="281.0" y="500.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="528.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">17</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="494.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#c0daf5" stroke-width="1.5"/><text x="350.0" y="512.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Range Finding &amp; Fire Control</text><text x="350.0" y="530.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="546.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#c0daf5">17 subjects</text></g>
+</g>
+<g class="hm-cell hm-r7 hm-c1">
+<title>Range Finding & Fire Control · 1898-99: 12 subjects</title>
+<rect class="hm-rect" fill="#cbe1f7" x="421.0" y="500.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="528.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">12</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="494.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#cbe1f7" stroke-width="1.5"/><text x="490.0" y="512.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Range Finding &amp; Fire Control</text><text x="490.0" y="530.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="546.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#cbe1f7">12 subjects</text></g>
+</g>
+<g class="hm-cell hm-r7 hm-c2">
+<title>Range Finding & Fire Control · 1900-01: 9 subjects</title>
+<rect class="hm-rect" fill="#d2e5f8" x="561.0" y="500.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="528.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">9</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="494.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d2e5f8" stroke-width="1.5"/><text x="630.0" y="512.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Range Finding &amp; Fire Control</text><text x="630.0" y="530.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="546.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d2e5f8">9 subjects</text></g>
+</g>
+<g class="hm-cell hm-r7 hm-c3">
+<title>Range Finding & Fire Control · 1901-02: 13 subjects</title>
+<rect class="hm-rect" fill="#c9dff6" x="701.0" y="500.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="528.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">13</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="494.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#c9dff6" stroke-width="1.5"/><text x="770.0" y="512.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Range Finding &amp; Fire Control</text><text x="770.0" y="530.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="546.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#c9dff6">13 subjects</text></g>
+</g>
+<g class="hm-cell hm-r7 hm-c4">
+<title>Range Finding & Fire Control · 1903-04: 17 subjects</title>
+<rect class="hm-rect" fill="#c0daf5" x="841.0" y="500.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="528.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">17</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="494.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#c0daf5" stroke-width="1.5"/><text x="910.0" y="512.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Range Finding &amp; Fire Control</text><text x="910.0" y="530.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="546.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#c0daf5">17 subjects</text></g>
+</g>
+<g class="hm-cell hm-r7 hm-c5">
+<title>Range Finding & Fire Control · 1904-05: 14 subjects</title>
+<rect class="hm-rect" fill="#c6def6" x="981.0" y="500.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="528.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">14</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="494.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#c6def6" stroke-width="1.5"/><text x="1050.0" y="512.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Range Finding &amp; Fire Control</text><text x="1050.0" y="530.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="546.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#c6def6">14 subjects</text></g>
+</g>
+<g class="hm-cell hm-r7 hm-c6">
+<title>Range Finding & Fire Control · 1905-06: 18 subjects</title>
+<rect class="hm-rect" fill="#bed9f5" x="1121.0" y="500.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="528.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">18</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="494.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#bed9f5" stroke-width="1.5"/><text x="1190.0" y="512.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Range Finding &amp; Fire Control</text><text x="1190.0" y="530.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="546.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#bed9f5">18 subjects</text></g>
+</g>
+<g class="hm-cell hm-r7 hm-c7">
+<title>Range Finding & Fire Control · 1906-07: 10 subjects</title>
+<rect class="hm-rect" fill="#cfe3f7" x="1261.0" y="500.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="528.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">10</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="494.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#cfe3f7" stroke-width="1.5"/><text x="1330.0" y="512.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Range Finding &amp; Fire Control</text><text x="1330.0" y="530.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="546.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#cfe3f7">10 subjects</text></g>
+</g>
+<g class="hm-cell hm-r7 hm-c8">
+<title>Range Finding & Fire Control · 1907-08: 15 subjects</title>
+<rect class="hm-rect" fill="#c4ddf6" x="1401.0" y="500.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="528.5" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">15</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="494.5" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#c4ddf6" stroke-width="1.5"/><text x="1470.0" y="512.5" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Range Finding &amp; Fire Control</text><text x="1470.0" y="530.5" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="546.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#c4ddf6">15 subjects</text></g>
+</g>
+<g class="hm-cell hm-r8 hm-c0">
+<title>Small Arms · 1897-98: 9 subjects</title>
+<rect class="hm-rect" fill="#d2e5f8" x="281.0" y="548.7" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="576.9" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">9</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="542.9" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d2e5f8" stroke-width="1.5"/><text x="350.0" y="560.9" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Small Arms</text><text x="350.0" y="578.9" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="594.9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d2e5f8">9 subjects</text></g>
+</g>
+<g class="hm-cell hm-r8 hm-c1">
+<title>Small Arms · 1898-99: 4 subjects</title>
+<rect class="hm-rect" fill="#ddebf9" x="421.0" y="548.7" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="576.9" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">4</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="542.9" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#ddebf9" stroke-width="1.5"/><text x="490.0" y="560.9" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Small Arms</text><text x="490.0" y="578.9" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="594.9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#ddebf9">4 subjects</text></g>
+</g>
+<g class="hm-cell hm-r8 hm-c2">
+<title>Small Arms · 1900-01: 4 subjects</title>
+<rect class="hm-rect" fill="#ddebf9" x="561.0" y="548.7" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="576.9" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">4</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="542.9" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#ddebf9" stroke-width="1.5"/><text x="630.0" y="560.9" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Small Arms</text><text x="630.0" y="578.9" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="594.9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#ddebf9">4 subjects</text></g>
+</g>
+<g class="hm-cell hm-r8 hm-c3">
+<title>Small Arms · 1901-02: 14 subjects</title>
+<rect class="hm-rect" fill="#c6def6" x="701.0" y="548.7" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="576.9" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">14</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="542.9" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#c6def6" stroke-width="1.5"/><text x="770.0" y="560.9" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Small Arms</text><text x="770.0" y="578.9" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="594.9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#c6def6">14 subjects</text></g>
+</g>
+<g class="hm-cell hm-r8 hm-c4">
+<title>Small Arms · 1903-04: 9 subjects</title>
+<rect class="hm-rect" fill="#d2e5f8" x="841.0" y="548.7" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="576.9" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">9</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="542.9" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d2e5f8" stroke-width="1.5"/><text x="910.0" y="560.9" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Small Arms</text><text x="910.0" y="578.9" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="594.9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d2e5f8">9 subjects</text></g>
+</g>
+<g class="hm-cell hm-r8 hm-c5">
+<title>Small Arms · 1904-05: 5 subjects</title>
+<rect class="hm-rect" fill="#daeaf9" x="981.0" y="548.7" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="576.9" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">5</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="542.9" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#daeaf9" stroke-width="1.5"/><text x="1050.0" y="560.9" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Small Arms</text><text x="1050.0" y="578.9" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="594.9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#daeaf9">5 subjects</text></g>
+</g>
+<g class="hm-cell hm-r8 hm-c6">
+<title>Small Arms · 1905-06: 7 subjects</title>
+<rect class="hm-rect" fill="#d6e7f8" x="1121.0" y="548.7" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="576.9" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">7</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="542.9" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d6e7f8" stroke-width="1.5"/><text x="1190.0" y="560.9" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Small Arms</text><text x="1190.0" y="578.9" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="594.9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d6e7f8">7 subjects</text></g>
+</g>
+<g class="hm-cell hm-r8 hm-c7">
+<title>Small Arms · 1906-07: 4 subjects</title>
+<rect class="hm-rect" fill="#ddebf9" x="1261.0" y="548.7" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="576.9" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">4</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="542.9" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#ddebf9" stroke-width="1.5"/><text x="1330.0" y="560.9" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Small Arms</text><text x="1330.0" y="578.9" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="594.9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#ddebf9">4 subjects</text></g>
+</g>
+<g class="hm-cell hm-r8 hm-c8">
+<title>Small Arms · 1907-08: 3 subjects</title>
+<rect class="hm-rect" fill="#dfedfa" x="1401.0" y="548.7" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="576.9" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">3</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="542.9" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#dfedfa" stroke-width="1.5"/><text x="1470.0" y="560.9" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Small Arms</text><text x="1470.0" y="578.9" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="594.9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#dfedfa">3 subjects</text></g>
+</g>
+<g class="hm-cell hm-r9 hm-c0">
+<title>Searchlights & Optics · 1897-98: 2 subjects</title>
+<rect class="hm-rect" fill="#e1eefa" x="281.0" y="597.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="625.4" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">2</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="591.4" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e1eefa" stroke-width="1.5"/><text x="350.0" y="609.4" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Searchlights &amp; Optics</text><text x="350.0" y="627.4" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="643.4" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e1eefa">2 subjects</text></g>
+</g>
+<g class="hm-cell hm-r9 hm-c1">
+<title>Searchlights & Optics · 1898-99: 2 subjects</title>
+<rect class="hm-rect" fill="#e1eefa" x="421.0" y="597.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="625.4" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">2</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="591.4" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e1eefa" stroke-width="1.5"/><text x="490.0" y="609.4" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Searchlights &amp; Optics</text><text x="490.0" y="627.4" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="643.4" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e1eefa">2 subjects</text></g>
+</g>
+<g class="hm-cell hm-r9 hm-c2">
+<title>Searchlights & Optics · 1900-01: 3 subjects</title>
+<rect class="hm-rect" fill="#dfedfa" x="561.0" y="597.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="625.4" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">3</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="591.4" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#dfedfa" stroke-width="1.5"/><text x="630.0" y="609.4" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Searchlights &amp; Optics</text><text x="630.0" y="627.4" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="643.4" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#dfedfa">3 subjects</text></g>
+</g>
+<g class="hm-cell hm-r9 hm-c3">
+<title>Searchlights & Optics · 1901-02: 3 subjects</title>
+<rect class="hm-rect" fill="#dfedfa" x="701.0" y="597.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="625.4" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">3</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="591.4" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#dfedfa" stroke-width="1.5"/><text x="770.0" y="609.4" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Searchlights &amp; Optics</text><text x="770.0" y="627.4" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="643.4" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#dfedfa">3 subjects</text></g>
+</g>
+<g class="hm-cell hm-r9 hm-c4">
+<title>Searchlights & Optics · 1903-04: 10 subjects</title>
+<rect class="hm-rect" fill="#cfe3f7" x="841.0" y="597.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="625.4" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">10</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="591.4" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#cfe3f7" stroke-width="1.5"/><text x="910.0" y="609.4" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Searchlights &amp; Optics</text><text x="910.0" y="627.4" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="643.4" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#cfe3f7">10 subjects</text></g>
+</g>
+<g class="hm-cell hm-r9 hm-c5">
+<title>Searchlights & Optics · 1904-05: 7 subjects</title>
+<rect class="hm-rect" fill="#d6e7f8" x="981.0" y="597.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="625.4" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">7</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="591.4" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d6e7f8" stroke-width="1.5"/><text x="1050.0" y="609.4" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Searchlights &amp; Optics</text><text x="1050.0" y="627.4" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="643.4" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d6e7f8">7 subjects</text></g>
+</g>
+<g class="hm-cell hm-r9 hm-c6">
+<title>Searchlights & Optics · 1905-06: 5 subjects</title>
+<rect class="hm-rect" fill="#daeaf9" x="1121.0" y="597.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="625.4" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">5</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="591.4" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#daeaf9" stroke-width="1.5"/><text x="1190.0" y="609.4" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Searchlights &amp; Optics</text><text x="1190.0" y="627.4" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="643.4" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#daeaf9">5 subjects</text></g>
+</g>
+<g class="hm-cell hm-r9 hm-c7">
+<title>Searchlights & Optics · 1906-07: 22 subjects</title>
+<rect class="hm-rect" fill="#b5d4f4" x="1261.0" y="597.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="625.4" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">22</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="591.4" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#b5d4f4" stroke-width="1.5"/><text x="1330.0" y="609.4" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Searchlights &amp; Optics</text><text x="1330.0" y="627.4" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="643.4" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#b5d4f4">22 subjects</text></g>
+</g>
+<g class="hm-cell hm-r9 hm-c8">
+<title>Searchlights & Optics · 1907-08: 10 subjects</title>
+<rect class="hm-rect" fill="#cfe3f7" x="1401.0" y="597.2" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="625.4" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">10</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="591.4" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#cfe3f7" stroke-width="1.5"/><text x="1470.0" y="609.4" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Searchlights &amp; Optics</text><text x="1470.0" y="627.4" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="643.4" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#cfe3f7">10 subjects</text></g>
+</g>
+<g class="hm-cell hm-r10 hm-c0">
+<title>Entrenching & Field Equip. · 1897-98: 0 subjects</title>
+<rect class="hm-rect" fill="#e6f1fb" x="281.0" y="645.6" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="673.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">0</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="639.8" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e6f1fb" stroke-width="1.5"/><text x="350.0" y="657.8" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Entrenching &amp; Field Equip.</text><text x="350.0" y="675.8" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="691.8" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e6f1fb">0 subjects</text></g>
+</g>
+<g class="hm-cell hm-r10 hm-c1">
+<title>Entrenching & Field Equip. · 1898-99: 3 subjects</title>
+<rect class="hm-rect" fill="#dfedfa" x="421.0" y="645.6" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="673.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">3</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="639.8" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#dfedfa" stroke-width="1.5"/><text x="490.0" y="657.8" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Entrenching &amp; Field Equip.</text><text x="490.0" y="675.8" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="691.8" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#dfedfa">3 subjects</text></g>
+</g>
+<g class="hm-cell hm-r10 hm-c2">
+<title>Entrenching & Field Equip. · 1900-01: 10 subjects</title>
+<rect class="hm-rect" fill="#cfe3f7" x="561.0" y="645.6" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="673.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">10</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="639.8" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#cfe3f7" stroke-width="1.5"/><text x="630.0" y="657.8" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Entrenching &amp; Field Equip.</text><text x="630.0" y="675.8" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="691.8" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#cfe3f7">10 subjects</text></g>
+</g>
+<g class="hm-cell hm-r10 hm-c3">
+<title>Entrenching & Field Equip. · 1901-02: 10 subjects</title>
+<rect class="hm-rect" fill="#cfe3f7" x="701.0" y="645.6" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="673.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">10</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="639.8" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#cfe3f7" stroke-width="1.5"/><text x="770.0" y="657.8" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Entrenching &amp; Field Equip.</text><text x="770.0" y="675.8" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="691.8" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#cfe3f7">10 subjects</text></g>
+</g>
+<g class="hm-cell hm-r10 hm-c4">
+<title>Entrenching & Field Equip. · 1903-04: 8 subjects</title>
+<rect class="hm-rect" fill="#d4e6f8" x="841.0" y="645.6" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="673.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">8</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="639.8" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d4e6f8" stroke-width="1.5"/><text x="910.0" y="657.8" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Entrenching &amp; Field Equip.</text><text x="910.0" y="675.8" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="691.8" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d4e6f8">8 subjects</text></g>
+</g>
+<g class="hm-cell hm-r10 hm-c5">
+<title>Entrenching & Field Equip. · 1904-05: 7 subjects</title>
+<rect class="hm-rect" fill="#d6e7f8" x="981.0" y="645.6" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="673.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">7</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="639.8" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d6e7f8" stroke-width="1.5"/><text x="1050.0" y="657.8" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Entrenching &amp; Field Equip.</text><text x="1050.0" y="675.8" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="691.8" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d6e7f8">7 subjects</text></g>
+</g>
+<g class="hm-cell hm-r10 hm-c6">
+<title>Entrenching & Field Equip. · 1905-06: 3 subjects</title>
+<rect class="hm-rect" fill="#dfedfa" x="1121.0" y="645.6" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="673.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">3</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="639.8" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#dfedfa" stroke-width="1.5"/><text x="1190.0" y="657.8" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Entrenching &amp; Field Equip.</text><text x="1190.0" y="675.8" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="691.8" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#dfedfa">3 subjects</text></g>
+</g>
+<g class="hm-cell hm-r10 hm-c7">
+<title>Entrenching & Field Equip. · 1906-07: 1 subjects</title>
+<rect class="hm-rect" fill="#e3effa" x="1261.0" y="645.6" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="673.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">1</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="639.8" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e3effa" stroke-width="1.5"/><text x="1330.0" y="657.8" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Entrenching &amp; Field Equip.</text><text x="1330.0" y="675.8" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="691.8" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e3effa">1 subjects</text></g>
+</g>
+<g class="hm-cell hm-r10 hm-c8">
+<title>Entrenching & Field Equip. · 1907-08: 0 subjects</title>
+<rect class="hm-rect" fill="#e6f1fb" x="1401.0" y="645.6" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="673.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">0</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="639.8" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e6f1fb" stroke-width="1.5"/><text x="1470.0" y="657.8" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Entrenching &amp; Field Equip.</text><text x="1470.0" y="675.8" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="691.8" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e6f1fb">0 subjects</text></g>
+</g>
+<g class="hm-cell hm-r11 hm-c0">
+<title>Transportation & Vehicles · 1897-98: 2 subjects</title>
+<rect class="hm-rect" fill="#e1eefa" x="281.0" y="694.1" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="722.3" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">2</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="688.3" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e1eefa" stroke-width="1.5"/><text x="350.0" y="706.3" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Transportation &amp; Vehicles</text><text x="350.0" y="724.3" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="740.3" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e1eefa">2 subjects</text></g>
+</g>
+<g class="hm-cell hm-r11 hm-c1">
+<title>Transportation & Vehicles · 1898-99: 2 subjects</title>
+<rect class="hm-rect" fill="#e1eefa" x="421.0" y="694.1" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="722.3" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">2</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="688.3" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e1eefa" stroke-width="1.5"/><text x="490.0" y="706.3" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Transportation &amp; Vehicles</text><text x="490.0" y="724.3" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="740.3" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e1eefa">2 subjects</text></g>
+</g>
+<g class="hm-cell hm-r11 hm-c2">
+<title>Transportation & Vehicles · 1900-01: 3 subjects</title>
+<rect class="hm-rect" fill="#dfedfa" x="561.0" y="694.1" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="722.3" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">3</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="688.3" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#dfedfa" stroke-width="1.5"/><text x="630.0" y="706.3" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Transportation &amp; Vehicles</text><text x="630.0" y="724.3" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="740.3" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#dfedfa">3 subjects</text></g>
+</g>
+<g class="hm-cell hm-r11 hm-c3">
+<title>Transportation & Vehicles · 1901-02: 5 subjects</title>
+<rect class="hm-rect" fill="#daeaf9" x="701.0" y="694.1" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="722.3" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">5</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="688.3" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#daeaf9" stroke-width="1.5"/><text x="770.0" y="706.3" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Transportation &amp; Vehicles</text><text x="770.0" y="724.3" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="740.3" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#daeaf9">5 subjects</text></g>
+</g>
+<g class="hm-cell hm-r11 hm-c4">
+<title>Transportation & Vehicles · 1903-04: 5 subjects</title>
+<rect class="hm-rect" fill="#daeaf9" x="841.0" y="694.1" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="722.3" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">5</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="688.3" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#daeaf9" stroke-width="1.5"/><text x="910.0" y="706.3" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Transportation &amp; Vehicles</text><text x="910.0" y="724.3" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="740.3" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#daeaf9">5 subjects</text></g>
+</g>
+<g class="hm-cell hm-r11 hm-c5">
+<title>Transportation & Vehicles · 1904-05: 0 subjects</title>
+<rect class="hm-rect" fill="#e6f1fb" x="981.0" y="694.1" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="722.3" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">0</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="688.3" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e6f1fb" stroke-width="1.5"/><text x="1050.0" y="706.3" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Transportation &amp; Vehicles</text><text x="1050.0" y="724.3" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="740.3" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e6f1fb">0 subjects</text></g>
+</g>
+<g class="hm-cell hm-r11 hm-c6">
+<title>Transportation & Vehicles · 1905-06: 4 subjects</title>
+<rect class="hm-rect" fill="#ddebf9" x="1121.0" y="694.1" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="722.3" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">4</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="688.3" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#ddebf9" stroke-width="1.5"/><text x="1190.0" y="706.3" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Transportation &amp; Vehicles</text><text x="1190.0" y="724.3" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="740.3" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#ddebf9">4 subjects</text></g>
+</g>
+<g class="hm-cell hm-r11 hm-c7">
+<title>Transportation & Vehicles · 1906-07: 0 subjects</title>
+<rect class="hm-rect" fill="#e6f1fb" x="1261.0" y="694.1" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="722.3" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">0</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="688.3" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e6f1fb" stroke-width="1.5"/><text x="1330.0" y="706.3" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Transportation &amp; Vehicles</text><text x="1330.0" y="724.3" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="740.3" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e6f1fb">0 subjects</text></g>
+</g>
+<g class="hm-cell hm-r11 hm-c8">
+<title>Transportation & Vehicles · 1907-08: 4 subjects</title>
+<rect class="hm-rect" fill="#ddebf9" x="1401.0" y="694.1" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="722.3" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">4</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="688.3" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#ddebf9" stroke-width="1.5"/><text x="1470.0" y="706.3" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Transportation &amp; Vehicles</text><text x="1470.0" y="724.3" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="740.3" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#ddebf9">4 subjects</text></g>
+</g>
+<g class="hm-cell hm-r12 hm-c0">
+<title>Wireless & Electrical · 1897-98: 4 subjects</title>
+<rect class="hm-rect" fill="#ddebf9" x="281.0" y="742.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="350.0" y="770.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">4</text>
+<g class="hm-badge" pointer-events="none"><rect x="280.0" y="732.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#ddebf9" stroke-width="1.5"/><text x="350.0" y="750.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Wireless &amp; Electrical</text><text x="350.0" y="768.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1897-98</text><text x="350.0" y="784.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#ddebf9">4 subjects</text></g>
+</g>
+<g class="hm-cell hm-r12 hm-c1">
+<title>Wireless & Electrical · 1898-99: 5 subjects</title>
+<rect class="hm-rect" fill="#daeaf9" x="421.0" y="742.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="490.0" y="770.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">5</text>
+<g class="hm-badge" pointer-events="none"><rect x="420.0" y="732.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#daeaf9" stroke-width="1.5"/><text x="490.0" y="750.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Wireless &amp; Electrical</text><text x="490.0" y="768.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1898-99</text><text x="490.0" y="784.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#daeaf9">5 subjects</text></g>
+</g>
+<g class="hm-cell hm-r12 hm-c2">
+<title>Wireless & Electrical · 1900-01: 2 subjects</title>
+<rect class="hm-rect" fill="#e1eefa" x="561.0" y="742.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="630.0" y="770.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">2</text>
+<g class="hm-badge" pointer-events="none"><rect x="560.0" y="732.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e1eefa" stroke-width="1.5"/><text x="630.0" y="750.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Wireless &amp; Electrical</text><text x="630.0" y="768.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1900-01</text><text x="630.0" y="784.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e1eefa">2 subjects</text></g>
+</g>
+<g class="hm-cell hm-r12 hm-c3">
+<title>Wireless & Electrical · 1901-02: 8 subjects</title>
+<rect class="hm-rect" fill="#d4e6f8" x="701.0" y="742.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="770.0" y="770.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">8</text>
+<g class="hm-badge" pointer-events="none"><rect x="700.0" y="732.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#d4e6f8" stroke-width="1.5"/><text x="770.0" y="750.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Wireless &amp; Electrical</text><text x="770.0" y="768.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1901-02</text><text x="770.0" y="784.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#d4e6f8">8 subjects</text></g>
+</g>
+<g class="hm-cell hm-r12 hm-c4">
+<title>Wireless & Electrical · 1903-04: 2 subjects</title>
+<rect class="hm-rect" fill="#e1eefa" x="841.0" y="742.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="910.0" y="770.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">2</text>
+<g class="hm-badge" pointer-events="none"><rect x="840.0" y="732.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e1eefa" stroke-width="1.5"/><text x="910.0" y="750.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Wireless &amp; Electrical</text><text x="910.0" y="768.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1903-04</text><text x="910.0" y="784.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e1eefa">2 subjects</text></g>
+</g>
+<g class="hm-cell hm-r12 hm-c5">
+<title>Wireless & Electrical · 1904-05: 1 subjects</title>
+<rect class="hm-rect" fill="#e3effa" x="981.0" y="742.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="1050.0" y="770.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">1</text>
+<g class="hm-badge" pointer-events="none"><rect x="980.0" y="732.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e3effa" stroke-width="1.5"/><text x="1050.0" y="750.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Wireless &amp; Electrical</text><text x="1050.0" y="768.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1904-05</text><text x="1050.0" y="784.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e3effa">1 subjects</text></g>
+</g>
+<g class="hm-cell hm-r12 hm-c6">
+<title>Wireless & Electrical · 1905-06: 0 subjects</title>
+<rect class="hm-rect" fill="#e6f1fb" x="1121.0" y="742.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="1190.0" y="770.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">0</text>
+<g class="hm-badge" pointer-events="none"><rect x="1120.0" y="732.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e6f1fb" stroke-width="1.5"/><text x="1190.0" y="750.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Wireless &amp; Electrical</text><text x="1190.0" y="768.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1905-06</text><text x="1190.0" y="784.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e6f1fb">0 subjects</text></g>
+</g>
+<g class="hm-cell hm-r12 hm-c7">
+<title>Wireless & Electrical · 1906-07: 0 subjects</title>
+<rect class="hm-rect" fill="#e6f1fb" x="1261.0" y="742.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="1330.0" y="770.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">0</text>
+<g class="hm-badge" pointer-events="none"><rect x="1260.0" y="732.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#e6f1fb" stroke-width="1.5"/><text x="1330.0" y="750.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Wireless &amp; Electrical</text><text x="1330.0" y="768.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1906-07</text><text x="1330.0" y="784.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#e6f1fb">0 subjects</text></g>
+</g>
+<g class="hm-cell hm-r12 hm-c8">
+<title>Wireless & Electrical · 1907-08: 3 subjects</title>
+<rect class="hm-rect" fill="#dfedfa" x="1401.0" y="742.5" width="138.0" height="46.5"/>
+<text class="hm-num" x="1470.0" y="770.8" font-family="Source Serif 4, Georgia, serif" font-size="13" fill="#0C447C" text-anchor="middle">3</text>
+<g class="hm-badge" pointer-events="none"><rect x="1400.0" y="732.0" width="140" height="58" rx="4" fill="#FBF6E6" stroke="#dfedfa" stroke-width="1.5"/><text x="1470.0" y="750.0" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="12" fill="#1A1A2E">Wireless &amp; Electrical</text><text x="1470.0" y="768.0" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#55556A">1907-08</text><text x="1470.0" y="784.0" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="13" fill="#dfedfa">3 subjects</text></g>
+</g>
+<text class="y-label-vert" x="266" y="189.2">Projectiles &amp; Ammunition</text>
+<text class="y-label-vert" x="266" y="237.7">Artillery &amp; Guns</text>
+<text class="y-label-vert" x="266" y="286.2">Other</text>
+<text class="y-label-vert" x="266" y="334.6">Torpedoes &amp; Mines</text>
+<text class="y-label-vert" x="266" y="383.1">Aerial / Aviation</text>
+<text class="y-label-vert" x="266" y="431.5">Armor &amp; Fortification</text>
+<text class="y-label-vert" x="266" y="480.0">Explosives &amp; Propellants</text>
+<text class="y-label-vert" x="266" y="528.5">Range Finding &amp; Fire Control</text>
+<text class="y-label-vert" x="266" y="576.9">Small Arms</text>
+<text class="y-label-vert" x="266" y="625.4">Searchlights &amp; Optics</text>
+<text class="y-label-vert" x="266" y="673.8">Entrenching &amp; Field Equip.</text>
+<text class="y-label-vert" x="266" y="722.3">Transportation &amp; Vehicles</text>
+<text class="y-label-vert" x="266" y="770.8">Wireless &amp; Electrical</text>
+<text class="tick" x="350.0" y="812" text-anchor="middle">1897-98</text>
+<text class="tick" x="490.0" y="812" text-anchor="middle">1898-99</text>
+<text class="tick" x="630.0" y="812" text-anchor="middle">1900-01</text>
+<text class="tick" x="770.0" y="812" text-anchor="middle">1901-02</text>
+<text class="tick" x="910.0" y="812" text-anchor="middle">1903-04</text>
+<text class="tick" x="1050.0" y="812" text-anchor="middle">1904-05</text>
+<text class="tick" x="1190.0" y="812" text-anchor="middle">1905-06</text>
+<text class="tick" x="1330.0" y="812" text-anchor="middle">1906-07</text>
+<text class="tick" x="1470.0" y="812" text-anchor="middle">1907-08</text>
+<text class="axis-label" x="910.0" y="840" text-anchor="middle">BOF reporting period</text>
+<rect fill="#e6f1fb" x="1340.0" y="860" width="3.6" height="10"/>
+<rect fill="#e1eefa" x="1343.1" y="860" width="3.6" height="10"/>
+<rect fill="#dcebf9" x="1346.1" y="860" width="3.6" height="10"/>
+<rect fill="#d7e8f8" x="1349.2" y="860" width="3.6" height="10"/>
+<rect fill="#d2e5f8" x="1352.2" y="860" width="3.6" height="10"/>
+<rect fill="#cde2f7" x="1355.3" y="860" width="3.6" height="10"/>
+<rect fill="#c8dff6" x="1358.3" y="860" width="3.6" height="10"/>
+<rect fill="#c3dcf6" x="1361.4" y="860" width="3.6" height="10"/>
+<rect fill="#bed9f5" x="1364.4" y="860" width="3.6" height="10"/>
+<rect fill="#bad6f4" x="1367.5" y="860" width="3.6" height="10"/>
+<rect fill="#b5d4f4" x="1370.5" y="860" width="3.6" height="10"/>
+<rect fill="#b0d1f3" x="1373.6" y="860" width="3.6" height="10"/>
+<rect fill="#aacdf2" x="1376.6" y="860" width="3.6" height="10"/>
+<rect fill="#a5caf1" x="1379.7" y="860" width="3.6" height="10"/>
+<rect fill="#a0c7f0" x="1382.7" y="860" width="3.6" height="10"/>
+<rect fill="#9bc4ef" x="1385.8" y="860" width="3.6" height="10"/>
+<rect fill="#96c1ee" x="1388.8" y="860" width="3.6" height="10"/>
+<rect fill="#91beed" x="1391.9" y="860" width="3.6" height="10"/>
+<rect fill="#8cbbec" x="1394.9" y="860" width="3.6" height="10"/>
+<rect fill="#87b8eb" x="1398.0" y="860" width="3.6" height="10"/>
+<rect fill="#80b4ea" x="1401.0" y="860" width="3.6" height="10"/>
+<rect fill="#79b0e8" x="1404.1" y="860" width="3.6" height="10"/>
+<rect fill="#71abe7" x="1407.1" y="860" width="3.6" height="10"/>
+<rect fill="#69a7e6" x="1410.2" y="860" width="3.6" height="10"/>
+<rect fill="#61a2e4" x="1413.2" y="860" width="3.6" height="10"/>
+<rect fill="#599ee3" x="1416.3" y="860" width="3.6" height="10"/>
+<rect fill="#5299e1" x="1419.3" y="860" width="3.6" height="10"/>
+<rect fill="#4a95e0" x="1422.4" y="860" width="3.6" height="10"/>
+<rect fill="#4290df" x="1425.4" y="860" width="3.6" height="10"/>
+<rect fill="#3a8cdd" x="1428.5" y="860" width="3.6" height="10"/>
+<rect fill="#3587da" x="1431.5" y="860" width="3.6" height="10"/>
+<rect fill="#3283d4" x="1434.6" y="860" width="3.6" height="10"/>
+<rect fill="#2f7fcf" x="1437.6" y="860" width="3.6" height="10"/>
+<rect fill="#2c7ac9" x="1440.7" y="860" width="3.6" height="10"/>
+<rect fill="#2976c3" x="1443.7" y="860" width="3.6" height="10"/>
+<rect fill="#2672be" x="1446.8" y="860" width="3.6" height="10"/>
+<rect fill="#226eb8" x="1449.8" y="860" width="3.6" height="10"/>
+<rect fill="#1f69b3" x="1452.9" y="860" width="3.6" height="10"/>
+<rect fill="#1c65ad" x="1455.9" y="860" width="3.6" height="10"/>
+<rect fill="#1961a7" x="1459.0" y="860" width="3.6" height="10"/>
+<rect fill="#175da2" x="1462.0" y="860" width="3.6" height="10"/>
+<rect fill="#165a9e" x="1465.1" y="860" width="3.6" height="10"/>
+<rect fill="#14579a" x="1468.1" y="860" width="3.6" height="10"/>
+<rect fill="#135595" x="1471.2" y="860" width="3.6" height="10"/>
+<rect fill="#125291" x="1474.2" y="860" width="3.6" height="10"/>
+<rect fill="#114f8d" x="1477.3" y="860" width="3.6" height="10"/>
+<rect fill="#0f4c88" x="1480.3" y="860" width="3.6" height="10"/>
+<rect fill="#0e4984" x="1483.4" y="860" width="3.6" height="10"/>
+<rect fill="#0d4680" x="1486.4" y="860" width="3.6" height="10"/>
+<rect fill="#0b437b" x="1489.5" y="860" width="3.6" height="10"/>
+<rect fill="#0b4177" x="1492.5" y="860" width="3.6" height="10"/>
+<rect fill="#0a3f73" x="1495.6" y="860" width="3.6" height="10"/>
+<rect fill="#093c6f" x="1498.6" y="860" width="3.6" height="10"/>
+<rect fill="#083a6b" x="1501.7" y="860" width="3.6" height="10"/>
+<rect fill="#073767" x="1504.7" y="860" width="3.6" height="10"/>
+<rect fill="#073563" x="1507.8" y="860" width="3.6" height="10"/>
+<rect fill="#06335f" x="1510.8" y="860" width="3.6" height="10"/>
+<rect fill="#05305b" x="1513.9" y="860" width="3.6" height="10"/>
+<rect fill="#042e57" x="1516.9" y="860" width="3.6" height="10"/>
+<rect fill="#042c53" x="1520.0" y="860" width="3.6" height="10"/>
+<text class="tick" x="1340.0" y="884.0" text-anchor="start">0</text>
+<text class="tick" x="1520.0" y="884.0" text-anchor="end">130</text>
+<text class="axis-label" x="1430.0" y="854.0" text-anchor="middle">Subjects</text>
+</svg>
+</div>
 </body>
 </html>
